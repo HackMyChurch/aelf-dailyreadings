@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Aelf - lectures du jours</string>
+    
+    <!-- Toolbar buttons -->
+    <string name="action_calendar">Date</string>
+    <string name="action_settings">Paramètres</string>
+    <string name="action_about">À propos</string>
+    
+    <!-- Dialogs -->
+    <string name="dialog_about_title">À propos</string>
+    <string name="dialog_about_content">L\'application "AELF" est strictement <i>officieuse</i> et n\'engage en rien AELF.\n\n\
+Les textes sont la propriété exclusive de AELF. Application développée par @Catho_Geek.\n\nTextes liturgiques © AELF</string>
+	
+	<!-- Buttons -->
+    <string name="button_ok">Valider</string>
+    <string name="button_cancel">Anuller</string>
+
+</resources>

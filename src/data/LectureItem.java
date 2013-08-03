@@ -1,0 +1,33 @@
+package data;
+
+import java.io.Serializable;
+
+public class LectureItem implements Serializable {
+	/**
+	 * internal data structure version ID
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	public final String longTitle;
+	public final String shortTitle;
+	public final String description;
+	public final String category;
+	public final int guid; // FIXME: remove ?
+	
+	/**
+	 * @param title
+	 * @param description
+	 * @param category
+	 * @param guid
+	 */
+	public LectureItem(String title, String description, String category, int guid) {
+		String[] titleChunks = title.split(" : ");
+		
+		this.shortTitle = titleChunks[0];
+		this.longTitle = title;
+		this.description = description;
+		this.category = category;
+		this.guid = guid;
+	}
+
+}

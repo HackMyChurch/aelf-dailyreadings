@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="spinner">
+        <item>Messe</item>
+        <item>Office des Lectures</item>
+        <item>Laudes</item>
+        <item>Tierce</item>
+        <item>Sexte</item>
+        <item>None</item>
+        <item>Vêpres</item>
+        <item>Complies</item>
+    </string-array>
+
+</resources>
