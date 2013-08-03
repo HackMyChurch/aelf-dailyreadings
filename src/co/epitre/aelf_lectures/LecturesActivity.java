@@ -156,6 +156,17 @@ public class LecturesActivity extends FragmentActivity implements DatePickerFrag
 		return true;
 	}
 	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    switch (item.getItemId()) { 
+	    case R.id.action_about:
+	        return onAbout(item);
+	    case R.id.action_calendar:
+	        return onCalendar(item);
+	    }
+	    return true;
+	} 
+	
 	/**
 	 * Create a new dummy account for the sync adapter
 	 *

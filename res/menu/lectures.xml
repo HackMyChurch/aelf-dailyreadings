@@ -4,7 +4,6 @@
         android:id="@+id/action_calendar"
         android:orderInCategory="120"
         android:showAsAction="always"
-        android:onClick="onCalendar"
         android:title="@string/action_calendar"/>
     <!--item
         android:id="@+id/action_settings"
@@ -15,7 +14,6 @@
         android:id="@+id/action_about"
         android:orderInCategory="210"
         android:showAsAction="never"
-        android:onClick="onAbout"
         android:title="@string/action_about"/>
 
 </menu>
