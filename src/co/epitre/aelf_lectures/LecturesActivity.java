@@ -18,7 +18,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.widget.ArrayAdapter;
-import android.widget.SpinnerAdapter;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -91,12 +90,23 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 		setContentView(R.layout.activity_lectures);
 		
 		// Spinner
-		ActionBar actionBar = getSupportActionBar();
+	    ActionBar actionBar = getSupportActionBar();
+	    
+	    Context context = actionBar.getThemedContext();
+	    ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.sherlock_spinner_item);
+	    list.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+	    
+	    actionBar.setDisplayShowTitleEnabled(false);
+	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+	    actionBar.setListNavigationCallbacks(list, this);
+		
+		
+		/*ActionBar actionBar = getSupportActionBar();
 		SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(actionBar.getThemedContext(), R.array.spinner,
 		          android.R.layout.simple_spinner_dropdown_item);
 		actionBar.setDisplayShowTitleEnabled(false);
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
+		actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);*/
 		
 		// finally, turn on periodic lectures caching
 		if(mAccount != null) {
