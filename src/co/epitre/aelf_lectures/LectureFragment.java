@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -20,6 +21,7 @@ public class LectureFragment extends Fragment {
 	public LectureFragment() {
 	}
 
+	@SuppressLint("NewApi") // surrounded by a runtime test 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		
@@ -33,7 +35,10 @@ public class LectureFragment extends Fragment {
 		WebView lectureView = (WebView) rootView.findViewById(R.id.LectureView);
 		lectureView.loadDataWithBaseURL("file:///android_asset/", htmlString.toString(), "text/html", "utf-8", null);
 		lectureView.setBackgroundColor(0x00000000);
-		lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+		if(android.os.Build.VERSION.SDK_INT > 11)
+		{
+			lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+		}
 		// return
 		return rootView;
 	}

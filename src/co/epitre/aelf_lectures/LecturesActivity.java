@@ -12,24 +12,25 @@ import data.LecturesController;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.SpinnerAdapter;
+
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
 class WhatWhen {
 	public LecturesController.WHAT what;
 	public GregorianCalendar when;
 }
 
-public class LecturesActivity extends FragmentActivity implements DatePickerFragment.CalendarDialogListener,
+public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
                                                                   ActionBar.OnNavigationListener {
 
 	/**
@@ -90,7 +91,7 @@ public class LecturesActivity extends FragmentActivity implements DatePickerFrag
 		setContentView(R.layout.activity_lectures);
 		
 		// Spinner
-		ActionBar actionBar = getActionBar();
+		ActionBar actionBar = getSupportActionBar();
 		SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(actionBar.getThemedContext(), R.array.spinner,
 		          android.R.layout.simple_spinner_dropdown_item);
 		actionBar.setDisplayShowTitleEnabled(false);
@@ -144,7 +145,7 @@ public class LecturesActivity extends FragmentActivity implements DatePickerFrag
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar
-		getMenuInflater().inflate(R.menu.lectures, menu);
+		getSupportMenuInflater().inflate(R.menu.lectures, menu);
 		
 		// Update to date button with "this.date"
 		MenuItem calendarItem = menu.findItem(R.id.action_calendar);
