@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -88,7 +89,7 @@ class SupportDatePickerDialog extends DatePickerDialog {
 }
 
 public class DatePickerFragment extends DialogFragment
-	implements DatePickerDialog.OnDateSetListener {
+	implements DatePickerDialog.OnDateSetListener, DialogInterface.OnClickListener {
 	
 	/* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
@@ -135,7 +136,37 @@ public class DatePickerFragment extends DialogFragment
 		DatePickerDialog dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
 		dialog.setCancelable(true);
 		dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), (Message)null);
+		dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_next_sunday), this);
 		return dialog;
+	}
+	
+	@Override
+	public void onClick(DialogInterface dialog, int which) {
+		if(which == DialogInterface.BUTTON_NEUTRAL) {
+			// find next sunday's date
+			GregorianCalendar date = new GregorianCalendar();
+			while (date.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+				date.add(Calendar.DATE, +1);
+			}
+			
+			// set date picker's date
+			DatePickerDialog dateDialog = (DatePickerDialog)dialog;
+	    	dateDialog.updateDate(
+	    			date.get(Calendar.YEAR), 
+	    			date.get(Calendar.MONTH),
+	    			date.get(Calendar.DAY_OF_MONTH));
+	    	
+	    	// trigger listener
+	    	mListener.onCalendarDialogPicked(
+	    			date.get(Calendar.YEAR), 
+	    			date.get(Calendar.MONTH),
+	    			date.get(Calendar.DAY_OF_MONTH));
+	    	
+	    	// quit the dialog
+	    	dialog.dismiss();
+	    	
+	    	// FIXME: avoid flickering
+		}
 	}
 
 	public void onDateSet(DatePicker view, int year, int month, int day) {

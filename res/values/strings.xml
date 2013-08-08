@@ -16,5 +16,6 @@ Les textes sont la propriété exclusive de AELF. Application développée par @
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
     <string name="button_cancel">Annuler</string>
+    <string name="button_next_sunday">Dim pro.</string>
 
 </resources>

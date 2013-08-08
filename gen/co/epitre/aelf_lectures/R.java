@@ -1052,6 +1052,7 @@ containing a value of this type.
         public static final int action_settings=0x7f0a000f;
         public static final int app_name=0x7f0a000d;
         public static final int button_cancel=0x7f0a0014;
+        public static final int button_next_sunday=0x7f0a0015;
         /**  Buttons 
          */
         public static final int button_ok=0x7f0a0013;
