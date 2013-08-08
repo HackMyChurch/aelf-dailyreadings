@@ -79,7 +79,7 @@ class SupportDatePickerDialog extends DatePickerDialog {
         mCalendar.set(Calendar.MONTH, month);
         mCalendar.set(Calendar.DAY_OF_MONTH, day);
         String weekday = mWeekDays[mCalendar.get(Calendar.DAY_OF_WEEK)];
-        setTitle(weekday + ", " + mDateFormat.format(mCalendar.getTime()));
+        setTitle(weekday + " " + mDateFormat.format(mCalendar.getTime()));
     }
 	
 	public void onDateChanged(DatePicker view, int year,
