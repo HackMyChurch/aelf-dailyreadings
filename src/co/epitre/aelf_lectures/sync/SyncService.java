@@ -28,7 +28,7 @@ public class SyncService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        android.os.Debug.waitForDebugger();
+        // android.os.Debug.waitForDebugger();
         Log.i(TAG, "Service created");
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {

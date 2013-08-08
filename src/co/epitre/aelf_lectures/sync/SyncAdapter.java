@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import data.LecturesController;
+import co.epitre.aelf_lectures.data.LecturesController;
+
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;

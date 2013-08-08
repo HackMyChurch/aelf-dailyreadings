@@ -2,12 +2,13 @@ package co.epitre.aelf_lectures;
 
 import java.util.List;
 
+import co.epitre.aelf_lectures.data.LectureItem;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import data.LectureItem;
 
 /**
  * A {@link FragmentPagerAdapter} that returns a fragment corresponding to

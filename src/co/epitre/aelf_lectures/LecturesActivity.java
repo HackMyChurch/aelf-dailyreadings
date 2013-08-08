@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import data.LectureItem;
-import data.LecturesController;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -18,6 +16,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.widget.ArrayAdapter;
+
+import co.epitre.aelf_lectures.data.LectureItem;
+import co.epitre.aelf_lectures.data.LecturesController;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;

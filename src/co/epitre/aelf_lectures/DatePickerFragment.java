@@ -1,15 +1,91 @@
 package co.epitre.aelf_lectures;
 
+import java.text.DateFormatSymbols;
 import java.util.Calendar;
 
 import android.app.Activity;
 import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
+import android.text.format.DateFormat;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Message;
 import android.widget.DatePicker;
+
+/**
+ * Overload stock DatePickerDialog to force date display in title in ICS
+ * + refresh on date change
+ * @author jean-tiare
+ * 
+ * source taken from https://github.com/android/platform_frameworks_base/blob/9066cfe9886ac131c34d59ed0e2d287b0e3c0087/core/java/android/app/DatePickerDialog.java
+ *
+ */
+class SupportDatePickerDialog extends DatePickerDialog {
+	private final Calendar mCalendar;
+	private final java.text.DateFormat mDateFormat;
+	private final String[] mWeekDays;
+	
+    /**
+	* @param context The context the dialog is to run in.
+	* @param callBack How the parent is notified that the date is set.
+	* @param year The initial year of the dialog.
+	* @param monthOfYear The initial month of the dialog.
+	* @param dayOfMonth The initial day of the dialog.
+	*/
+    public SupportDatePickerDialog(Context context,
+            OnDateSetListener callBack,
+            int year,
+            int monthOfYear,
+            int dayOfMonth) {
+        super(context, callBack, year, monthOfYear, dayOfMonth);
+        
+        DateFormatSymbols symbols = new DateFormatSymbols();
+    	mWeekDays = symbols.getShortWeekdays();
+
+    	mDateFormat = DateFormat.getMediumDateFormat(context);
+    	mCalendar = Calendar.getInstance();
+    	updateTitle(year, monthOfYear, dayOfMonth);
+    }
+	
+	/**
+	 * @param context The context the dialog is to run in.
+	 * @param theme the theme to apply to this dialog
+	 * @param callBack How the parent is notified that the date is set.
+	 * @param year The initial year of the dialog.
+	 * @param monthOfYear The initial month of the dialog.
+	 * @param dayOfMonth The initial day of the dialog.
+	 */
+    public SupportDatePickerDialog(Context context,
+    		int theme,
+    		OnDateSetListener callBack,
+    		int year,
+    		int monthOfYear,
+    		int dayOfMonth) {
+    	super(context, theme, callBack, year, monthOfYear, dayOfMonth);
+    	DateFormatSymbols symbols = new DateFormatSymbols();
+    	mWeekDays = symbols.getShortWeekdays();
+
+    	mDateFormat = DateFormat.getMediumDateFormat(context);
+    	mCalendar = Calendar.getInstance();
+    	updateTitle(year, monthOfYear, dayOfMonth);
+    }
+
+	
+	private void updateTitle(int year, int month, int day) {
+        mCalendar.set(Calendar.YEAR, year);
+        mCalendar.set(Calendar.MONTH, month);
+        mCalendar.set(Calendar.DAY_OF_MONTH, day);
+        String weekday = mWeekDays[mCalendar.get(Calendar.DAY_OF_WEEK)];
+        setTitle(weekday + ", " + mDateFormat.format(mCalendar.getTime()));
+    }
+	
+	public void onDateChanged(DatePicker view, int year,
+            int month, int day) {
+        updateTitle(year, month, day);
+    }
+}
 
 public class DatePickerFragment extends DialogFragment
 	implements DatePickerDialog.OnDateSetListener {
@@ -56,7 +132,7 @@ public class DatePickerFragment extends DialogFragment
 		int day = c.get(Calendar.DAY_OF_MONTH);
 
 		// Create a new instance of DatePickerDialog and return it
-		DatePickerDialog dialog =  new DatePickerDialog(getActivity(), this, year, month, day);
+		DatePickerDialog dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
 		dialog.setCancelable(true);
 		dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), (Message)null);
 		return dialog;

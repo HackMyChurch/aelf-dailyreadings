@@ -1,4 +1,4 @@
-package data;
+package co.epitre.aelf_lectures.data;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,6 +24,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 import android.util.Xml;
 
 
@@ -36,7 +37,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 	private static final String DB_NAME = "aelf_cache.db";
 	
 	private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (date INTEGER PRIMARY KEY, lectures BLOB)";
-	private static final String DB_TABLE_SET = "INSERT INTO `%s` VALUES (?,?)";
+	private static final String DB_TABLE_SET = "INSERT OR REPLACE INTO `%s` VALUES (?,?)";
 	
 	// TODO: prepare requests
 	
@@ -180,6 +181,7 @@ public final class LecturesController {
 	/**
 	 * This class is a manager --> Singleton
 	 */
+	private static final String TAG = "LectureController";
 	private static volatile LecturesController instance = null;
 	private AelfCacheHelper cache = null;
 	private LecturesController(Context c) {
@@ -206,7 +208,13 @@ public final class LecturesController {
     	List<LectureItem> lectures = null;
     	
     	// attempts load from cache
-    	lectures = cache.load(what, when);
+    	try {
+    		lectures = cache.load(what, when);
+		} catch (RuntimeException e) {
+			// gracefully recover when DB stream outdated/corrupted by refreshing
+			Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...");
+			lectures = null;
+		}
     	if(lectures != null) {
     		return lectures;
     	}

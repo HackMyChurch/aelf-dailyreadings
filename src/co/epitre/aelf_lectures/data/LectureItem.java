@@ -1,4 +1,4 @@
-package data;
+package co.epitre.aelf_lectures.data;
 
 import java.io.Serializable;
 
