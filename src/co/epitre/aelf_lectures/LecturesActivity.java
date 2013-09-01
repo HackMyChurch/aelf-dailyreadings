@@ -28,6 +28,7 @@ import com.actionbarsherlock.view.MenuItem;
 class WhatWhen {
 	public LecturesController.WHAT what;
 	public GregorianCalendar when;
+	public int position;
 }
 
 public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
@@ -83,6 +84,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 		whatwhen = new WhatWhen();
 		whatwhen.when = new GregorianCalendar();
 		whatwhen.what = LecturesController.WHAT.MESSE;
+		whatwhen.position = -1; // for mass, load gospel first
 		
 		// error handler
 		networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur", -1));
@@ -116,6 +118,46 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 		}
 	}
 	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		// Save instance state. Especially useful on screen rotate on older phones
+		// - what --> mass, tierce, ... ? (id)
+		// - when --> date (timestamp)
+		// - position --> active tab (id)
+		super.onSaveInstanceState(outState);
+		
+		outState.putInt("what", whatwhen.what.getPosition());
+		outState.putLong("when", whatwhen.when.getTimeInMillis());
+		outState.putInt("position", mViewPager.getCurrentItem());
+	}
+	
+	@Override
+	protected void onRestoreInstanceState (Bundle savedInstanceState) {
+		// Restore saved instance state. Especially useful on screen rotate on older phones
+		// - what --> mass, tierce, ... ? (id)
+		// - when --> date (timestamp)
+		// - position --> active tab (id)
+		super.onRestoreInstanceState(savedInstanceState);
+		
+    	// load state
+    	whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what")];
+    	whatwhen.when.setTimeInMillis(savedInstanceState.getLong("when"));
+    	whatwhen.position = savedInstanceState.getInt("position");
+    	
+    	// update UI
+    	ActionBar actionBar = getSupportActionBar();
+    	actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+		MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
+		SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
+		calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
+    	
+		// nota: data reload + move to position is triggered by spinner callback
+		
+		// FIXME: factorize date UI
+		// TODO: tab
+		
+	}
+	
 	public boolean onAbout(MenuItem item) {
 		AboutDialogFragment aboutDialog = new AboutDialogFragment();
 		aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
@@ -136,8 +178,9 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 	@SuppressLint("SimpleDateFormat") // I know but currently French only
 	public void onCalendarDialogPicked(int year, int month, int day) {
 		whatwhen.when = new GregorianCalendar(year, month, day);
+		whatwhen.position = mViewPager.getCurrentItem(); // keep on the same reading on date change
 		new DownloadXmlTask().execute(whatwhen);
-		
+
 		// Update to date button with "this.date"
 		MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
 		SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
@@ -146,8 +189,11 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 	
 	@Override
 	public boolean onNavigationItemSelected(int position, long itemId) {
-		// FIXME: range check
-		whatwhen.what = LecturesController.WHAT.values()[position];
+		// Are we actually *changing* ? --> maybe not if coming from state reload
+		if(whatwhen.what != LecturesController.WHAT.values()[position]) {
+			whatwhen.what = LecturesController.WHAT.values()[position];
+			whatwhen.position = (whatwhen.what == LecturesController.WHAT.MESSE) ? -1:0; // on what change, move to last for mass, 1st for others
+		}
 		new DownloadXmlTask().execute(whatwhen);
 		return true;
 	}
@@ -229,9 +275,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 			// Set up the ViewPager with the sections adapter.
 			mViewPager = (ViewPager) findViewById(R.id.pager);
 			mViewPager.setAdapter(mSectionsPagerAdapter);
-			if(whatwhen.what == LecturesController.WHAT.MESSE) {
-				mViewPager.setCurrentItem(lectures.size()-1); // directly move to Gospel
-			}
+			int start = (whatwhen.position < 0)?lectures.size():0;
+			mViewPager.setCurrentItem(start + whatwhen.position);
 		}
 	}
 
