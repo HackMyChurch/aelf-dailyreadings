@@ -147,10 +147,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// update UI
     	ActionBar actionBar = getSupportActionBar();
     	actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
-		MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
-		SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
-		calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
     	
+    	// nota: date UI is updated on menu creation
 		// nota: data reload + move to position is triggered by spinner callback
 		
 		// FIXME: factorize date UI
