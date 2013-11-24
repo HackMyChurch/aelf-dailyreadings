@@ -103,14 +103,6 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 	    actionBar.setListNavigationCallbacks(list, this);
 		
-		
-		/*ActionBar actionBar = getSupportActionBar();
-		SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(actionBar.getThemedContext(), R.array.spinner,
-		          android.R.layout.simple_spinner_dropdown_item);
-		actionBar.setDisplayShowTitleEnabled(false);
-		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-		actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);*/
-		
 		// finally, turn on periodic lectures caching
 		if(mAccount != null) {
 			ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
