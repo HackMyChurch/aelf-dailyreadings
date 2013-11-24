@@ -1,3 +1,7 @@
 *.apk
 *.class
 
+.settings
+bin/
+gen/
+proguard/
