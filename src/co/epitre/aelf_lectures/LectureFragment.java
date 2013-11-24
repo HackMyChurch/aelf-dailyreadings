@@ -27,8 +27,10 @@ public class LectureFragment extends Fragment {
 		
 		// compute view --> HTML
 		StringBuilder htmlString = new StringBuilder();
+		htmlString.append("<html><head><style type=\"text/css\">body{margin:24px}</style></head><body>");
 		htmlString.append("<h3>" + getArguments().getString(ARG_LONG_TITLE) + "</h3>");
 		htmlString.append(getArguments().getString(ARG_DESCRIPTION));
+		htmlString.append("</body></html>");
 
 		// actual UI refresh
 		View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
