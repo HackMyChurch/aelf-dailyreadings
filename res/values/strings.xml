@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Aelf - lectures du jours</string>
+    <string name="app_name">Aelf - lectures du jour</string>
     
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
