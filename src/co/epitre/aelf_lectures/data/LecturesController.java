@@ -27,7 +27,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 import android.util.Xml;
 
-
 /**
  * Internal cache manager (SQLite)
  */
@@ -221,18 +220,56 @@ public final class LecturesController {
     	
     	// fallback to network load
     	lectures = loadFromNetwork(what, when);
-    	if(lectures != null) {
-    		cache.store(what, when, lectures);
-    		return lectures;
-    	}
-    	
-    	// big fail TODO: Log
-		return null;
+		if(lectures == null) {
+			// big fail TODO: Log
+			return null;
+		}
+
+		lectures = PostProcessLectures(lectures);
+
+		cache.store(what, when, lectures);
+		return lectures;
     }
     
     /**
      * Real Work
      */
+
+	private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
+		List<LectureItem> cleaned = new ArrayList<LectureItem>();
+
+		String buffer = "";
+
+		for(LectureItem lectureIn: lectures) {
+			// prepend title
+			buffer += "<h3>" + lectureIn.longTitle + "</h3>";
+
+			// add &nbsp; where needed
+			buffer += lectureIn.description
+					.replace(" :", "&nbsp;:")
+					.replace(" !", "&nbsp;!")
+					.replace(" ?", "&nbsp;?")
+					.replace(" &raquo;", "&nbsp;&raquo;")
+					.replace("&laquo; ", "&laquo;&nbsp;");
+
+			// if `longTitle` is "Antienne" AND not last, --> done
+			// FIXME: add "not last iteration condition"
+			if(lectureIn.longTitle.equals("Antienne")) continue;
+
+			// append to the output list
+			cleaned.add(new LectureItem(
+					lectureIn.longTitle,
+					buffer,
+					lectureIn.category,
+					lectureIn.guid));
+
+			// reset buffer
+			buffer = "";
+		}
+
+		return cleaned;
+	}
+
     // real work internal var
     private static final SimpleDateFormat formater = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
     

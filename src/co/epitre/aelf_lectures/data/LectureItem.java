@@ -29,5 +29,4 @@ public class LectureItem implements Serializable {
 		this.category = category;
 		this.guid = guid;
 	}
-
 }

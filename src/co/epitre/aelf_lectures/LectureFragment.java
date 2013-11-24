@@ -15,8 +15,7 @@ public class LectureFragment extends Fragment {
 	/**
 	 * The fragment arguments
 	 */
-	public static final String ARG_DESCRIPTION = "description";
-	public static final String ARG_LONG_TITLE = "long_title";
+	public static final String ARG_TEXT_HTML = "text html";
 
 	public LectureFragment() {
 	}
@@ -27,14 +26,8 @@ public class LectureFragment extends Fragment {
 		
 		// compute view --> HTML
 		StringBuilder htmlString = new StringBuilder();
-		String body = getArguments().getString(ARG_DESCRIPTION)
-				.replace(" :", "&nbsp;:")
-				.replace(" !", "&nbsp;!")
-				.replace(" ?", "&nbsp;?")
-				.replace(" &raquo;", "&nbsp;&raquo;")
-				.replace("&laquo; ", "&laquo;&nbsp;");
+		String body = getArguments().getString(ARG_TEXT_HTML);
 		htmlString.append("<html><head><style type=\"text/css\">body{margin:24px}</style></head><body>");
-		htmlString.append("<h3>" + getArguments().getString(ARG_LONG_TITLE) + "</h3>");
 		htmlString.append(body);
 		htmlString.append("</body></html>");
 
@@ -49,7 +42,7 @@ public class LectureFragment extends Fragment {
 			lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 			lectureView.getSettings().setDisplayZoomControls(false);
 		}
-		// return
+
 		return rootView;
 	}
 }

@@ -12,6 +12,9 @@ import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
@@ -33,6 +36,8 @@ class WhatWhen {
 
 public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
                                                                   ActionBar.OnNavigationListener {
+
+	public static final String PREFS_NAME = "aelf-prefs";
 
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -73,6 +78,36 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		// ---- need upgrade ?
+		int currentVersion, savedVersion;
+
+		// current version
+		PackageInfo packageInfo;
+		try {
+			packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+		} catch (NameNotFoundException e) {
+			throw new RuntimeException("Could not determine current version");
+		}
+		currentVersion = packageInfo.versionCode;
+
+		// load saved version, if any
+	    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+	    savedVersion = settings.getInt("version", -1);
+
+		// upgrade logic, primitive at the moment...
+		if(savedVersion != currentVersion) {
+			if(savedVersion < 5) {
+				// delete cache DB: needs to force regenerate
+				getApplicationContext().deleteDatabase("aelf_cache.db");
+			}
+
+			// update saved version
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putInt("version", currentVersion);
+			editor.commit();
+		}
+		// ---- end upgrade
 
 		// create dummy account for our background sync engine
 		mAccount = CreateSyncAccount(this);

@@ -32,8 +32,7 @@ public class SectionsPagerAdapterFragment extends FragmentStatePagerAdapter {
 		Fragment fragment = new LectureFragment();
 
 		Bundle args = new Bundle();
-		args.putString(LectureFragment.ARG_LONG_TITLE, lecture.longTitle);
-		args.putString(LectureFragment.ARG_DESCRIPTION, lecture.description);
+		args.putString(LectureFragment.ARG_TEXT_HTML, lecture.description);
 		fragment.setArguments(args);
 		return fragment;
 	}
