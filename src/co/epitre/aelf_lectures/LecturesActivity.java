@@ -18,7 +18,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.RelativeLayout;
 
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
@@ -273,16 +275,32 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 			return null;
 		}
 	}
-	
+
+	protected void setLoading(final boolean loading) {
+		final RelativeLayout loadingOverlay = (RelativeLayout)findViewById(R.id.loadingOverlay);
+
+		loadingOverlay.post(new Runnable() {
+			public void run() {
+				if(loading) {
+					loadingOverlay.setVisibility(View.VISIBLE);
+				} else {
+					loadingOverlay.setVisibility(View.INVISIBLE);
+				}
+		    }
+		});
+	}
+
 	// Async loader
 	private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 		@Override
 		protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
 			try {
+				setLoading(true);
 				WhatWhen ww = whatwhen[0];
 				return lecturesCtrl.getLectures(ww.what, ww.when);
 			} catch (IOException e) {
 				// TODO print error message
+				setLoading(false);
 				e.printStackTrace();
 				return null;
 			}
@@ -302,6 +320,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 			mViewPager.setAdapter(mSectionsPagerAdapter);
 			int start = (whatwhen.position < 0)?lectures.size():0;
 			mViewPager.setCurrentItem(start + whatwhen.position);
+
+			setLoading(false);
 		}
 	}
 
