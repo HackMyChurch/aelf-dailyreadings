@@ -245,8 +245,12 @@ public final class LecturesController {
 		String buffer = "";
 
 		for(LectureItem lectureIn: lectures) {
+			boolean isEmpty = lectureIn.description.trim().equals("");
 			boolean isAntienne = lectureIn.longTitle.equals("Antienne");
 
+			// if the content is empty, just ignore this chunk
+			if(isEmpty) continue;
+			
 			if(!isAntienne) {
 				// prepend title
 				buffer = "<h3>" + lectureIn.longTitle + "</h3>" + buffer;
