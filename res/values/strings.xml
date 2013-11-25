@@ -10,8 +10,10 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">L\'application "AELF" est strictement <i>officieuse</i> et n\'engage en rien AELF.\n\n\
-Les textes sont la propriété exclusive de AELF. Application développée par @Catho_Geek.\n\nTextes liturgiques © AELF</string>
+    <string name="dialog_about_content">L\'application <i>officieuse</i> "AELF" n\'engage en rien AELF. \
+Les textes sont issus de la traduction liturgique, propriété exclusive de AELF.\n\n\
+Application par @Catho_Geek.\n\
+Textes liturgiques © AELF</string>
 	
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
