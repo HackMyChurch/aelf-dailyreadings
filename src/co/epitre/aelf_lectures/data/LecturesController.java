@@ -197,15 +197,16 @@ public final class LecturesController {
         }
         return LecturesController.instance;
     }
-    
+
+
     /**
      * API
      * @throws IOException to allow for auto retry. Aelf servers are not that stable...
      */
-    
-    public List<LectureItem> getLectures(WHAT what, GregorianCalendar when) throws IOException {
+
+    public List<LectureItem> getLectures(WHAT what, GregorianCalendar when, boolean restrictToCache) throws IOException {
     	List<LectureItem> lectures = null;
-    	
+
     	// attempts load from cache
     	try {
     		lectures = cache.load(what, when);
@@ -217,7 +218,10 @@ public final class LecturesController {
     	if(lectures != null) {
     		return lectures;
     	}
-    	
+
+		// are we allowed to go any further ?
+    	if(restrictToCache) return null;
+ 
     	// fallback to network load
     	lectures = loadFromNetwork(what, when);
 		if(lectures == null) {
@@ -230,7 +234,7 @@ public final class LecturesController {
 		cache.store(what, when, lectures);
 		return lectures;
     }
-    
+
     /**
      * Real Work
      */

@@ -294,10 +294,16 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 	private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 		@Override
 		protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
+			WhatWhen ww = whatwhen[0];
+
 			try {
+				// attempt to load from cache: skip loading indicator (avoids flickering)
+				List<LectureItem> lectures = lecturesCtrl.getLectures(ww.what, ww.when, true);
+				if(lectures != null) return lectures;
+
+				// attempts to load from network, with loading indicator
 				setLoading(true);
-				WhatWhen ww = whatwhen[0];
-				return lecturesCtrl.getLectures(ww.what, ww.when);
+				return lecturesCtrl.getLectures(ww.what, ww.when, false);
 			} catch (IOException e) {
 				// TODO print error message
 				setLoading(false);

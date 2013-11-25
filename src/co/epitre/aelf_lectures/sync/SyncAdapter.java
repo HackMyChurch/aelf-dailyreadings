@@ -7,14 +7,17 @@ import java.util.GregorianCalendar;
 import co.epitre.aelf_lectures.data.LecturesController;
 
 import android.accounts.Account;
+import android.annotation.TargetApi;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncResult;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public static final String TAG = "SyncAdapter";
 	// Global variables
@@ -36,7 +39,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize, allowParallelSyncs);
         mContentResolver = context.getContentResolver();
     }
-    
+
     /*
      * Pre-load readings for 
      *  - yesterday
@@ -56,14 +59,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     	LecturesController controller = LecturesController.getInstance(this.getContext());
     	
     	try {
-    		GregorianCalendar date = new GregorianCalendar(); // today
-			controller.getLectures(LecturesController.WHAT.MESSE, date);
+			GregorianCalendar date = new GregorianCalendar(); // today
+			controller.getLectures(LecturesController.WHAT.MESSE, date, false);
 			date.add(Calendar.DATE, -1); // yesterday
-	    	controller.getLectures(LecturesController.WHAT.MESSE, date);
-	    	date.add(Calendar.DATE, +2); // tomorrow
-	    	controller.getLectures(LecturesController.WHAT.MESSE, date);
-	    	while (date.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) date.add(Calendar.DATE, +1); // next Sunday
-	    	controller.getLectures(LecturesController.WHAT.MESSE, date);
+			controller.getLectures(LecturesController.WHAT.MESSE, date, false);
+			date.add(Calendar.DATE, +2); // tomorrow
+			controller.getLectures(LecturesController.WHAT.MESSE, date, false);
+			while (date.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) date.add(Calendar.DATE, +1); // next Sunday
+			controller.getLectures(LecturesController.WHAT.MESSE, date, false);
 		} catch (IOException e) {
 			// Aelf servers down ? It appends ...
 			syncResult.delayUntil = 60L*15; // Wait 15min before retrying
