@@ -21,10 +21,17 @@ public class LectureItem implements Serializable {
 	 * @param guid
 	 */
 	public LectureItem(String title, String description, String category, int guid) {
-		String[] titleChunks = title.split(" : ");
-		
-		this.shortTitle = titleChunks[0];
-		this.longTitle = title;
+		String[] titleChunks = title.split(":");
+		String shortTitle = titleChunks[0].trim();
+		String longTitle = title.trim();
+
+		if(shortTitle.equalsIgnoreCase("psaume") && longTitle.length() < 18) {
+			// use a title of the form "Psaume 94" instead of Psaume : 94
+			longTitle = shortTitle = longTitle.replaceFirst(" *: *", " ");
+		}
+
+		this.shortTitle = shortTitle;
+		this.longTitle = longTitle;
 		this.description = description;
 		this.category = category;
 		this.guid = guid;

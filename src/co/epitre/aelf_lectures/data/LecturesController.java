@@ -245,8 +245,15 @@ public final class LecturesController {
 		String buffer = "";
 
 		for(LectureItem lectureIn: lectures) {
-			// prepend title
-			buffer += "<h3>" + lectureIn.longTitle + "</h3>";
+			boolean isAntienne = lectureIn.longTitle.equals("Antienne");
+
+			if(!isAntienne) {
+				// prepend title
+				buffer = "<h3>" + lectureIn.longTitle + "</h3>" + buffer;
+			} else {
+				// enter blockquote
+				buffer += "<blockquote><b>Antienne&nbsp;:</b> ";
+			}
 
 			// add &nbsp; where needed
 			buffer += lectureIn.description
@@ -256,9 +263,11 @@ public final class LecturesController {
 					.replace(" &raquo;", "&nbsp;&raquo;")
 					.replace("&laquo; ", "&laquo;&nbsp;");
 
-			// if `longTitle` is "Antienne" AND not last, --> done
-			// FIXME: add "not last iteration condition"
-			if(lectureIn.longTitle.equals("Antienne")) continue;
+			// if `longTitle` is "Antienne" --> done
+			if(isAntienne) {
+				buffer += "</blockquote>";
+				continue; // FIXME: add "not last iteration condition"
+			}
 
 			// append to the output list
 			cleaned.add(new LectureItem(
