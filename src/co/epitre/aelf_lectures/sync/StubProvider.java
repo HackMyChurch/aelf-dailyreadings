@@ -9,30 +9,30 @@ import android.util.Log;
 /*
  * Define an implementation of ContentProvider that stubs out
  * all methods
- * 
+ *
  * The real provider is in .data.LecturesController.
  * FIXME: merge them
  */
 public class StubProvider extends ContentProvider {
-	private static final String TAG = "SyncDB";
-	
+    private static final String TAG = "AELFSyncDB";
+
     /*
      * Always return true, indicating that the
      * provider loaded correctly.
      */
     @Override
     public boolean onCreate() {
-    	Log.i(TAG, "Provider created");
+        Log.i(TAG, "Provider created");
         return true;
     }
     /*
      * Return an empty String for MIME type
      */
     @Override
-	public String getType(Uri arg0) {
-    	Log.i(TAG, "Provider: Type");
-		return new String();
-	}
+    public String getType(Uri arg0) {
+        Log.i(TAG, "Provider: Type");
+    	return new String();
+    }
     /*
      * query() always returns no results
      *
@@ -44,7 +44,7 @@ public class StubProvider extends ContentProvider {
             String selection,
             String[] selectionArgs,
             String sortOrder) {
-    	Log.i(TAG, "Provider: query");
+        Log.i(TAG, "Provider: query");
         return null;
     }
     /*
@@ -52,7 +52,7 @@ public class StubProvider extends ContentProvider {
      */
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-    	Log.i(TAG, "Provider: insert");
+        Log.i(TAG, "Provider: insert");
         return null;
     }
     /*
@@ -60,7 +60,7 @@ public class StubProvider extends ContentProvider {
      */
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-    	Log.i(TAG, "Provider: delete");
+        Log.i(TAG, "Provider: delete");
         return 0;
     }
     /*
@@ -71,8 +71,8 @@ public class StubProvider extends ContentProvider {
             ContentValues values,
             String selection,
             String[] selectionArgs) {
-    	Log.i(TAG, "Provider: update");
+        Log.i(TAG, "Provider: update");
         return 0;
     }
-	
+
 }

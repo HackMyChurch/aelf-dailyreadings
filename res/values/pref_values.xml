@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Lectures à synchroniser: def = Messe -->
+    <string-array name="pref_lectures_title">
+        <item>Messe</item>
+        <item>Messe + Offices</item>
+    </string-array>
+    <string-array name="pref_lectures_values">
+        <item>messe</item>
+        <item>messe-offices</item>
+    </string-array>
+    <string name="pref_lectures_def">messe</string>
+
+    <!-- Durée de synchronisation: def = Aujourd'hui + dimanche prochain -->
+    <string-array name="pref_duree_title">
+        <item>Aujourd\'hui</item>
+        <item>Aujourd\'hui + Dimanche prochain</item>
+        <item>1 semaine</item>
+        <item>1 mois</item>
+    </string-array>
+    <string-array name="pref_duree_values">
+        <item>auj</item>
+        <item>auj-dim</item>
+        <item>semaine</item>
+        <item>mois</item>
+    </string-array>
+    <string name="pref_duree_def">auj-dim</string>
+    
+    <!-- Durée de conservation: def = 1 semaine -->
+    <string-array name="pref_conserv_title">
+        <item>1 journée</item>
+        <item>1 semaine</item>
+        <item>1 mois</item>
+        <item>Toujours</item>
+    </string-array>
+    <string-array name="pref_conserv_values">
+        <item>jour</item>
+        <item>semaine</item>
+        <item>mois</item>
+        <item>toujours</item>
+    </string-array>
+    <string name="pref_conserv_def">semaine</string>
+    
+</resources>

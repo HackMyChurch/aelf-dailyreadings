@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:title="Paramètres" 
+    android:key="pref_sync">
+    <PreferenceCategory android:title="Mode hors connexion" />
+    <ListPreference 
+        android:title="Lectures à synchroniser"
+        android:dialogTitle="Lectures à synchroniser"
+        android:entryValues="@array/pref_lectures_values"
+        android:entries="@array/pref_lectures_title"
+        android:key="pref_sync_lectures" android:defaultValue="@string/pref_lectures_def"/>
+    <ListPreference 
+        android:title="Télécharger à l'avance"
+        android:dialogTitle="Télécharger à l'avance"
+        android:entryValues="@array/pref_duree_values"
+        android:entries="@array/pref_duree_title"
+        android:key="pref_sync_duree" android:defaultValue="@string/pref_duree_def"/>
+    <ListPreference 
+        android:title="Conserver les textes pendant"
+        android:dialogTitle="Conserver les textes pendant"
+        android:entryValues="@array/pref_conserv_values"
+        android:entries="@array/pref_conserv_title"
+        android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>
+</PreferenceScreen>

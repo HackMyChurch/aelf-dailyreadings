@@ -12,37 +12,37 @@ import android.webkit.WebView;
  * "Lecture" renderer
  */
 public class LectureFragment extends Fragment {
-	/**
-	 * The fragment arguments
-	 */
-	public static final String ARG_TEXT_HTML = "text html";
+    /**
+     * The fragment arguments
+     */
+    public static final String ARG_TEXT_HTML = "text html";
 
-	public LectureFragment() {
-	}
+    public LectureFragment() {
+    }
 
-	@SuppressLint("NewApi") // surrounded by a runtime test 
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		
-		// compute view --> HTML
-		StringBuilder htmlString = new StringBuilder();
-		String body = getArguments().getString(ARG_TEXT_HTML);
-		htmlString.append("<html><head><style type=\"text/css\">body{margin:24px}</style></head><body>");
-		htmlString.append(body);
-		htmlString.append("</body></html>");
+    @SuppressLint("NewApi") // surrounded by a runtime test
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
-		// actual UI refresh
-		View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
-		WebView lectureView = (WebView) rootView.findViewById(R.id.LectureView);
-		lectureView.getSettings().setBuiltInZoomControls(true);
-		lectureView.loadDataWithBaseURL("file:///android_asset/", htmlString.toString(), "text/html", "utf-8", null);
-		lectureView.setBackgroundColor(0x00000000);
-		if(android.os.Build.VERSION.SDK_INT > 11)
-		{
-			lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
-			lectureView.getSettings().setDisplayZoomControls(false);
-		}
+    	// compute view --> HTML
+    	StringBuilder htmlString = new StringBuilder();
+    	String body = getArguments().getString(ARG_TEXT_HTML);
+    	htmlString.append("<html><head><style type=\"text/css\">body{margin:24px}</style></head><body>");
+    	htmlString.append(body);
+    	htmlString.append("</body></html>");
 
-		return rootView;
-	}
+    	// actual UI refresh
+    	View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
+    	WebView lectureView = (WebView) rootView.findViewById(R.id.LectureView);
+    	lectureView.getSettings().setBuiltInZoomControls(true);
+    	lectureView.loadDataWithBaseURL("file:///android_asset/", htmlString.toString(), "text/html", "utf-8", null);
+    	lectureView.setBackgroundColor(0x00000000);
+    	if(android.os.Build.VERSION.SDK_INT > 11)
+    	{
+    		lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+    		lectureView.getSettings().setDisplayZoomControls(false);
+    	}
+
+    	return rootView;
+    }
 }
