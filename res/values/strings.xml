@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Aelf - lectures du jour</string>
+    <string name="app_name">Aelf - Bréviaire au quotidien </string>
     
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
@@ -11,7 +11,7 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">L\'application <i>officieuse</i> "AELF" n\'engage en rien AELF. \
+    <string name="dialog_about_content">L\'application <i>officieuse</i> "AELF #VERSION#" n\'engage en rien AELF. \
 Les textes sont issus de la traduction liturgique, propriété exclusive de AELF.\n\n\
 Application par @Catho_Geek.\n\
 Textes liturgiques © AELF</string>
