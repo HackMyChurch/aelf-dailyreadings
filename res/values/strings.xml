@@ -11,10 +11,10 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">L\'application <i>officieuse</i> "AELF #VERSION#" n\'engage en rien AELF. \
-Les textes sont issus de la traduction liturgique, propriété exclusive de AELF.\n\n\
+    <string name="dialog_about_content">Application <i>officieuse</i> \"AELF - lectures du jour (#VERSION#)\" développée avec le soutient d\'AELF. \
+Textes issus de la traduction liturgique et logo reproduits avec l\'aimable autorisation de l\'AELF.\n\n\
 Application par @Catho_Geek.\n\
-Textes liturgiques © AELF</string>
+Textes liturgiques © AELF (www.aelf.org)</string>
 	
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
