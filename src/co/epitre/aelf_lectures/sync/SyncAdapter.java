@@ -83,9 +83,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // max is either
-    //  - 1 --> messe(0)
+    //  - 1 --> messe(0) && metas (8)
     //  - len(offices)
     private void syncDay(GregorianCalendar when, int max) throws IOException {
+		if(max == 1) {
+			// that's terrible code... Should use a list of items to sync and changing the IDs has terrible side effects...
+			// but at least we avoid doing it twice
+			mController.getLectures(LecturesController.WHAT.METAS, when, false);
+		}
         while(max-- > 0) {
         	LecturesController.WHAT what = LecturesController.WHAT.values()[max];
         	mController.getLectures(what, when, false);

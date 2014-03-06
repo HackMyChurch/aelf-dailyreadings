@@ -151,14 +151,15 @@ public final class LecturesController {
      */
 
     public enum WHAT {
-    	MESSE   (0, "lectures_messe",    "http://rss.aelf.org/%s/[redacted]"),
-    	LECTURES(1, "lectures_lectures", "http://rss.aelf.org/%s/[redacted]"),
-    	LAUDES  (2, "lectures_laudes",   "http://rss.aelf.org/%s/[redacted]"),
-    	TIERCE  (3, "lectures_tierce",   "http://rss.aelf.org/%s/[redacted]"),
-    	SEXTE   (4, "lectures_sexte",    "http://rss.aelf.org/%s/[redacted]"),
-    	NONE    (5, "lectures_none",     "http://rss.aelf.org/%s/[redacted]"),
-    	VEPRES  (6, "lectures_vepres",   "http://rss.aelf.org/%s/[redacted]"),
-    	COMPLIES(7, "lectures_complies", "http://rss.aelf.org/%s/[redacted]");
+		MESSE   (0, "lectures_messe",    "http://rss.aelf.org/%s/[redacted]"),
+		LECTURES(1, "lectures_lectures", "http://rss.aelf.org/%s/[redacted]"),
+		LAUDES  (2, "lectures_laudes",   "http://rss.aelf.org/%s/[redacted]"),
+		TIERCE  (3, "lectures_tierce",   "http://rss.aelf.org/%s/[redacted]"),
+		SEXTE   (4, "lectures_sexte",    "http://rss.aelf.org/%s/[redacted]"),
+		NONE    (5, "lectures_none",     "http://rss.aelf.org/%s/[redacted]"),
+		VEPRES  (6, "lectures_vepres",   "http://rss.aelf.org/%s/[redacted]"),
+		COMPLIES(7, "lectures_complies", "http://rss.aelf.org/%s/[redacted]"),
+		METAS   (8, "lectures_metas",    "http://rss.aelf.org/%s/[redacted]");
 
     	private String name = "";
     	private String url = "";
