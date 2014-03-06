@@ -41,6 +41,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
                                                                   ActionBar.OnNavigationListener {
 
     public static final String PREFS_NAME = "aelf-prefs";
+    public static final long DATE_TODAY = 0;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -148,7 +149,14 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
     	}
     }
-
+    
+    private boolean isToday(GregorianCalendar when){
+    	GregorianCalendar today = new GregorianCalendar();
+    	return (when.get(GregorianCalendar.ERA) == today.get(GregorianCalendar.ERA) &&
+                when.get(GregorianCalendar.YEAR) == today.get(GregorianCalendar.YEAR) &&
+                when.get(GregorianCalendar.DAY_OF_YEAR) == today.get(GregorianCalendar.DAY_OF_YEAR));
+    }
+    
     @Override
     protected void onSaveInstanceState(Bundle outState) {
     	// Save instance state. Especially useful on screen rotate on older phones
@@ -156,10 +164,15 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// - when --> date (timestamp)
     	// - position --> active tab (id)
     	super.onSaveInstanceState(outState);
-
+    	
     	outState.putInt("what", whatwhen.what.getPosition());
-    	outState.putLong("when", whatwhen.when.getTimeInMillis());
     	outState.putInt("position", mViewPager.getCurrentItem());
+    	
+    	if(isToday(whatwhen.when)) {
+    		outState.putLong("when", DATE_TODAY);
+    	} else {
+    		outState.putLong("when", whatwhen.when.getTimeInMillis());
+    	}
     }
 
     @Override
@@ -172,8 +185,14 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
         // load state
         whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what")];
-        whatwhen.when.setTimeInMillis(savedInstanceState.getLong("when"));
         whatwhen.position = savedInstanceState.getInt("position");
+        
+        long timestamp = savedInstanceState.getLong("when");
+        if(timestamp == DATE_TODAY) {
+        	whatwhen.when = new GregorianCalendar();
+        } else {
+        	whatwhen.when.setTimeInMillis(timestamp);
+        }
 
         // update UI
         ActionBar actionBar = getSupportActionBar();
