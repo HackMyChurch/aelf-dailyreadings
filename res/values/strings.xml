@@ -19,6 +19,6 @@ Textes liturgiques © AELF (www.aelf.org)</string>
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
     <string name="button_cancel">Annuler</string>
-    <string name="button_next_sunday">Dim pro.</string>
+    <string name="button_today">Auj.</string>
 
 </resources>

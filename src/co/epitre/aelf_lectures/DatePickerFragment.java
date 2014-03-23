@@ -136,18 +136,15 @@ public class DatePickerFragment extends DialogFragment
     	DatePickerDialog dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
     	dialog.setCancelable(true);
     	dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), (Message)null);
-    	dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_next_sunday), this);
+    	dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
     	return dialog;
     }
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
     	if(which == DialogInterface.BUTTON_NEUTRAL) {
-    		// find next sunday's date
+    		// set to today
     		GregorianCalendar date = new GregorianCalendar();
-    		while (date.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-    			date.add(Calendar.DATE, +1);
-    		}
 
     		// set date picker's date
     		DatePickerDialog dateDialog = (DatePickerDialog)dialog;
