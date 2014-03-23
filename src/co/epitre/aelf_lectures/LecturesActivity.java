@@ -259,7 +259,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// Are we actually *changing* ? --> maybe not if coming from state reload
     	if(whatwhen.what != LecturesController.WHAT.values()[position]) {
     		whatwhen.what = LecturesController.WHAT.values()[position];
-    		whatwhen.position = (whatwhen.what == LecturesController.WHAT.MESSE) ? -1:0; // on what change, move to last for mass, 1st for others
+    		whatwhen.position = 0; // on what change, move to 1st
     	}
     	new DownloadXmlTask().execute(whatwhen);
     	return true;
