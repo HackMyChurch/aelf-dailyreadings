@@ -135,7 +135,8 @@ public final class LecturesController {
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
     	List<LectureItem> cleaned = new ArrayList<LectureItem>();
 
-    	String buffer = "";
+    	String descriptionBuffer = "";
+    	String titleBuffer = "";
 
     	for(LectureItem lectureIn: lectures) {
     		boolean isEmpty = lectureIn.description.trim().equals("");
@@ -144,16 +145,20 @@ public final class LecturesController {
     		// if the content is empty, just ignore this chunk
     		if(isEmpty) continue;
 
+    		titleBuffer = lectureIn.longTitle
+    				.replace("n\\est", "n'est");
+    		
     		if(!isAntienne) {
     			// prepend title
-    			buffer = "<h3>" + lectureIn.longTitle + "</h3>" + buffer;
+    			descriptionBuffer = "<h3>" + titleBuffer + "</h3>" + descriptionBuffer;
     		} else {
     			// enter blockquote
-    			buffer += "<blockquote><b>Antienne&nbsp;:</b> ";
+    			descriptionBuffer += "<blockquote><b>Antienne&nbsp;:</b> ";
     		}
 
     		// add &nbsp; where needed
-    		buffer += lectureIn.description
+    		descriptionBuffer += lectureIn.description
+    				.replace("n\\est", "n'est")
     				.replace(" :", "&nbsp;:")
     				.replace(" !", "&nbsp;!")
     				.replace(" ?", "&nbsp;?")
@@ -162,19 +167,20 @@ public final class LecturesController {
 
     		// if `longTitle` is "Antienne" --> done
     		if(isAntienne) {
-    			buffer += "</blockquote>";
+    			descriptionBuffer += "</blockquote>";
     			continue; // FIXME: add "not last iteration condition"
     		}
 
     		// append to the output list
     		cleaned.add(new LectureItem(
-    				lectureIn.longTitle,
-    				buffer,
+    				titleBuffer,
+    				descriptionBuffer,
     				lectureIn.category,
     				lectureIn.guid));
 
     		// reset buffer
-    		buffer = "";
+    		descriptionBuffer = "";
+    		titleBuffer = "";
     	}
 
     	return cleaned;
