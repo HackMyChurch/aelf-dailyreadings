@@ -3,7 +3,7 @@
 
     <string-array name="spinner">
         <item>Messe</item>
-        <item>Office des Lectures</item>
+        <item>Lectures (office)</item>
         <item>Laudes</item>
         <item>Tierce</item>
         <item>Sexte</item>
