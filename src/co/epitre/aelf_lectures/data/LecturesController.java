@@ -99,7 +99,12 @@ public final class LecturesController {
     		Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...");
     		lectures = null;
     	}
-        if(lectures != null) {
+        
+        // on error or if cached value looks like an error (not yet in AELF
+        // calendar for instance), force reload of live data.
+        // Need this heuristic after a cache load as previous versions erroneously cached
+        // these.
+        if(lectures != null && !looksLikeError(lectures)) {
         	return lectures;
         }
 
@@ -114,8 +119,12 @@ public final class LecturesController {
     	}
 
     	lectures = PostProcessLectures(lectures);
-
-    	cache.store(what, when, lectures);
+    	
+    	// does it look like an error message ? Only simple stupid heuristic for now.
+    	if(looksLikeError(lectures)) {
+    		cache.store(what, when, lectures);
+    	}
+    	
     	return lectures;
     }
 
@@ -131,6 +140,15 @@ public final class LecturesController {
     /**
      * Real Work
      */
+    
+    private boolean looksLikeError(List<LectureItem> lectures) {
+    	// does it look like an error message ? Only simple stupid heuristic for now.
+    	if(lectures.size() > 1) {
+    		return false;
+    	}
+    	
+    	return true;
+    }
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
     	List<LectureItem> cleaned = new ArrayList<LectureItem>();
