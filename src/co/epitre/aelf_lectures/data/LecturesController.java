@@ -176,10 +176,16 @@ public final class LecturesController {
 
     		// add &nbsp; where needed
     		descriptionBuffer += lectureIn.description
+    				// fix ugly typo in error message
     				.replace("n\\est", "n'est")
+    				// ensure punctuation has required spaces
     				.replace(" :", "&nbsp;:")
     				.replace(" !", "&nbsp;!")
     				.replace(" ?", "&nbsp;?")
+    				// fix suddenly smaller text in readings
+    				.replace("size=\"2\"", "")
+    				.replace("face=\"Tahoma\"", "")
+    				// ensure quotes have required spaces
     				.replace(" &raquo;", "&nbsp;&raquo;")
     				.replace("&laquo; ", "&laquo;&nbsp;");
 
