@@ -121,7 +121,7 @@ public final class LecturesController {
     	lectures = PostProcessLectures(lectures);
     	
     	// does it look like an error message ? Only simple stupid heuristic for now.
-    	if(looksLikeError(lectures)) {
+    	if(!looksLikeError(lectures)) {
     		cache.store(what, when, lectures);
     	}
     	
@@ -155,16 +155,29 @@ public final class LecturesController {
 
     	String descriptionBuffer = "";
     	String titleBuffer = "";
+    	boolean inPericope = false;
 
     	for(LectureItem lectureIn: lectures) {
     		boolean isEmpty = lectureIn.description.trim().equals("");
     		boolean isAntienne = lectureIn.longTitle.equals("Antienne");
+    		
+    		if(!inPericope) {
+    			// transition in ?
+    			if(lectureIn.shortTitle.equals("Pericope")) {
+    				inPericope = true;
+    				titleBuffer = lectureIn.longTitle;
+    			}
+    		} else {
+    			// still in or transitioned out ?
+    			inPericope = lectureIn.shortTitle.equals("Repons") || lectureIn.shortTitle.equals("Verset");
+    		}
 
     		// if the content is empty, just ignore this chunk
     		if(isEmpty) continue;
 
-    		titleBuffer = lectureIn.longTitle
-    				.replace("n\\est", "n'est");
+    		if(!inPericope)
+	    		titleBuffer = lectureIn.longTitle
+	    				.replace("n\\est", "n'est");
     		
     		if(!isAntienne) {
     			// prepend title
