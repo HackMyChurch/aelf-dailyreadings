@@ -14,7 +14,6 @@ public class LectureItem implements Serializable {
     public final String shortTitle;
     public final String description;
     public final String category;
-    public final int guid; // FIXME: remove ?
 
     /**
      * @param title
@@ -22,7 +21,13 @@ public class LectureItem implements Serializable {
      * @param category
      * @param guid
      */
-    public LectureItem(String title, String description, String category, int guid) {
+    public LectureItem(String title, String description, String category) {
+    	// FIXME: last round of title filtering occurs here
+    	// Capitalize
+    	if(title.length() != 0) {
+    		title = title.substring(0, 1).toUpperCase() + title.substring(1);
+    	}
+    	
     	String[] titleChunks = title.split(":");
     	String shortTitle = titleChunks[0].trim();
     	String longTitle = title.trim();
@@ -36,6 +41,5 @@ public class LectureItem implements Serializable {
     	this.longTitle = longTitle;
     	this.description = description;
     	this.category = category;
-    	this.guid = guid;
     }
 }

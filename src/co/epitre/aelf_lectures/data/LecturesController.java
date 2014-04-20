@@ -150,45 +150,64 @@ public final class LecturesController {
     	return true;
     }
 
+	private enum postProcessState {
+		Empty,    // Initial. Do not commit
+		Regular,  // post-process && commit
+		Psaume,   // Merge Antienne + Psaume/Cantique/...
+		Pericope, // Merge Pericope + Repos + Verset
+	}
+
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
     	List<LectureItem> cleaned = new ArrayList<LectureItem>();
 
-    	String descriptionBuffer = "";
-    	String titleBuffer = "";
-    	boolean inPericope = false;
+    	postProcessState previousState = postProcessState.Empty;
+    	String bufferCategory = "";
+    	String bufferTitle = ""; 
+    	String bufferDescription = "";
 
     	for(LectureItem lectureIn: lectures) {
-    		boolean isEmpty = lectureIn.description.trim().equals("");
-    		boolean isAntienne = lectureIn.longTitle.equals("Antienne");
+    		postProcessState currentState = postProcessState.Empty;
+    		String currentTitle = "";
+    		String currentDescription = "";
     		
-    		if(!inPericope) {
-    			// transition in ?
-    			if(lectureIn.shortTitle.equals("Pericope")) {
-    				inPericope = true;
-    				titleBuffer = lectureIn.longTitle;
-    			}
-    		} else {
-    			// still in or transitioned out ?
-    			inPericope = lectureIn.shortTitle.equals("Repons") || lectureIn.shortTitle.equals("Verset");
-    		}
-
-    		// if the content is empty, just ignore this chunk
-    		if(isEmpty) continue;
-
-    		if(!inPericope)
-	    		titleBuffer = lectureIn.longTitle
-	    				.replace("n\\est", "n'est");
+    		// ignore buggy/empty chunks
+    		if(lectureIn.description.trim().equals("")) continue;
     		
-    		if(!isAntienne) {
-    			// prepend title
-    			descriptionBuffer = "<h3>" + titleBuffer + "</h3>" + descriptionBuffer;
+    		// compute new state
+    		if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
+    			lectureIn.shortTitle.equalsIgnoreCase("repons") || 
+    			lectureIn.shortTitle.equalsIgnoreCase("verset")) {
+    			currentState = postProcessState.Pericope;
+    		} else if(	lectureIn.longTitle.equalsIgnoreCase("antienne") || 
+    					lectureIn.longTitle.toLowerCase().startsWith("psaume") ||
+    					lectureIn.longTitle.toLowerCase().startsWith("cantique")) {
+    			currentState = postProcessState.Psaume;
     		} else {
-    			// enter blockquote
-    			descriptionBuffer += "<blockquote><b>Antienne&nbsp;:</b> ";
+    			currentState = postProcessState.Regular;
     		}
-
-    		// add &nbsp; where needed
-    		descriptionBuffer += lectureIn.description
+    		
+    		// state changed or Regular ? Commit previous.
+    		if(	previousState != postProcessState.Empty && (
+    			previousState != currentState || 
+    			previousState == postProcessState.Regular)) {
+        		cleaned.add(new LectureItem(
+        				bufferTitle,
+        				bufferDescription,
+        				bufferCategory));
+        		bufferCategory = bufferTitle = bufferDescription = "";
+    		}
+    		
+    		// save state
+    		previousState = currentState;
+    		
+    		// filter title && content
+    		currentTitle = lectureIn.longTitle
+    				// WTF fixes
+    				.replace("n\\est", "n'est")
+    				.replaceAll(":\\s+(\\s+)", "")
+    				.replaceAll("(Hymne|Psaume)\\s+(?!:)", "$1 : ");
+    		
+    		currentDescription = lectureIn.description
     				// fix ugly typo in error message
     				.replace("n\\est", "n'est")
     				// ensure punctuation has required spaces
@@ -197,29 +216,55 @@ public final class LecturesController {
     				.replace(" ?", "&nbsp;?")
     				// fix suddenly smaller text in readings
     				.replace("size=\"2\"", "")
-    				.replace("face=\"Tahoma\"", "")
+    				.replaceAll("face=\".*?\"", "")
+    				.replaceAll("(font-size|font-family).*?(?=[;\"])", "")
     				// ensure quotes have required spaces
     				.replace(" &raquo;", "&nbsp;&raquo;")
     				.replace("&laquo; ", "&laquo;&nbsp;");
-
-    		// if `longTitle` is "Antienne" --> done
-    		if(isAntienne) {
-    			descriptionBuffer += "</blockquote>";
-    			continue; // FIXME: add "not last iteration condition"
+    		
+    		// accumulate into buffer, depending on current state
+    		switch(currentState) {
+			case Empty:
+				// TODO: exception ?
+				break;
+			case Pericope:
+				if(lectureIn.shortTitle.equalsIgnoreCase("pericope")) {
+					bufferTitle = currentTitle;
+					bufferDescription = "<h3>" + currentTitle + "</h3>" + currentDescription;
+					bufferCategory = lectureIn.category;
+				} else {
+					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
+				}
+				break;
+			case Psaume:
+				if(lectureIn.longTitle.equalsIgnoreCase("antienne")) {
+					bufferTitle = currentTitle;
+					bufferDescription = "<blockquote><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
+				} else { // Psaume|Cantique
+					bufferTitle = currentTitle;
+					bufferDescription = "<h3>" + currentTitle + "</h3>" + bufferDescription + currentDescription;
+					bufferCategory = lectureIn.category;
+				}
+				break;
+			case Regular:
+				bufferCategory = lectureIn.category;
+				bufferTitle = currentTitle;
+				bufferDescription = "<h3>" + currentTitle + "</h3>" + currentDescription;
+				break;
+			default:
+				// TODO: exception ?
+				break;
     		}
-
-    		// append to the output list
-    		cleaned.add(new LectureItem(
-    				titleBuffer,
-    				descriptionBuffer,
-    				lectureIn.category,
-    				lectureIn.guid));
-
-    		// reset buffer
-    		descriptionBuffer = "";
-    		titleBuffer = "";
     	}
 
+    	// Not empty ? --> do last commit
+		if(	previousState != postProcessState.Empty) {
+    		cleaned.add(new LectureItem(
+    				bufferTitle,
+    				bufferDescription,
+    				bufferCategory));
+		}
+    	
     	return cleaned;
     }
 
@@ -309,7 +354,6 @@ public final class LecturesController {
         String title = null;
         String description = null;
         String category = null;
-        int guid = -1;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -327,15 +371,11 @@ public final class LecturesController {
             	parser.require(XmlPullParser.START_TAG, null, name);
                 category = readText(parser);
                 parser.require(XmlPullParser.END_TAG, null, name);
-            } else if (name.equals("guid")) {
-            	parser.require(XmlPullParser.START_TAG, null, name);
-                guid = readInt(parser);
-                parser.require(XmlPullParser.END_TAG, null, name);
             } else {
                 skip(parser);
             }
         }
-        return new LectureItem(title, description, category, guid);
+        return new LectureItem(title, description, category);
     }
 
     // Extract text from the feed

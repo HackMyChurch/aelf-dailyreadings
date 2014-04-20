@@ -126,7 +126,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	whatwhen.position = -1; // for mass, load gospel first
 
     	// error handler
-    	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur", -1));
+    	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
 
     	// some UI. Most UI init are done in the prev async task
     	setContentView(R.layout.activity_lectures);
