@@ -16,11 +16,15 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 
+import android.util.Log;
+
+
 /**
  * Internal cache manager (SQLite)
  */
 
 final class AelfCacheHelper extends SQLiteOpenHelper {
+	public static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 2;
     private static final String DB_NAME = "aelf_cache.db";
 

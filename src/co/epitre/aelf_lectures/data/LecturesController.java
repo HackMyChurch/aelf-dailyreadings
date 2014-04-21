@@ -284,8 +284,7 @@ public final class LecturesController {
     		feedUrl = new URL(String.format(what.getUrl(), formater.format(when.getTime())));
     		in = feedUrl.openStream();
     	} catch (MalformedURLException e) {
-    		throw new RuntimeException(e);
-    		// FIXME: error recovery
+    		return null;
     	}
 
     	// Attempts to parse the feed
@@ -296,17 +295,14 @@ public final class LecturesController {
             parser.nextTag();
             readFeed(parser, lectures);
         } catch (XmlPullParserException e) {
-            throw new RuntimeException(e);
-            // FIXME: error recovery
+        	return null;
     	} catch (IOException e) {
-    		throw new RuntimeException(e);
-    		// FIXME: error recovery
+    		return null;
     	} finally {
             try {
     			in.close();
     		} catch (IOException e) {
-    			throw new RuntimeException(e);
-    			// FIXME: error recovery
+    			return null;
     		}
         }
 

@@ -19,10 +19,10 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
-
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 
@@ -40,6 +40,7 @@ class WhatWhen {
 public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
                                                                   ActionBar.OnNavigationListener {
 
+	public static final String TAG = "AELFLecturesActivity";
     public static final String PREFS_NAME = "aelf-prefs";
     public static final long DATE_TODAY = 0;
 
@@ -346,9 +347,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     			setLoading(true);
     			return lecturesCtrl.getLectures(ww.what, ww.when, false);
     		} catch (IOException e) {
-    			// TODO print error message
+    			Log.e(TAG, "I/O error while loading. AELF servers down ?");
     			setLoading(false);
-    			e.printStackTrace();
     			return null;
     		}
     	}

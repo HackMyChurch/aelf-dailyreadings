@@ -175,6 +175,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         	}
     	} catch (IOException e) {
     		// Aelf servers down ? It appends ...
+    		Log.e(TAG, "I/O error while syncing. AELF servers down ?");
     		syncResult.delayUntil = 60L*15; // Wait 15min before retrying
     	} finally {
     		this.cancelNotification();
