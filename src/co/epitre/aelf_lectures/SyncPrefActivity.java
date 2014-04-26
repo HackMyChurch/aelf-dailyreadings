@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures;
 
 import com.actionbarsherlock.app.SherlockPreferenceActivity;
 
-import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -32,17 +31,11 @@ public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSh
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
 
-    @SuppressLint("NewApi") // check
     @SuppressWarnings("deprecation")
     @Override
     protected void onPause() {
         super.onPause();
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-        if(android.os.Build.VERSION.SDK_INT >= 9) {
-            // need this to make sure Sync sees the new preferences...
-        	SharedPreferences.Editor editor = getPreferenceScreen().getSharedPreferences().edit();
-        	editor.apply();
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -54,6 +47,13 @@ public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSh
             key.equals(KEY_PREF_SYNC_CONSERV)) {
             ListPreference pref = (ListPreference)findPreference(key);
             pref.setSummary(pref.getEntry());
+        }
+        
+        // called with null from the constructor
+        if(sharedPreferences != null) {
+	        // Apply changes so that sync engines takes them into account
+	    	SharedPreferences.Editor editor = sharedPreferences.edit();
+	        editor.commit(); // commit to file so that sync service is able to load it from disk
         }
     }
 
