@@ -124,7 +124,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	whatwhen = new WhatWhen();
     	whatwhen.when = new GregorianCalendar();
     	whatwhen.what = LecturesController.WHAT.MESSE;
-    	whatwhen.position = -1; // for mass, load gospel first
+    	whatwhen.position = 0; // 1st lecture of the office
 
     	// error handler
     	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
@@ -374,8 +374,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		// Set up the ViewPager with the sections adapter.
     		mViewPager = (ViewPager) findViewById(R.id.pager);
     		mViewPager.setAdapter(mSectionsPagerAdapter);
-    		int start = (whatwhen.position < 0)?lectures.size():0;
-    		mViewPager.setCurrentItem(start + whatwhen.position);
+    		mViewPager.setCurrentItem(whatwhen.position);
 
     		setLoading(false);
     	}
