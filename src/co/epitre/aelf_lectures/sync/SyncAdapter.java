@@ -86,11 +86,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     //  - 1 --> messe(0) && metas (8)
     //  - len(offices)
     private void syncDay(GregorianCalendar when, int max) throws IOException {
-		if(max == 1) {
+		/*if(max == 1) { // FIXME: temporarily disable meta sync
 			// that's terrible code... Should use a list of items to sync and changing the IDs has terrible side effects...
 			// but at least we avoid doing it twice
 			mController.getLectures(LecturesController.WHAT.METAS, when, false);
-		}
+		}*/
         while(max-- > 0) {
         	LecturesController.WHAT what = LecturesController.WHAT.values()[max];
         	mController.getLectures(what, when, false);
@@ -136,7 +136,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // turn params into something usable
         int todo = 1;
         int done = 0;
-        int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length:1;
+        int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1; // -1 --> FIXME: temporarily disable meta sync
         GregorianCalendar whenMax = new GregorianCalendar();
 
         if(pDuree.equals("auj")) {
