@@ -166,14 +166,23 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// - position --> active tab (id)
     	super.onSaveInstanceState(outState);
     	
-    	outState.putInt("what", whatwhen.what.getPosition());
-    	outState.putInt("position", mViewPager.getCurrentItem());
+    	if(outState == null) return;
     	
-    	if(isToday(whatwhen.when)) {
-    		outState.putLong("when", DATE_TODAY);
-    	} else {
-    		outState.putLong("when", whatwhen.when.getTimeInMillis());
+    	int position = 0; // first slide by default
+    	int what = 0; // "Messe" by default
+    	long when = DATE_TODAY;
+    	
+    	if(whatwhen != null) {
+    		if(whatwhen.what != null) what = whatwhen.what.getPosition();
+    		if(mViewPager    != null) position = mViewPager.getCurrentItem();
+    		if(whatwhen.when != null && !isToday(whatwhen.when)) {
+    			when = whatwhen.when.getTimeInMillis();
+    		}
     	}
+    	
+    	outState.putInt("what", what);
+    	outState.putInt("position", position);
+    	outState.putLong("when", when);
     }
 
     @Override
