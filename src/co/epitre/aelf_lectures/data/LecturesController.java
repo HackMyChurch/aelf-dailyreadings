@@ -156,6 +156,7 @@ public final class LecturesController {
 		Regular,  // post-process && commit
 		Psaume,   // Merge Antienne + Psaume/Cantique/...
 		Pericope, // Merge Pericope + Repos + Verset
+		NeedFlush, // Force flush when item is known to be last of sequence
 	}
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
@@ -187,9 +188,10 @@ public final class LecturesController {
     			currentState = postProcessState.Regular;
     		}
     		
-    		// state changed or Regular ? Commit previous.
+    		// state changed or Regular or NeedFlush ? Commit previous.
     		if(	previousState != postProcessState.Empty && (
     			previousState != currentState || 
+    			previousState == postProcessState.NeedFlush ||
     			previousState == postProcessState.Regular)) {
         		cleaned.add(new LectureItem(
         				bufferTitle,
@@ -197,9 +199,6 @@ public final class LecturesController {
         				bufferCategory));
         		bufferCategory = bufferTitle = bufferDescription = "";
     		}
-    		
-    		// save state
-    		previousState = currentState;
     		
     		// filter title && content
     		currentTitle = lectureIn.longTitle
@@ -245,6 +244,8 @@ public final class LecturesController {
 					bufferTitle = currentTitle;
 					bufferDescription = "<h3>" + currentTitle + "</h3>" + bufferDescription + currentDescription;
 					bufferCategory = lectureIn.category;
+					// force commit && buffer flush --> avoid to merge consecutives psaumes
+					currentState = postProcessState.NeedFlush;
 				}
 				break;
 			case Regular:
@@ -256,6 +257,9 @@ public final class LecturesController {
 				// TODO: exception ?
 				break;
     		}
+    		
+    		// save state
+    		previousState = currentState;
     	}
 
     	// Not empty ? --> do last commit
