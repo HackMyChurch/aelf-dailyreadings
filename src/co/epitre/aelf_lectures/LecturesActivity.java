@@ -35,6 +35,7 @@ class WhatWhen {
     public LecturesController.WHAT what;
     public GregorianCalendar when;
     public int position;
+    public boolean useCache = true;
 }
 
 public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
@@ -240,6 +241,12 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
         // done
     	return true;
     }
+    
+    public boolean onRefresh(MenuItem item) {
+    	whatwhen.useCache = false;
+    	new DownloadXmlTask().execute(whatwhen);
+    	return true;
+    }
 
     public boolean onCalendar(MenuItem item) {
     	Bundle args = new Bundle();
@@ -300,6 +307,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
         	return onSyncPref(item);
         case R.id.action_sync_do:
         	return onSyncDo(item);
+        case R.id.action_refresh:
+        	return onRefresh(item);
         case R.id.action_calendar:
             return onCalendar(item);
         }
@@ -348,17 +357,23 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		WhatWhen ww = whatwhen[0];
 
     		try {
-    			// attempt to load from cache: skip loading indicator (avoids flickering)
-    			List<LectureItem> lectures = lecturesCtrl.getLectures(ww.what, ww.when, true);
-    			if(lectures != null) return lectures;
+    			if(ww.useCache) {
+	    			// attempt to load from cache: skip loading indicator (avoids flickering)
+	    			List<LectureItem> lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
+	    			if(lectures != null) 
+	    				return lectures;
+    			}
 
     			// attempts to load from network, with loading indicator
     			setLoading(true);
-    			return lecturesCtrl.getLectures(ww.what, ww.when, false);
+    			return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
     		} catch (IOException e) {
     			Log.e(TAG, "I/O error while loading. AELF servers down ?");
     			setLoading(false);
     			return null;
+    		} finally {
+    			// "useCache=false" is "fire and forget"
+    			ww.useCache = true;
     		}
     	}
 

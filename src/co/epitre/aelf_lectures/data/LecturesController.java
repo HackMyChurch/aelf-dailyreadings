@@ -83,36 +83,32 @@ public final class LecturesController {
         return LecturesController.instance;
     }
 
-
-    /**
-     * API
-     * @throws IOException to allow for auto retry. Aelf servers are not that stable...
-     */
-
-    public List<LectureItem> getLectures(WHAT what, GregorianCalendar when, boolean restrictToCache) throws IOException {
-        List<LectureItem> lectures = null;
-
-        // attempts load from cache
-        try {
+    public List<LectureItem> getLecturesFromCache(WHAT what, GregorianCalendar when) throws IOException {
+    	List<LectureItem> lectures = null;
+    	
+    	try {
         	lectures = cache.load(what, when);
     	} catch (RuntimeException e) {
     		// gracefully recover when DB stream outdated/corrupted by refreshing
     		Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...");
-    		lectures = null;
+    		return null;
     	}
-        
-        // on error or if cached value looks like an error (not yet in AELF
+    	
+    	// on error or if cached value looks like an error (not yet in AELF
         // calendar for instance), force reload of live data.
         // Need this heuristic after a cache load as previous versions erroneously cached
         // these.
         if(lectures != null && !looksLikeError(lectures)) {
         	return lectures;
         }
-
-    	// are we allowed to go any further ?
-        if(restrictToCache) return null;
-
-        // fallback to network load
+        
+        return null;
+    }
+    
+    public List<LectureItem> getLecturesFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
+    	List<LectureItem> lectures = null;
+    	
+    	// fallback to network load
         lectures = loadFromNetwork(what, when);
     	if(lectures == null) {
     		// big fail TODO: Log
@@ -218,6 +214,8 @@ public final class LecturesController {
     				.replace("size=\"2\"", "")
     				.replaceAll("face=\".*?\"", "")
     				.replaceAll("(font-size|font-family).*?(?=[;\"])", "")
+    				// HTML entities bugs
+    				.replace("&#156;", "œ")
     				// ensure quotes have required spaces
     				.replace(" &raquo;", "&nbsp;&raquo;")
     				.replace("&laquo; ", "&laquo;&nbsp;");

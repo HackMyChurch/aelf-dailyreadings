@@ -93,7 +93,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		}*/
         while(max-- > 0) {
         	LecturesController.WHAT what = LecturesController.WHAT.values()[max];
-        	mController.getLectures(what, when, false);
+        	// make sure it is not in cache
+        	if(mController.getLecturesFromCache(what, when) == null) {
+        		mController.getLecturesFromNetwork(what, when);
+        	}
         }
     }
 

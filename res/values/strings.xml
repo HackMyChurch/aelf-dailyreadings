@@ -7,6 +7,7 @@
     <string name="action_calendar">Date</string>
     <string name="action_sync_settings">Paramètres</string>
     <string name="action_sync_do">Synchroniser maintenant</string>
+    <string name="action_refresh">Actualiser</string>
     <string name="action_about">À propos</string>
     
     <!-- Dialogs -->
