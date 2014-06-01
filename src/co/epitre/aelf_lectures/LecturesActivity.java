@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
@@ -25,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
+import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 
 import com.actionbarsherlock.app.ActionBar;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
@@ -121,11 +121,25 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// init the lecture controller
     	lecturesCtrl = LecturesController.getInstance(this);
 
-    	// load the "lectures" for today
+    	// need restore state ?
     	whatwhen = new WhatWhen();
-    	whatwhen.when = new GregorianCalendar();
-    	whatwhen.what = LecturesController.WHAT.MESSE;
-    	whatwhen.position = 0; // 1st lecture of the office
+    	if(savedInstanceState != null) {
+        	// Restore saved instance state. Especially useful on screen rotate on older phones
+            whatwhen.what = WHAT.values()[savedInstanceState.getInt("what")];
+            whatwhen.position = savedInstanceState.getInt("position");
+            
+            long timestamp = savedInstanceState.getLong("when");
+            if(timestamp == DATE_TODAY) {
+            	whatwhen.when = new GregorianCalendar();
+            } else {
+            	whatwhen.when.setTimeInMillis(timestamp);
+            }
+    	} else {
+	    	// load the "lectures" for today
+	    	whatwhen.when = new GregorianCalendar();
+	    	whatwhen.what = WHAT.MESSE;
+	    	whatwhen.position = 0; // 1st lecture of the office
+    	}
 
     	// error handler
     	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
@@ -184,37 +198,6 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	outState.putInt("what", what);
     	outState.putInt("position", position);
     	outState.putLong("when", when);
-    }
-
-    @Override
-    protected void onRestoreInstanceState (Bundle savedInstanceState) {
-    	// Restore saved instance state. Especially useful on screen rotate on older phones
-    	// - what --> mass, tierce, ... ? (id)
-    	// - when --> date (timestamp)
-    	// - position --> active tab (id)
-    	super.onRestoreInstanceState(savedInstanceState);
-
-        // load state
-        whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what")];
-        whatwhen.position = savedInstanceState.getInt("position");
-        
-        long timestamp = savedInstanceState.getLong("when");
-        if(timestamp == DATE_TODAY) {
-        	whatwhen.when = new GregorianCalendar();
-        } else {
-        	whatwhen.when.setTimeInMillis(timestamp);
-        }
-
-        // update UI
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
-
-        // nota: date UI is updated on menu creation
-    	// nota: data reload + move to position is triggered by spinner callback
-
-    	// FIXME: factorize date UI
-    	// TODO: tab
-
     }
 
     public boolean onAbout(MenuItem item) {
