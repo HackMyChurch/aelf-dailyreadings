@@ -227,8 +227,8 @@ public final class LecturesController {
 				break;
 			case Pericope:
 				if(lectureIn.shortTitle.equalsIgnoreCase("pericope")) {
-					bufferTitle = currentTitle;
-					bufferDescription = "<h3>" + currentTitle + "</h3>" + currentDescription;
+					bufferTitle = currentTitle.replaceFirst("(?i)pericope", "Parole de Dieu");
+					bufferDescription = "<h3>" + bufferTitle + "</h3>" + currentDescription;
 					bufferCategory = lectureIn.category;
 				} else {
 					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
