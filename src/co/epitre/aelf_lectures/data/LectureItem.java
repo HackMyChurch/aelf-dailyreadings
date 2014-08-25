@@ -2,8 +2,6 @@ package co.epitre.aelf_lectures.data;
 
 import java.io.Serializable;
 
-import android.R.bool;
-
 public class LectureItem implements Serializable {
     /**
      * internal data structure version ID

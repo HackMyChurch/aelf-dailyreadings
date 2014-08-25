@@ -8,7 +8,8 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 
 public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSharedPreferenceChangeListener {
-    public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
+	public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
+	public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
 
@@ -19,6 +20,7 @@ public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSh
         addPreferencesFromResource(R.xml.sync_preferences);
 
         // hacky hack, but does the job --> init summaries
+        onSharedPreferenceChanged(null, KEY_PREF_DISP_FONT_SIZE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_DUREE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_CONSERV);
@@ -42,7 +44,8 @@ public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSh
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // set summary
-        if (key.equals(KEY_PREF_SYNC_LECTURES) ||
+        if (key.equals(KEY_PREF_DISP_FONT_SIZE) ||
+        	key.equals(KEY_PREF_SYNC_LECTURES) ||
             key.equals(KEY_PREF_SYNC_DUREE) ||
             key.equals(KEY_PREF_SYNC_CONSERV)) {
             ListPreference pref = (ListPreference)findPreference(key);
