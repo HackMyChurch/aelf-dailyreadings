@@ -9,6 +9,7 @@ import java.util.List;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
+import android.app.UiModeManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,9 +18,13 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings.SettingNotFoundException;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.WindowCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
 import co.epitre.aelf_lectures.data.LectureItem;
@@ -73,6 +78,9 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     public static final long SYNC_INTERVAL = 60L*60L*22L;
     // Instance fields
     Account mAccount;
+    
+    // action bar
+    protected ActionBar actionBar;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -143,7 +151,10 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	// error handler
     	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
-
+    	
+    	// TODO: explore possible overlay action bar lifecycle
+    	//requestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
+    	
     	// some UI. Most UI init are done in the prev async task
     	setContentView(R.layout.activity_lectures);
     	
@@ -151,7 +162,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	findViewById(android.R.id.content).setKeepScreenOn(true);
 
     	// Spinner
-        ActionBar actionBar = getSupportActionBar();
+        actionBar = getSupportActionBar();
 
         Context context = actionBar.getThemedContext();
         ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.sherlock_spinner_item);
@@ -167,6 +178,56 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
     		ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
     	}
+    }
+    
+    @SuppressLint("NewApi")
+    public void prepare_fullscreen() {
+    	// Hide status (top) bar. Navigation bar (> 4.0) still visible.
+    	getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+    	if (android.os.Build.VERSION.SDK_INT < 14) // 4.0 min
+    		return;
+    	
+    	// Android 4.0+: make navigation bar 'discret' ('dots' instead of icons)
+    	int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
+    	
+    	// for android.os.Build.VERSION.SDK_INT >= 16 (4.1)
+    	// we should explore
+    	//  - navbar workflow.    --> hide with View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    	//  - actionbar workflow. --> hide with View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    	// BUT: navbar shows automatically and dont hide :(
+    	//      actionbar does not show. (actionBar.hide/show();)
+    	// an idea is to deal with scroll events on the UI.
+
+    	// Android 4.4+: hide navigation bar, make it accessible via edge scroll
+    	if (android.os.Build.VERSION.SDK_INT >= 19) {
+	    	uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+	    			  |  View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+    	}
+
+    	// apply settings
+    	View decorView = getWindow().getDecorView();
+    	
+    	decorView.setSystemUiVisibility(uiOptions);
+  	
+    	// TODO: explore artificially reducing luminosity
+    	/*try {
+    		int brightness = android.provider.Settings.System.getInt(
+    	    getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
+    		Log.v(TAG, "brightness="+brightness);
+    	} catch (SettingNotFoundException e) {
+    	    // don't care
+    	}*/
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	// manage application's intrusiveness for different Android versions
+    	super.onWindowFocusChanged(hasFocus);
+    	
+    	if(hasFocus)
+    		prepare_fullscreen();
     }
     
     private boolean isToday(GregorianCalendar when){
