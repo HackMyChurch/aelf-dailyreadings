@@ -230,11 +230,15 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		prepare_fullscreen();
     }
     
+    private boolean isSameDay(GregorianCalendar when, GregorianCalendar other){
+    	return (when.get(GregorianCalendar.ERA) == other.get(GregorianCalendar.ERA) &&
+                when.get(GregorianCalendar.YEAR) == other.get(GregorianCalendar.YEAR) &&
+                when.get(GregorianCalendar.DAY_OF_YEAR) == other.get(GregorianCalendar.DAY_OF_YEAR));
+    }
+    
     private boolean isToday(GregorianCalendar when){
     	GregorianCalendar today = new GregorianCalendar();
-    	return (when.get(GregorianCalendar.ERA) == today.get(GregorianCalendar.ERA) &&
-                when.get(GregorianCalendar.YEAR) == today.get(GregorianCalendar.YEAR) &&
-                when.get(GregorianCalendar.DAY_OF_YEAR) == today.get(GregorianCalendar.DAY_OF_YEAR));
+    	return isSameDay(when, today);
     }
     
     @Override
@@ -309,7 +313,13 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     @SuppressLint("SimpleDateFormat") // I know but currently French only
     public void onCalendarDialogPicked(int year, int month, int day) {
-    	whatwhen.when = new GregorianCalendar(year, month, day);
+    	GregorianCalendar date = new GregorianCalendar(year, month, day);
+    	
+    	// do not refresh if date did not change to avoid unnecessary flickering
+    	if(isSameDay(whatwhen.when, date))
+    		return;
+    	
+    	whatwhen.when = date;
     	whatwhen.position = mViewPager.getCurrentItem(); // keep on the same reading on date change
     	new DownloadXmlTask().execute(whatwhen);
 
