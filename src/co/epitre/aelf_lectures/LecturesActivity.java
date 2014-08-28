@@ -291,6 +291,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     
     public boolean onRefresh(MenuItem item) {
     	whatwhen.useCache = false;
+    	whatwhen.position = mViewPager.getCurrentItem();
     	new DownloadXmlTask().execute(whatwhen);
     	return true;
     }
