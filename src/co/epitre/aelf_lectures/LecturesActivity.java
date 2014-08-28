@@ -146,6 +146,9 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	// some UI. Most UI init are done in the prev async task
     	setContentView(R.layout.activity_lectures);
+    	
+    	// prevent phone sleep
+    	findViewById(android.R.id.content).setKeepScreenOn(true);
 
     	// Spinner
         ActionBar actionBar = getSupportActionBar();
