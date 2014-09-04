@@ -436,20 +436,31 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	}
 
     	@Override
-    	protected void onPostExecute(List<LectureItem> lectures) {
-    		// Create the adapter that will return a fragment for each of the three
-    		// primary sections of the app.
-    		if(lectures == null) {
-    			lectures = networkError;
-    		}
-    		mSectionsPagerAdapter = new SectionsPagerAdapterFragment(getSupportFragmentManager(), lectures);
+    	protected void onPostExecute(final List<LectureItem> lectures) {
+    		// Force running on UI thread to attempt WorkAround loads of java.lang.IllegalStateException: 
+    		//     Fragment e{4a335af8} is not currently in the FragmentManager
+    		runOnUiThread(new Runnable() {
+    		    public void run() {
+    		    	List<LectureItem> pager_data;
 
-    		// Set up the ViewPager with the sections adapter.
-    		mViewPager = (ViewPager) findViewById(R.id.pager);
-    		mViewPager.setAdapter(mSectionsPagerAdapter);
-    		mViewPager.setCurrentItem(whatwhen.position);
+    	    		if(lectures != null) {
+    	    			pager_data = lectures;
+    	    		} else {
+    	    			pager_data = networkError;
+    	    		}
 
-    		setLoading(false);
+    	    		// Create the adapter that will return a fragment for each of the three
+    	    		// primary sections of the app.
+    		    	mSectionsPagerAdapter = new SectionsPagerAdapterFragment(getSupportFragmentManager(), pager_data);
+
+    	    		// Set up the ViewPager with the sections adapter.
+    	    		mViewPager = (ViewPager) findViewById(R.id.pager);
+    	    		mViewPager.setAdapter(mSectionsPagerAdapter);
+    	    		mViewPager.setCurrentItem(whatwhen.position);
+
+    	    		setLoading(false);
+    		    }
+    		});
     	}
     }
 
