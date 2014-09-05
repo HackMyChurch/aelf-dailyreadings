@@ -72,7 +72,15 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     	// compute view --> HTML
     	StringBuilder htmlString = new StringBuilder();
     	String body = getArguments().getString(ARG_TEXT_HTML);
-    	htmlString.append("<html><head><style type=\"text/css\">body{margin:24px}</style></head><body>");
+    	htmlString.append("" +
+    			"<html>" +
+    				"<head>" +
+    					"<style type=\"text/css\">" +
+    					"body{margin:24px}" +
+    					"body{text-align:justify;}" +
+    					"</style>" +
+    				"</head>" +
+    				"<body>");
     	htmlString.append(body);
     	htmlString.append("</body></html>");
 

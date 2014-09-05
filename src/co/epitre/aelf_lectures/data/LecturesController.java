@@ -207,9 +207,11 @@ public final class LecturesController {
     				// fix ugly typo in error message
     				.replace("n\\est", "n'est")
     				// ensure punctuation has required spaces
-    				.replace(" :", "&nbsp;:")
-    				.replace(" !", "&nbsp;!")
-    				.replace(" ?", "&nbsp;?")
+    				.replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
+    				// non adjacent semicolon
+    				.replaceAll("\\s+;\\s*", "&#x202f;; ")
+    				// adjacent semicolon NOT from entities
+    				.replaceAll("\\b(?<!&)(?<!&#)\\w+;\\s*", "&#x202f;; ")
     				// fix suddenly smaller text in readings
     				.replace("size=\"2\"", "")
     				.replaceAll("face=\".*?\"", "")
