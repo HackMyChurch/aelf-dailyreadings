@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="20" android:maxSdkVersion="20"/>
+        android:targetSdkVersion="19" android:maxSdkVersion="19"/>
 	
     <!-- Required for fetching feed data. -->
     <uses-permission android:name="android.permission.INTERNET"/>
