@@ -137,9 +137,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
             whatwhen.position = savedInstanceState.getInt("position");
             
             long timestamp = savedInstanceState.getLong("when");
-            if(timestamp == DATE_TODAY) {
-            	whatwhen.when = new GregorianCalendar();
-            } else {
+            whatwhen.when = new GregorianCalendar();
+            if(timestamp != DATE_TODAY) {
             	whatwhen.when.setTimeInMillis(timestamp);
             }
     	} else {
