@@ -27,6 +27,13 @@ class SupportDatePickerDialog extends DatePickerDialog {
     private final Calendar mCalendar;
     private final java.text.DateFormat mDateFormat;
     private final String[] mWeekDays;
+    
+    public boolean canceled = false;
+    
+    public void cancel() {
+    	canceled = true;
+    	super.cancel();
+    }
 
     /**
     * @param context The context the dialog is to run in.
@@ -90,6 +97,8 @@ class SupportDatePickerDialog extends DatePickerDialog {
 
 public class DatePickerFragment extends DialogFragment
     implements DatePickerDialog.OnDateSetListener, DialogInterface.OnClickListener {
+	
+	protected SupportDatePickerDialog dialog;
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
@@ -133,9 +142,9 @@ public class DatePickerFragment extends DialogFragment
     	int day = c.get(Calendar.DAY_OF_MONTH);
 
     	// Create a new instance of DatePickerDialog and return it
-    	DatePickerDialog dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
+    	dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
     	dialog.setCancelable(true);
-    	dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), (Message)null);
+    	dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);
     	dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
     	return dialog;
     }
@@ -163,10 +172,14 @@ public class DatePickerFragment extends DialogFragment
         	dialog.dismiss();
 
         	// FIXME: avoid flickering
+    	} else if(which == DialogInterface.BUTTON_NEGATIVE) {
+    		this.dialog.canceled = true;
     	}
     }
 
     public void onDateSet(DatePicker view, int year, int month, int day) {
-    	mListener.onCalendarDialogPicked(year, month, day);
+    	if(!dialog.canceled) {
+    		mListener.onCalendarDialogPicked(year, month, day);
+    	}
     }
 }
