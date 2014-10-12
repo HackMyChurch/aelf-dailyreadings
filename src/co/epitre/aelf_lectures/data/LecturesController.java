@@ -211,7 +211,7 @@ public final class LecturesController {
     				// non adjacent semicolon
     				.replaceAll("\\s+;\\s*", "&#x202f;; ")
     				// adjacent semicolon NOT from entities
-    				.replaceAll("\\b(?<!&)(?<!&#)\\w+;\\s*", "&#x202f;; ")
+    				.replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
     				// fix suddenly smaller text in readings
     				.replace("size=\"2\"", "")
     				.replaceAll("face=\".*?\"", "")
