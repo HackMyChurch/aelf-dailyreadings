@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.epitre.aelf_lectures"
-    android:versionCode="9"
-    android:versionName="1.2.3" >
+    android:versionCode="10"
+    android:versionName="1.2.4" >
 
     <uses-sdk
         android:minSdkVersion="8"
-        android:targetSdkVersion="19" android:maxSdkVersion="19"/>
+        android:targetSdkVersion="21" android:maxSdkVersion="21"/>
 	
     <!-- Required for fetching feed data. -->
     <uses-permission android:name="android.permission.INTERNET"/>
