@@ -171,6 +171,9 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setListNavigationCallbacks(list, this);
 
+        // restore active navigation item
+        actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+
     	// finally, turn on periodic lectures caching
     	if(mAccount != null) {
     		ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
