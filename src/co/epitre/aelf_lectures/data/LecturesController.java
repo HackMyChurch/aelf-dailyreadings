@@ -14,6 +14,9 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.provider.UserDictionary.Words;
+import android.support.v4.text.TextUtilsCompat;
+import android.transition.Slide;
 import android.util.Log;
 import android.util.Xml;
 
@@ -160,7 +163,9 @@ public final class LecturesController {
 
     	postProcessState previousState = postProcessState.Empty;
     	String bufferCategory = "";
-    	String bufferTitle = ""; 
+    	String bufferTitle = "";
+    	String pagerTitle = "";
+    	String lectureTitle = "";
     	String bufferDescription = "";
 
     	for(LectureItem lectureIn: lectures) {
@@ -196,12 +201,130 @@ public final class LecturesController {
         		bufferCategory = bufferTitle = bufferDescription = "";
     		}
     		
+    		/*
+    		 * Titres
+    		 * ======
+    		 * 
+    		 * 1/ FILTRE péricope, ...
+    		 * 
+    		 * 2/ split sur ':'
+    		 *  - SI une seule partie: short = long, FIN
+    		 *  - SI commence par "'«, short = [0], long = [1], FIN
+    		 *  - SI [1] commence par Cantique|... short = [1].1ermot, long = [1], [0],[1] = [0].split(' ')
+    		 *    SINON short = [0], long = [1]
+    		 *  - SI [1] commence par chiffre ET (1 seul mot OU mot suivant commence par chiffre), short += 1er mot, long = [1] 
+       		 * 
+    		 */
+    		currentTitle = lectureIn.longTitle;
+    		
+    		// trim HTML
+    		currentTitle = android.text.Html.fromHtml(currentTitle).toString();
+    		
+    		// sanitize capitalization
+    		if(currentTitle.length() != 0) {
+    			// *keep* capitals only when first letter of a word
+    			char[] chars = currentTitle.toCharArray();
+				boolean isFirstChar = true;
+				for (int i = 0; i < chars.length; i++) {
+					if (isFirstChar && Character.isLetter(chars[i])) {
+						isFirstChar = false;
+					} else if (!isFirstChar && Character.isLetter(chars[i])) {
+						chars[i] = Character.toLowerCase(chars[i]);
+					} else if (!Character.isLetterOrDigit(chars[i])) {
+						isFirstChar = true;
+					}
+				}
+				currentTitle = String.valueOf(chars);
+				
+				// force lower case on determinant and preposition
+				String[] words = currentTitle.split("\\s+");
+				currentTitle = "";
+				for (int i = 0; i < words.length; i++) {
+					if(words[i].startsWith("L'Évangile")) {
+						// keep capitals
+					} else if(
+						words[i].startsWith("D'") ||
+						words[i].equals("De") ||
+						words[i].equals("Des") ||
+						words[i].startsWith("L'") ||
+						words[i].equals("Le") ||
+						words[i].equals("La") ||
+						words[i].equals("Les") ||
+						words[i].equals("Sur") ||
+						words[i].equals("Sur") ||
+						words[i].equals("En") ||
+						words[i].equals("Dans") ||
+						words[i].equals("Pour") ||
+						words[i].equals("Contre") ||
+						words[i].equals("Avec")
+					) {
+						words[i] = words[i].toLowerCase();
+					}
+					currentTitle += " "+words[i];
+				}
+        	}
+    		
     		// filter title && content
-    		currentTitle = lectureIn.longTitle
+    		currentTitle = currentTitle
     				// WTF fixes
     				.replace("n\\est", "n'est")
     				.replaceAll(":\\s+(\\s+)", "")
+    				.replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
+    				.replaceAll("CANTIQUE", "Cantique")
+    				.replaceFirst("(?i)pericope", "Parole de Dieu")
     				.replaceAll("(Hymne|Psaume)\\s+(?!:)", "$1 : ");
+    		
+    		// compute long and short titles
+    		String[] titleChunks = currentTitle.trim().split("\\s*:\\s*", 2);
+    		if(titleChunks.length == 1 || titleChunks[1].length() == 0) {
+    			pagerTitle = lectureTitle = titleChunks[0];
+    			
+    			// if the short title is loooooong, heuristic: keep only the first, this a comment for Lectures Office
+    			if(pagerTitle.length() > 30) {
+    				pagerTitle = pagerTitle.split("\\s+")[0];
+    			}
+    		} else {
+    			char fc = titleChunks[1].charAt(0);
+    			if(fc == '"' || fc == '\'' || fc == '«') {
+    				pagerTitle = titleChunks[0];
+    				lectureTitle = titleChunks[1];
+    			} else {
+    				String[] words = titleChunks[1].split("\\s+", 2);
+    				if(
+    					words[0].equalsIgnoreCase("cantique") ||
+    					words[0].equalsIgnoreCase("hymne") ||
+    					words[0].equalsIgnoreCase("psaume")
+    				){
+    					pagerTitle = words[0];
+    					if(words.length > 1) {
+    						lectureTitle = words[1];
+    					} else {
+    						lectureTitle = words[0];
+    					}
+    				} else {
+    					pagerTitle = titleChunks[0];
+    					lectureTitle = titleChunks[1];
+    				}
+    				
+    				// FIXME: hard-coded until real ref parser
+    				if(currentState == postProcessState.Psaume && Character.isDigit(lectureTitle.charAt(0))) {
+    					lectureTitle = pagerTitle + " " + lectureTitle;
+    					pagerTitle += " "+words[0];
+    				}
+    			}
+
+    			// finally, make sure we have more than just a reference
+    			if(lectureTitle.charAt(0) == '(') {
+    				lectureTitle = pagerTitle + " " + lectureTitle;
+    			}
+    		}
+    		
+    		// Capitalize first letter
+			pagerTitle = pagerTitle.substring(0, 1).toUpperCase() + pagerTitle.substring(1);
+			lectureTitle = lectureTitle.substring(0, 1).toUpperCase() + lectureTitle.substring(1);
+    		
+    		// FIXME: compat
+    		bufferTitle = pagerTitle + " : " + lectureTitle;
     		
     		currentDescription = lectureIn.description
     				// fix ugly typo in error message
@@ -229,8 +352,7 @@ public final class LecturesController {
 				break;
 			case Pericope:
 				if(lectureIn.shortTitle.equalsIgnoreCase("pericope")) {
-					bufferTitle = currentTitle.replaceFirst("(?i)pericope", "Parole de Dieu");
-					bufferDescription = "<h3>" + bufferTitle + "</h3>" + currentDescription;
+					bufferDescription = "<h3>" + lectureTitle + "</h3>" + currentDescription;
 					bufferCategory = lectureIn.category;
 				} else {
 					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
@@ -238,11 +360,9 @@ public final class LecturesController {
 				break;
 			case Psaume:
 				if(lectureIn.longTitle.equalsIgnoreCase("antienne")) {
-					bufferTitle = currentTitle;
 					bufferDescription = "<blockquote><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
 				} else { // Psaume|Cantique
-					bufferTitle = currentTitle;
-					bufferDescription = "<h3>" + currentTitle + "</h3>" + bufferDescription + currentDescription;
+					bufferDescription = "<h3>" + lectureTitle + "</h3>" + bufferDescription + currentDescription;
 					bufferCategory = lectureIn.category;
 					// force commit && buffer flush --> avoid to merge consecutives psaumes
 					currentState = postProcessState.NeedFlush;
@@ -250,8 +370,8 @@ public final class LecturesController {
 				break;
 			case Regular:
 				bufferCategory = lectureIn.category;
-				bufferTitle = currentTitle;
-				bufferDescription = "<h3>" + currentTitle + "</h3>" + currentDescription;
+				//bufferTitle = currentTitle;
+				bufferDescription = "<h3>" + lectureTitle + "</h3>" + currentDescription;
 				break;
 			default:
 				// TODO: exception ?
