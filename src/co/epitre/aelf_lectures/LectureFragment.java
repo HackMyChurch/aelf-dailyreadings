@@ -76,13 +76,31 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     			"<html>" +
     				"<head>" +
     					"<style type=\"text/css\">" +
-    					"body{margin:24px}" +
-    					"body{text-align:justify;}" +
+    					"body{" +
+    					"	margin:24px;" +
+    					"	background-color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2)+";" +
+    					"	color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2)+";" +
+    					"   font-family: 'Droid Sans', Courier, sans-serif;" +
+    					"	font-size: 15px;" + // regular body
+    					"	font-weight: regular;"+
+    					"}" +
+    					"h3 {" + // title
+    					"	font-size: 20px;" +
+    					"	font-weight: thin;" +
+    					"}"+
+    					"b i{" + // sub-title
+    					"	font-size: 15px;" +
+    					"	font-weight: regular;" +
+    					"}" +
+    					"font[color='#cc0000'] {" + // psaume refrain
+    					"	color: #"+Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2)+";" +
+    					"} " +
     					"</style>" +
     				"</head>" +
     				"<body>");
     	htmlString.append(body);
     	htmlString.append("</body></html>");
+    	;
 
     	// actual UI refresh
     	View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
