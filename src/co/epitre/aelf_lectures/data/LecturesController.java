@@ -157,6 +157,36 @@ public final class LecturesController {
 		Pericope, // Merge Pericope + Repos + Verset
 		NeedFlush, // Force flush when item is known to be last of sequence
 	}
+	
+	private String commonTextSanitizer(String input) {
+		return input
+				// fix ugly typo in error message
+				.replace("n\\est", "n'est")
+				// spacing fixes
+    			.replaceAll(":\\s+(\\s+)", "")
+    			.replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
+				// ensure punctuation has required spaces
+				.replaceAll("\\s*([:?!])\\s*", "\u00A0$1 ")
+				// non adjacent semicolon
+				.replaceAll("\\s+;\\s*", "&#x202f;; ")
+				// adjacent semicolon NOT from entities
+				.replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
+				// fix suddenly smaller text in readings
+				.replace("size=\"2\"", "")
+				.replaceAll("face=\".*?\"", "")
+				.replaceAll("(font-size|font-family).*?(?=[;\"])", "")
+				// HTML entities bugs
+				.replace("&#156;", "œ")
+				// Evangile fixes
+				.replace("<br /><blockquote>", "<blockquote>")
+				.replaceAll("<b>Acclamation\\s*:\\s*</b>", "")
+				// clean references
+				.replaceAll("<small><i>\\s*\\((cf.)?\\s*", "<small><i>— ")
+				.replaceAll("\\s*\\)</i></small>", "</i></small>")
+				// ensure quotes have required spaces
+				.replaceAll("\\s*(»|&raquo;)", "\u00A0&raquo;")
+				.replaceAll("(«|&laquo;)\\s*", "&laquo\u00A0");
+	}
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
     	List<LectureItem> cleaned = new ArrayList<LectureItem>();
@@ -265,11 +295,8 @@ public final class LecturesController {
         	}
     		
     		// filter title && content
-    		currentTitle = currentTitle
-    				// WTF fixes
-    				.replace("n\\est", "n'est")
-    				.replaceAll(":\\s+(\\s+)", "")
-    				.replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
+    		currentTitle = currentDescription = commonTextSanitizer(currentTitle)
+    				// title specific fixes
     				.replaceAll("CANTIQUE", "Cantique")
     				.replaceFirst("(?i)pericope", "Parole de Dieu")
     				.replaceAll("(Hymne|Psaume)\\s+(?!:)", "$1 : ");
@@ -326,24 +353,7 @@ public final class LecturesController {
     		// FIXME: compat
     		bufferTitle = pagerTitle + " : " + lectureTitle;
     		
-    		currentDescription = lectureIn.description
-    				// fix ugly typo in error message
-    				.replace("n\\est", "n'est")
-    				// ensure punctuation has required spaces
-    				.replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
-    				// non adjacent semicolon
-    				.replaceAll("\\s+;\\s*", "&#x202f;; ")
-    				// adjacent semicolon NOT from entities
-    				.replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
-    				// fix suddenly smaller text in readings
-    				.replace("size=\"2\"", "")
-    				.replaceAll("face=\".*?\"", "")
-    				.replaceAll("(font-size|font-family).*?(?=[;\"])", "")
-    				// HTML entities bugs
-    				.replace("&#156;", "œ")
-    				// ensure quotes have required spaces
-    				.replace(" &raquo;", "&nbsp;&raquo;")
-    				.replace("&laquo; ", "&laquo;&nbsp;");
+    		currentDescription = commonTextSanitizer(lectureIn.description);
     		
     		// accumulate into buffer, depending on current state
     		switch(currentState) {

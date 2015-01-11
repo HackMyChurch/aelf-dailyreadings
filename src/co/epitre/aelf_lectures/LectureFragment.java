@@ -90,7 +90,22 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     					"}"+
     					"b i{" + // sub-title
     					"	font-size: 15px;" +
-    					"	font-weight: regular;" +
+    					"	display: block;" +
+    					"	margin-top: -12px;" +
+    					"	margin-bottom: 20px;" +
+    					"}" +
+    					"blockquote {" +
+    					"	margin-right: 20px" +
+    					"}" +
+    					"blockquote p {" +
+    					"	margin-top: 30px;" +
+    					"}" +
+    					"small i{" + // reference
+    					"	display: block;" +
+    					"	text-align: right;" +
+    					"   margin-top: -15px;" +
+    					"	margin-right: 40px;" +
+    					"   padding-top: 0;" +
     					"}" +
     					"font[color='#cc0000'] {" + // psaume refrain
     					"	color: #"+Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2)+";" +
