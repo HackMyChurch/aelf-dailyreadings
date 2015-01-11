@@ -214,6 +214,7 @@ public final class LecturesController {
     	String bufferTitle = "";
     	String pagerTitle = "";
     	String lectureTitle = "";
+    	String lectureReference = "";
     	String bufferDescription = "";
 
     	for(LectureItem lectureIn: lectures) {
@@ -264,9 +265,18 @@ public final class LecturesController {
        		 * 
     		 */
     		currentTitle = lectureIn.longTitle;
+    		lectureReference = "";
     		
     		// trim HTML
     		currentTitle = android.text.Html.fromHtml(currentTitle).toString();
+    		
+    		// Extract reference
+    		String parts[] = currentTitle.split("\\(", 2);
+    		currentTitle = parts[0].trim();
+    		if(parts.length > 1) {
+    			int p = parts[1].lastIndexOf(")");
+    			lectureReference = parts[1].substring(0, p).trim();
+    		}
     		
     		// sanitize capitalization
     		if(currentTitle.length() != 0) {
@@ -373,6 +383,11 @@ public final class LecturesController {
     		
     		currentDescription = commonTextSanitizer(lectureIn.description);
     		
+    		// prepare reference, if any
+    		if(lectureReference != "") {
+    			lectureReference = "<small><i>— "+lectureReference+"</i></small>";
+    		}
+    		
     		// accumulate into buffer, depending on current state
     		switch(currentState) {
 			case Empty:
@@ -380,7 +395,7 @@ public final class LecturesController {
 				break;
 			case Pericope:
 				if(lectureIn.shortTitle.equalsIgnoreCase("pericope")) {
-					bufferDescription = "<h3>" + lectureTitle + "</h3>" + currentDescription;
+					bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
 					bufferCategory = lectureIn.category;
 				} else {
 					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
@@ -394,7 +409,7 @@ public final class LecturesController {
 					currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
 					bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
 				} else { // Psaume|Cantique
-					bufferDescription = "<h3>" + lectureTitle + "</h3>" + bufferDescription + currentDescription;
+					bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
 					bufferCategory = lectureIn.category;
 					// force commit && buffer flush --> avoid to merge consecutives psaumes
 					currentState = postProcessState.NeedFlush;
@@ -403,7 +418,7 @@ public final class LecturesController {
 			case Regular:
 				bufferCategory = lectureIn.category;
 				//bufferTitle = currentTitle;
-				bufferDescription = "<h3>" + lectureTitle + "</h3>" + currentDescription;
+				bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
 				break;
 			default:
 				// TODO: exception ?

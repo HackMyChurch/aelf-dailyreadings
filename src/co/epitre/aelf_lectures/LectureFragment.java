@@ -86,7 +86,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     					"}" +
     					"h3 {" + // title
     					"	font-size: 20px;" +
-    					"	font-weight: thin;" +
+    					"	font-weight: bold;" +
     					"}"+
     					"b i{" + // sub-title
     					"	font-size: 15px;" +
@@ -100,7 +100,13 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     					"blockquote p {" +
     					"	margin-top: 30px;" +
     					"}" +
-    					"small i{" + // reference
+    					"h3 small i{" + // global reference
+    					"	display: block;" +
+    					"	float: right;" +
+    					"   font-weight: normal;" +
+    					"	margin-top: 5px;" +
+    					"}" +
+    					"blockquote small i{" + // citation reference
     					"	display: block;" +
     					"	text-align: right;" +
     					"   margin-top: -15px;" +
