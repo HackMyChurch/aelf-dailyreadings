@@ -111,7 +111,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	// upgrade logic, primitive at the moment...
     	if(savedVersion != currentVersion) {
-    		if(savedVersion < 5) {
+    		if(savedVersion < 11) {
     			// delete cache DB: needs to force regenerate
     			getApplicationContext().deleteDatabase("aelf_cache.db");
     		}
