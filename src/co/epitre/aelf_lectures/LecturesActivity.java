@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
@@ -398,10 +399,12 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     protected void setLoading(final boolean loading) {
     	final RelativeLayout loadingOverlay = (RelativeLayout)findViewById(R.id.loadingOverlay);
+    	final ProgressBar loadingIndicator = (ProgressBar)findViewById(R.id.loadingIndicator);
 
     	loadingOverlay.post(new Runnable() {
     		public void run() {
     			if(loading) {
+    				loadingIndicator.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.sepia_fg), android.graphics.PorterDuff.Mode.MULTIPLY);
     				loadingOverlay.setVisibility(View.VISIBLE);
     			} else {
     				loadingOverlay.setVisibility(View.INVISIBLE);
