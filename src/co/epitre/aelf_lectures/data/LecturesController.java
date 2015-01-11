@@ -183,6 +183,8 @@ public final class LecturesController {
 				// clean references
 				.replaceAll("<small><i>\\s*\\((cf.)?\\s*", "<small><i>— ")
 				.replaceAll("\\s*\\)</i></small>", "</i></small>")
+				// grrrr
+				.replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
 				// ensure quotes have required spaces
 				.replaceAll("\\s*(»|&raquo;)", "\u00A0&raquo;")
 				.replaceAll("(«|&laquo;)\\s*", "&laquo\u00A0");
@@ -366,11 +368,15 @@ public final class LecturesController {
 					bufferCategory = lectureIn.category;
 				} else {
 					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
+					bufferDescription = bufferDescription
+							.replace("</blockquote><blockquote>", "")
+							.replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
 				}
 				break;
 			case Psaume:
 				if(lectureIn.longTitle.equalsIgnoreCase("antienne")) {
-					bufferDescription = "<blockquote><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
+					currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
+					bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
 				} else { // Psaume|Cantique
 					bufferDescription = "<h3>" + lectureTitle + "</h3>" + bufferDescription + currentDescription;
 					bufferCategory = lectureIn.category;
