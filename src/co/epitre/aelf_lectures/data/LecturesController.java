@@ -159,9 +159,13 @@ public final class LecturesController {
 	}
 	
 	private String commonTextSanitizer(String input) {
-		return input
+		input = input
 				// drop F** MS Word Meta
 				.replaceAll("(?s)<!--.*-->", "")
+				// remove inline paragraph styling
+				.replaceAll("<p.*?>", "<p>")
+				// fun with line feed at the beginning of §
+				.replaceAll("<p><br\\s*/>", "<p>")
 				// fix ugly typo in error message
 				.replace("n\\est", "n'est")
 				// spacing fixes
@@ -190,6 +194,16 @@ public final class LecturesController {
 				// ensure quotes have required spaces
 				.replaceAll("\\s*(»|&raquo;)", "\u00A0&raquo;")
 				.replaceAll("(«|&laquo;)\\s*", "&laquo\u00A0");
+
+		// Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
+		if(input.contains("<p>&nbsp;</p>")) {
+			input = input
+					.replace("<p><p>", "<p>")
+					.replace("</p></p>", "</p>")
+					.replace("<p>&nbsp;</p>", " ")
+					.replace("</p><p>", "<br/>");
+		}
+		return input;
 	}
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
