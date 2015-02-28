@@ -169,6 +169,7 @@ public final class LecturesController {
 				// fix ugly typo in error message
 				.replace("n\\est", "n'est")
 				// spacing fixes
+				.replaceAll("\\s*-\\s*", "-")
     			.replaceAll(":\\s+(\\s+)", "")
     			.replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
 				// ensure punctuation has required spaces
