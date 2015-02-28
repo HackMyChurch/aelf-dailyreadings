@@ -160,6 +160,8 @@ public final class LecturesController {
 	
 	private String commonTextSanitizer(String input) {
 		return input
+				// drop F** MS Word Meta
+				.replaceAll("(?s)<!--.*-->", "")
 				// fix ugly typo in error message
 				.replace("n\\est", "n'est")
 				// spacing fixes
