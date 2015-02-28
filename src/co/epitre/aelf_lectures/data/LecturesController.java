@@ -168,6 +168,9 @@ public final class LecturesController {
 				.replaceAll("<p><br\\s*/>", "<p>")
 				// fix ugly typo in error message
 				.replace("n\\est", "n'est")
+				// R/ formating
+				.replace("</p></font></p>", "</font></p>\n")
+				.replace("R/ <p>", "<strong>R/&nbsp;</strong>")
 				// spacing fixes
 				.replaceAll("\\s*-\\s*", "-")
     			.replaceAll(":\\s+(\\s+)", "")
