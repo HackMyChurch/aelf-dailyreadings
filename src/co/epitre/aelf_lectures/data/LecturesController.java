@@ -194,6 +194,9 @@ public final class LecturesController {
 			for (int i = 0; i < words.length; i++) {
 				if(words[i].startsWith("L'Évangile")) {
 					// keep capitals
+				} else if (words[i].matches("^[0-9]*-Ii*$")) {
+					// special case: undo this work for psaume Lecture Office reference ex: 103-Iii --> 103-III
+					words[i] = words[i].toUpperCase();
 				} else if(!isFirstWord && (
 					words[i].startsWith("D'") ||
 					words[i].equals("De") ||
