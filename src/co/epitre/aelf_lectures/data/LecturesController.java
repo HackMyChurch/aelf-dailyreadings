@@ -383,12 +383,8 @@ public final class LecturesController {
     					words[0].equalsIgnoreCase("hymne") ||
     					words[0].equalsIgnoreCase("psaume")
     				){
-    					pagerTitle = words[0];
-    					if(words.length > 1) {
-    						lectureTitle = words[1];
-    					} else {
-    						lectureTitle = words[0];
-    					}
+    					pagerTitle = titleChunks[1];
+    					lectureTitle = titleChunks[1];
     				} else {
     					pagerTitle = titleChunks[0];
     					lectureTitle = titleChunks[1];
