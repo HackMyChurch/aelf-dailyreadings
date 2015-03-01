@@ -113,9 +113,18 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     					"	margin-right: 0;" +
     					"   padding-top: 0;" +
     					"}" +
-    					"font[color='#cc0000'], font[color='#ff0000'] {" + // psaume refrain
+    					"font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
     					"	color: #"+Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2)+";" +
     					"} " +
+    					"font[size='1'] {" + // psaume verse number
+    					"	display: block;" +
+    					"   float: left;" +
+    					"   width: 25px;" +
+    					"   text-align: right;" +
+    					"   margin-top: 4px;" +
+    					"   margin-left: -30px;" +
+    					"}" +
+    					
     					"</style>" +
     				"</head>" +
     				"<body>");
