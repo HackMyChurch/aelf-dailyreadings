@@ -244,6 +244,8 @@ public final class LecturesController {
 				.replaceAll("<p><br\\s*/>", "<p>")
 				// fix ugly typo in error message
 				.replace("n\\est", "n'est")
+				// remove leading line breaks (cf Lectures.Repons)
+				.replaceAll("^(<br\\s*/>)*", "")
 				// R/, V/ formating
 				.replace("</p></font></p>", "</font></p>\n")
 				.replace("R/ <p>", "R/ ")
@@ -311,6 +313,7 @@ public final class LecturesController {
     		
     		// compute new state
     		if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
+    			lectureIn.shortTitle.equalsIgnoreCase("lecture") || 
     			lectureIn.shortTitle.equalsIgnoreCase("repons") || 
     			lectureIn.shortTitle.equalsIgnoreCase("verset")) {
     			currentState = postProcessState.Pericope;
@@ -414,9 +417,6 @@ public final class LecturesController {
     		pagerTitle = sanitizeTitleCapitalization(pagerTitle);
     		lectureTitle = sanitizeTitleCapitalization(lectureTitle);
     		
-    		// FIXME: compat
-    		bufferTitle = pagerTitle + " : " + lectureTitle;
-    		
     		currentDescription = commonTextSanitizer(lectureIn.description);
     		
     		// prepare reference, if any
@@ -430,30 +430,38 @@ public final class LecturesController {
 				// TODO: exception ?
 				break;
 			case Pericope:
-				if(lectureIn.shortTitle.equalsIgnoreCase("pericope")) {
+				if(lectureIn.shortTitle.equalsIgnoreCase("pericope") || lectureIn.shortTitle.equalsIgnoreCase("lecture")) {
 					bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
 					bufferCategory = lectureIn.category;
+					bufferTitle = pagerTitle + " : " + lectureTitle;
 				} else {
 					bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
 					bufferDescription = bufferDescription
 							.replace("</blockquote><blockquote>", "")
 							.replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
+					if(bufferTitle.equals("")) {
+						bufferTitle = pagerTitle + " : " + lectureTitle;
+					}
 				}
 				break;
 			case Psaume:
 				if(lectureIn.longTitle.equalsIgnoreCase("antienne")) {
 					currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
 					bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
+					if(bufferTitle.equals("")) {
+						bufferTitle = pagerTitle + " : " + lectureTitle;
+					}
 				} else { // Psaume|Cantique
 					bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
 					bufferCategory = lectureIn.category;
+					bufferTitle = pagerTitle + " : " + lectureTitle;
 					// force commit && buffer flush --> avoid to merge consecutives psaumes
 					currentState = postProcessState.NeedFlush;
 				}
 				break;
 			case Regular:
 				bufferCategory = lectureIn.category;
-				//bufferTitle = currentTitle;
+				bufferTitle = pagerTitle + " : " + lectureTitle;
 				bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
 				break;
 			default:
