@@ -110,7 +110,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     					"	display: block;" +
     					"	text-align: right;" +
     					"   margin-top: -15px;" +
-    					"	margin-right: 40px;" +
+    					"	margin-right: 0;" +
     					"   padding-top: 0;" +
     					"}" +
     					"font[color='#cc0000'], font[color='#ff0000'] {" + // psaume refrain
