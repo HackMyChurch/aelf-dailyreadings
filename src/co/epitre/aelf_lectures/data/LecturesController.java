@@ -158,6 +158,79 @@ public final class LecturesController {
 		NeedFlush, // Force flush when item is known to be last of sequence
 	}
 	
+	private String sanitizeTitleCapitalization(String input) {
+		// sanitize capitalization
+		if(input.length() != 0) {
+			// *keep* capitals only when first letter of a word
+			// set capital on first *letter*
+			char[] chars = input.toCharArray();
+			boolean isFirstChar = true;
+			boolean handledCapital = false;
+			for (int i = 0; i < chars.length; i++) {
+				if (isFirstChar && Character.isLetter(chars[i])) {
+					// First letter of sentence: always capitalize
+					if(!handledCapital) {
+						chars[i] = Character.toUpperCase(chars[i]);
+						handledCapital = true;
+					}
+					isFirstChar = false;
+				} else if (!handledCapital && Character.isDigit(chars[i])) {
+					// If first alnum char is number, cancel 1st letter capitalization
+					handledCapital = true;
+				} else if (!isFirstChar && Character.isLetter(chars[i])) {
+					// We are inside a word: never keep capitals
+					chars[i] = Character.toLowerCase(chars[i]);
+				} else if (!Character.isLetterOrDigit(chars[i])) {
+					isFirstChar = true;
+				}
+			}
+			input = String.valueOf(chars);
+
+			// force lower case on determinant and preposition
+			// except if 1st word
+			String[] words = input.split("\\s+");
+			input = "";
+			boolean isFirstWord = true;
+			for (int i = 0; i < words.length; i++) {
+				if(words[i].startsWith("L'Évangile")) {
+					// keep capitals
+				} else if(!isFirstWord && (
+					words[i].startsWith("D'") ||
+					words[i].equals("De") ||
+					words[i].equals("Des") ||
+					words[i].startsWith("L'") ||
+					words[i].equals("Le") ||
+					words[i].equals("La") ||
+					words[i].equals("Les") ||
+					words[i].equals("Sur") ||
+					words[i].equals("Sur") ||
+					words[i].equals("En") ||
+					words[i].startsWith("C'") ||
+					words[i].equals("Ce") ||
+					words[i].equals("Ces") ||
+					words[i].equals("Celui") ||
+					words[i].equals("Ça") ||
+					words[i].equals("Sa") ||
+					words[i].equals("Son") ||
+					words[i].equals("Ses") ||
+					words[i].equals("Dans") ||
+					words[i].equals("Pour") ||
+					words[i].equals("Contre") ||
+					words[i].equals("Avec")
+				)) {
+					words[i] = words[i].toLowerCase();
+				}
+				input += " "+words[i];
+
+				// Toggle once 1st word has been handled
+				if(Character.isLetterOrDigit(words[i].charAt(0))) {
+					isFirstWord = false;
+				}
+			}
+		}
+		return input;
+	}
+
 	private String commonTextSanitizer(String input) {
 		input = input
 				// drop F** MS Word Meta
@@ -196,8 +269,8 @@ public final class LecturesController {
 				// grrrr
 				.replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
 				// ensure quotes have required spaces
-				.replaceAll("\\s*(»|&raquo;)", "\u00A0&raquo;")
-				.replaceAll("(«|&laquo;)\\s*", "&laquo\u00A0");
+				.replaceAll("\\s*(»|&raquo;)", "\u00A0»")
+				.replaceAll("(«|&laquo;)\\s*", "«\u00A0");
 
 		// Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
 		if(input.contains("<p>&nbsp;</p>")) {
@@ -282,50 +355,6 @@ public final class LecturesController {
     			lectureReference = parts[1].substring(0, p).trim();
     		}
     		
-    		// sanitize capitalization
-    		if(currentTitle.length() != 0) {
-    			// *keep* capitals only when first letter of a word
-    			char[] chars = currentTitle.toCharArray();
-				boolean isFirstChar = true;
-				for (int i = 0; i < chars.length; i++) {
-					if (isFirstChar && Character.isLetter(chars[i])) {
-						isFirstChar = false;
-					} else if (!isFirstChar && Character.isLetter(chars[i])) {
-						chars[i] = Character.toLowerCase(chars[i]);
-					} else if (!Character.isLetterOrDigit(chars[i])) {
-						isFirstChar = true;
-					}
-				}
-				currentTitle = String.valueOf(chars);
-				
-				// force lower case on determinant and preposition
-				String[] words = currentTitle.split("\\s+");
-				currentTitle = "";
-				for (int i = 0; i < words.length; i++) {
-					if(words[i].startsWith("L'Évangile")) {
-						// keep capitals
-					} else if(
-						words[i].startsWith("D'") ||
-						words[i].equals("De") ||
-						words[i].equals("Des") ||
-						words[i].startsWith("L'") ||
-						words[i].equals("Le") ||
-						words[i].equals("La") ||
-						words[i].equals("Les") ||
-						words[i].equals("Sur") ||
-						words[i].equals("Sur") ||
-						words[i].equals("En") ||
-						words[i].equals("Dans") ||
-						words[i].equals("Pour") ||
-						words[i].equals("Contre") ||
-						words[i].equals("Avec")
-					) {
-						words[i] = words[i].toLowerCase();
-					}
-					currentTitle += " "+words[i];
-				}
-        	}
-    		
     		// filter title && content
     		currentTitle = currentDescription = commonTextSanitizer(currentTitle)
     				// title specific fixes
@@ -378,9 +407,9 @@ public final class LecturesController {
     			}
     		}
     		
-    		// Capitalize first letter
-			pagerTitle = pagerTitle.substring(0, 1).toUpperCase() + pagerTitle.substring(1);
-			lectureTitle = lectureTitle.substring(0, 1).toUpperCase() + lectureTitle.substring(1);
+    		// Sanitize titles capitalization
+    		pagerTitle = sanitizeTitleCapitalization(pagerTitle);
+    		lectureTitle = sanitizeTitleCapitalization(lectureTitle);
     		
     		// FIXME: compat
     		bufferTitle = pagerTitle + " : " + lectureTitle;
