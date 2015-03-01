@@ -248,6 +248,7 @@ public final class LecturesController {
 				.replace("</p></font></p>", "</font></p>\n")
 				.replace("R/ <p>", "R/ ")
 				.replace("V/ <p>", "V/ ")
+				.replace(", R/", "<br/>R/") // special case for lectures office introduction. *sights*
 				.replace("R/ ", "<strong>R/&nbsp;</strong>")
 				.replace("V/ ", "<strong>V/&nbsp;</strong>")
 				// spacing fixes
