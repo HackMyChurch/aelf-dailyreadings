@@ -14,9 +14,6 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
-import android.provider.UserDictionary.Words;
-import android.support.v4.text.TextUtilsCompat;
-import android.transition.Slide;
 import android.util.Log;
 import android.util.Xml;
 
