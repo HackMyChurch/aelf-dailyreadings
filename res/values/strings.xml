@@ -12,10 +12,8 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">Application <i>officieuse</i> \"AELF - lectures du jour (#VERSION#)\" développée avec le soutient d\'AELF. \
-Textes issus de la traduction liturgique et logo reproduits avec l\'aimable autorisation de l\'AELF.\n\n\
-Application par @Catho_Geek.\n\
-Textes liturgiques © AELF (www.aelf.org)</string>
+    <string name="dialog_about_content">Application \"AELF Lectures du jour\" version (#VERSION#) par @Catho_Geek.\n\
+Textes liturgiques reproduits avec l\'aimable autorisation d\'AELF (www.aelf.org). Tous droits réservés.</string>
 	
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
