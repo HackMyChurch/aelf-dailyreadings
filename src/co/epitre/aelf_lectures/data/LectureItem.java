@@ -15,7 +15,7 @@ public class LectureItem implements Serializable {
 
     public LectureItem(String title, String description, String category) {
     	String[] titleChunks = title.split(":");
-    	String shortTitle = titleChunks[0].trim();
+    	String shortTitle = titleChunks[0].trim().replace("&nbsp;", " ");
     	String longTitle = title.trim();
 
     	this.shortTitle = shortTitle;
