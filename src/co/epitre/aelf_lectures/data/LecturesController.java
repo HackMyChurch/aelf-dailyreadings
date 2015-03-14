@@ -363,7 +363,7 @@ public final class LecturesController {
     		}
     		
     		// filter title && content
-    		currentTitle = currentDescription = commonTextSanitizer(currentTitle)
+    		currentTitle = currentDescription = currentTitle
     				// title specific fixes
     				.replaceAll("CANTIQUE", "Cantique")
     				.replaceFirst("(?i)pericope", "Parole de Dieu")
@@ -411,8 +411,8 @@ public final class LecturesController {
     		}
     		
     		// Sanitize titles capitalization
-    		pagerTitle = sanitizeTitleCapitalization(pagerTitle);
-    		lectureTitle = sanitizeTitleCapitalization(lectureTitle);
+    		pagerTitle = commonTextSanitizer(sanitizeTitleCapitalization(pagerTitle));
+    		lectureTitle = commonTextSanitizer(sanitizeTitleCapitalization(lectureTitle));
     		
     		currentDescription = commonTextSanitizer(lectureIn.description);
     		
