@@ -255,7 +255,7 @@ public final class LecturesController {
     			.replaceAll(":\\s+(\\s+)", "")
     			.replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
 				// ensure punctuation has required spaces
-				.replaceAll("\\s*([:?!])\\s*", "\u00A0$1 ")
+				.replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
 				// non adjacent semicolon
 				.replaceAll("\\s+;\\s*", "&#x202f;; ")
 				// adjacent semicolon NOT from entities
@@ -275,8 +275,8 @@ public final class LecturesController {
 				// grrrr
 				.replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
 				// ensure quotes have required spaces
-				.replaceAll("\\s*(»|&raquo;)", "\u00A0»")
-				.replaceAll("(«|&laquo;)\\s*", "«\u00A0");
+				.replaceAll("\\s*(»|&raquo;)", "&nbsp;»")
+				.replaceAll("(«|&laquo;)\\s*", "«&nbsp;");
 
 		// Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
 		if(input.contains("<p>&nbsp;</p>")) {
