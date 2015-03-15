@@ -114,6 +114,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		if(savedVersion < 11) {
     			// delete cache DB: needs to force regenerate
     			getApplicationContext().deleteDatabase("aelf_cache.db");
+    			// regenerate, according to user settings
+    			do_manual_sync();
     		}
 
     		// update saved version
@@ -210,7 +212,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	// apply settings
     	View decorView = getWindow().getDecorView();
-    	
+
     	decorView.setSystemUiVisibility(uiOptions);
   	
     	// TODO: explore artificially reducing luminosity
@@ -221,6 +223,19 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	} catch (SettingNotFoundException e) {
     	    // don't care
     	}*/
+    }
+    
+    public boolean do_manual_sync() {
+        // Pass the settings flags by inserting them in a bundle
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+        // start sync
+        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+
+        // done
+    	return true;
     }
 
     @Override
@@ -283,16 +298,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     }
 
     public boolean onSyncDo(MenuItem item) {
-        // Pass the settings flags by inserting them in a bundle
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        // start sync
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-
-        // done
-    	return true;
+        return do_manual_sync();
     }
     
     public boolean onRefresh(MenuItem item) {
