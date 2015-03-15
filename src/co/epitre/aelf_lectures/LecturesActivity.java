@@ -452,32 +452,26 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	@Override
     	protected void onPostExecute(final List<LectureItem> lectures) {
-    		// Force running on UI thread to attempt WorkAround loads of java.lang.IllegalStateException: 
-    		//     Fragment e{4a335af8} is not currently in the FragmentManager
-    		runOnUiThread(new Runnable() {
-    		    public void run() {
-    		    	List<LectureItem> pager_data;
+	    	List<LectureItem> pager_data;
 
-    	    		if(lectures != null) {
-    	    			pager_data = lectures;
-    	    		} else {
-    	    			pager_data = networkError;
-    	    		}
+    		if(lectures != null) {
+    			pager_data = lectures;
+    		} else {
+    			pager_data = networkError;
+    		}
 
-    	    		// 1 slide fragment <==> 1 lecture
-    		    	mLecturesPager= new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
+    		// 1 slide fragment <==> 1 lecture
+	    	mLecturesPager= new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
 
-    	    		// Set up the ViewPager with the sections adapter.
-    		    	try {
-	    	    		mViewPager = (ViewPager) findViewById(R.id.pager);
-	    	    		mViewPager.setAdapter(mLecturesPager);
-	    	    		mViewPager.setCurrentItem(whatwhen.position);
-	    	    		setLoading(false);
-    		    	} catch(IllegalStateException e) {
-    		    		// Fragment manager has gone away, will reload anyway so silently give up
-    		    	}
-    		    }
-    		});
+    		// Set up the ViewPager with the sections adapter.
+	    	try {
+	    		mViewPager = (ViewPager) findViewById(R.id.pager);
+	    		mViewPager.setAdapter(mLecturesPager);
+	    		mViewPager.setCurrentItem(whatwhen.position);
+	    		setLoading(false);
+	    	} catch(IllegalStateException e) {
+	    		// Fragment manager has gone away, will reload anyway so silently give up
+	    	}
     	}
     }
 
