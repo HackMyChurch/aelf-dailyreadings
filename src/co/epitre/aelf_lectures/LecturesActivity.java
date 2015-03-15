@@ -126,7 +126,13 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	// ---- end upgrade
 
     	// create dummy account for our background sync engine
-    	mAccount = CreateSyncAccount(this);
+    	try {
+    		mAccount = CreateSyncAccount(this);
+    	} catch (SecurityException e) {
+    		// WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
+    		Log.w(TAG, "Create/Get sync account was DENIED");
+    		mAccount = null;
+    	}
 
     	// init the lecture controller
     	lecturesCtrl = LecturesController.getInstance(this);
@@ -226,6 +232,12 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     }
     
     public boolean do_manual_sync() {
+    	if (mAccount == null) {
+    		// TODO: patch the alg to work without ?
+    		Log.w(TAG, "Failed to run manual sync: we have no account...");
+    		return false;
+    	}
+    	
         // Pass the settings flags by inserting them in a bundle
         Bundle settingsBundle = new Bundle();
         settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
