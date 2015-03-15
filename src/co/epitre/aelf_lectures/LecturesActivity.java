@@ -297,7 +297,11 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     
     public boolean onRefresh(MenuItem item) {
     	whatwhen.useCache = false;
-    	whatwhen.position = mViewPager.getCurrentItem();
+    	if(mViewPager != null) {
+    		whatwhen.position = mViewPager.getCurrentItem();
+    	} else {
+    		whatwhen.position = 0;
+    	}
     	new DownloadXmlTask().execute(whatwhen);
     	return true;
     }
@@ -322,7 +326,12 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		return;
     	
     	whatwhen.when = date;
-    	whatwhen.position = mViewPager.getCurrentItem(); // keep on the same reading on date change
+    	// keep on the same reading on date change
+    	if(mViewPager != null) {
+    		whatwhen.position = mViewPager.getCurrentItem();
+    	} else {
+    		whatwhen.position = 0;
+    	}
     	new DownloadXmlTask().execute(whatwhen);
 
     	// Update to date button with "this.date"
