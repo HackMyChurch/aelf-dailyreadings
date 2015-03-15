@@ -13,8 +13,10 @@ import java.util.List;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Log;
 
 
 /**
@@ -45,6 +47,22 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     			when.get(Calendar.MONTH),
     			when.get(Calendar.DAY_OF_MONTH)).getTimeInMillis();
     }
+    
+    private boolean _execute_stmt(SQLiteStatement stmt, int max_retries) {
+    	// Attempt to run this statement up to max_retries times
+    	do {
+    		try {
+    			stmt.execute();
+    			return true;
+    		} catch(SQLiteException e) {
+    			Log.v(TAG, "Failed to save item in cache: "+e.toString());
+    		}
+    		
+    	} while (--max_retries > 0);
+    	
+    	// All attempts failed
+    	return false;
+    }
 
     public void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
     	long key  = computeKey(when);
@@ -67,7 +85,9 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     	SQLiteStatement stmt = getWritableDatabase().compileStatement(sql);
     	stmt.bindLong(1, key);
     	stmt.bindBlob(2, blob);
-        stmt.execute();
+    	
+    	// Multiple attempts. On failure ignore. This is cache --> best effort
+    	_execute_stmt(stmt, 3);
     }
 
     // cleaner helper method
