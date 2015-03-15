@@ -64,6 +64,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     Menu mMenu;
 
     List<LectureItem> networkError = new ArrayList<LectureItem>(1);
+    List<LectureItem> emptyOfficeError = new ArrayList<LectureItem>(1);
 
     /**
      * Sync account related vars
@@ -158,6 +159,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     	// error handler
     	networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
+    	emptyOfficeError.add(new LectureItem("Office vide", "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>", "erreur"));
     	
     	// TODO: explore possible overlay action bar lifecycle
     	//requestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
@@ -472,10 +474,15 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	protected void onPostExecute(final List<LectureItem> lectures) {
 	    	List<LectureItem> pager_data;
 
-    		if(lectures != null) {
-    			pager_data = lectures;
-    		} else {
+	    	// Failed to load
+    		if(lectures == null) {
     			pager_data = networkError;
+    		// Empty office ? Prevent crash
+    		} else if(lectures.isEmpty()) {
+    			pager_data = emptyOfficeError;
+    		// Nominal case
+    		} else {
+    			pager_data = lectures;
     		}
 
     		// 1 slide fragment <==> 1 lecture
