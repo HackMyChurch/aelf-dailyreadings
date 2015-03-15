@@ -468,11 +468,14 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		    	mLecturesPager= new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
 
     	    		// Set up the ViewPager with the sections adapter.
-    	    		mViewPager = (ViewPager) findViewById(R.id.pager);
-    	    		mViewPager.setAdapter(mLecturesPager);
-    	    		mViewPager.setCurrentItem(whatwhen.position);
-
-    	    		setLoading(false);
+    		    	try {
+	    	    		mViewPager = (ViewPager) findViewById(R.id.pager);
+	    	    		mViewPager.setAdapter(mLecturesPager);
+	    	    		mViewPager.setCurrentItem(whatwhen.position);
+	    	    		setLoading(false);
+    		    	} catch(IllegalStateException e) {
+    		    		// Fragment manager has gone away, will reload anyway so silently give up
+    		    	}
     		    }
     		});
     	}
