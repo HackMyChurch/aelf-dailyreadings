@@ -1,6 +1,9 @@
 package co.epitre.aelf_lectures;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -189,7 +192,43 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     		ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
     		ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
     		ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
+    		
+    		// If the account has not been synced in a long time, fallback on "manual" trigger. This is an attempt
+    		// to solve Huawei y330 bug
+    		long last_sync = getLasySyncTime();
+    		long now = System.currentTimeMillis();
+    		long days = (now - last_sync) / (1000 * 3600 * 24);
+    		if(days >= 2) {
+    			Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
+    			do_manual_sync();
+    		}
     	}
+    }
+    
+    private long getLasySyncTime() {
+    	// from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
+        long result = 0;
+        try {
+            Method getSyncStatus = ContentResolver.class.getMethod("getSyncStatus", Account.class, String.class);
+            if (mAccount != null) {
+                Object status = getSyncStatus.invoke(null, mAccount, AUTHORITY);
+                Class<?> statusClass = Class.forName("android.content.SyncStatusInfo");
+                boolean isStatusObject = statusClass.isInstance(status);
+                if (isStatusObject) {
+                    Field successTime = statusClass.getField("lastSuccessTime");
+                    result = successTime.getLong(status);
+                }
+            }
+        }
+        catch (NoSuchMethodException e) {}
+        catch (IllegalAccessException e) {}
+        catch (InvocationTargetException e) {}
+        catch (IllegalArgumentException e) {}
+        catch (ClassNotFoundException e) {}
+        catch (NoSuchFieldException e) {}
+        catch (NullPointerException e) {}
+
+        return result;
     }
     
     @SuppressLint("NewApi")
