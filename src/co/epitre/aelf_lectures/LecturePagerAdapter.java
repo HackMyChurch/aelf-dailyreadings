@@ -11,14 +11,13 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 /**
- * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
- * one of the sections/tabs/pages.
+ * Adapter, return a fragment for each lecture / slide.
  */
-public class SectionsPagerAdapterFragment extends FragmentStatePagerAdapter {
+public class LecturePagerAdapter extends FragmentStatePagerAdapter {
 
     List<LectureItem> mlectures;
 
-    public SectionsPagerAdapterFragment(FragmentManager fm, List<LectureItem> lectures) {
+    public LecturePagerAdapter(FragmentManager fm, List<LectureItem> lectures) {
     	super(fm);
     	mlectures = lectures;
     }

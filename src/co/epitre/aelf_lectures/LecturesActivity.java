@@ -60,7 +60,6 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     LecturesController lecturesCtrl = null;
-    SectionsPagerAdapterFragment mSectionsPagerAdapter;
     WhatWhen whatwhen;
     Menu mMenu;
 
@@ -415,6 +414,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
 
     // Async loader
     private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
+    	LecturePagerAdapter mLecturesPager;
+    	
     	@Override
     	protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
     		WhatWhen ww = whatwhen[0];
@@ -454,13 +455,12 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     	    			pager_data = networkError;
     	    		}
 
-    	    		// Create the adapter that will return a fragment for each of the three
-    	    		// primary sections of the app.
-    		    	mSectionsPagerAdapter = new SectionsPagerAdapterFragment(getSupportFragmentManager(), pager_data);
+    	    		// 1 slide fragment <==> 1 lecture
+    		    	mLecturesPager= new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
 
     	    		// Set up the ViewPager with the sections adapter.
     	    		mViewPager = (ViewPager) findViewById(R.id.pager);
-    	    		mViewPager.setAdapter(mSectionsPagerAdapter);
+    	    		mViewPager.setAdapter(mLecturesPager);
     	    		mViewPager.setCurrentItem(whatwhen.position);
 
     	    		setLoading(false);

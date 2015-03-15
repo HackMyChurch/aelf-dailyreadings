@@ -130,7 +130,6 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     				"<body>");
     	htmlString.append(body);
     	htmlString.append("</body></html>");
-    	;
 
     	// actual UI refresh
     	View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
