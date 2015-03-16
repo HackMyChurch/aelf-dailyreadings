@@ -14,13 +14,13 @@ public class LectureItem implements Serializable {
     public final String category;
 
     public LectureItem(String title, String description, String category) {
-    	String[] titleChunks = title.split(":");
-    	String shortTitle = titleChunks[0].trim().replace("&nbsp;", " ");
-    	String longTitle = title.trim();
+        String[] titleChunks = title.split(":");
+        String shortTitle = titleChunks[0].trim().replace("&nbsp;", " ");
+        String longTitle = title.trim();
 
-    	this.shortTitle = shortTitle;
-    	this.longTitle = longTitle;
-    	this.description = description;
-    	this.category = category;
+        this.shortTitle = shortTitle;
+        this.longTitle = longTitle;
+        this.description = description;
+        this.category = category;
     }
 }

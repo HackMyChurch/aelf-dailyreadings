@@ -31,7 +31,7 @@ public class StubProvider extends ContentProvider {
     @Override
     public String getType(Uri arg0) {
         Log.i(TAG, "Provider: Type");
-    	return new String();
+        return new String();
     }
     /*
      * query() always returns no results

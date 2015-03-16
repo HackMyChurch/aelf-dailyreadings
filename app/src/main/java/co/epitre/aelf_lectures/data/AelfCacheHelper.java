@@ -24,7 +24,7 @@ import android.util.Log;
  */
 
 final class AelfCacheHelper extends SQLiteOpenHelper {
-	public static final String TAG = "AELFCacheHelper";
+    public static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 2;
     private static final String DB_NAME = "aelf_cache.db";
 
@@ -34,7 +34,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     // TODO: prepare requests
 
     public AelfCacheHelper(Context context) {
-    	super(context, DB_NAME, null, DB_VERSION);
+        super(context, DB_NAME, null, DB_VERSION);
     }
 
     /**
@@ -42,94 +42,94 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
      */
 
     private long computeKey(GregorianCalendar when) {
-    	return new GregorianCalendar(
-    			when.get(Calendar.YEAR),
-    			when.get(Calendar.MONTH),
-    			when.get(Calendar.DAY_OF_MONTH)).getTimeInMillis();
+        return new GregorianCalendar(
+                when.get(Calendar.YEAR),
+                when.get(Calendar.MONTH),
+                when.get(Calendar.DAY_OF_MONTH)).getTimeInMillis();
     }
     
     private boolean _execute_stmt(SQLiteStatement stmt, int max_retries) {
-    	// Attempt to run this statement up to max_retries times
-    	do {
-    		try {
-    			stmt.execute();
-    			return true;
-    		} catch(SQLiteException e) {
-    			Log.v(TAG, "Failed to save item in cache: "+e.toString());
-    		}
-    		
-    	} while (--max_retries > 0);
-    	
-    	// All attempts failed
-    	return false;
+        // Attempt to run this statement up to max_retries times
+        do {
+            try {
+                stmt.execute();
+                return true;
+            } catch(SQLiteException e) {
+                Log.v(TAG, "Failed to save item in cache: "+e.toString());
+            }
+
+        } while (--max_retries > 0);
+
+        // All attempts failed
+        return false;
     }
 
     public void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
-    	long key  = computeKey(when);
-    	byte[] blob = null;
+        long key  = computeKey(when);
+        byte[] blob = null;
 
-    	// build blob
-    	try {
-    		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    		ObjectOutputStream oos = null;
-    		oos = new ObjectOutputStream(bos);
-    		oos.writeObject(lectures);
-    		blob = bos.toByteArray();
-    	} catch (IOException e) {
-    		throw new RuntimeException(e);
-    		// FIXME: error recovery
-    	}
+        // build blob
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = null;
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(lectures);
+            blob = bos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+            // FIXME: error recovery
+        }
 
-    	// insert into the database
-    	String sql = String.format(DB_TABLE_SET, what);
-    	SQLiteStatement stmt = getWritableDatabase().compileStatement(sql);
-    	stmt.bindLong(1, key);
-    	stmt.bindBlob(2, blob);
-    	
-    	// Multiple attempts. On failure ignore. This is cache --> best effort
-    	_execute_stmt(stmt, 3);
+        // insert into the database
+        String sql = String.format(DB_TABLE_SET, what);
+        SQLiteStatement stmt = getWritableDatabase().compileStatement(sql);
+        stmt.bindLong(1, key);
+        stmt.bindBlob(2, blob);
+
+        // Multiple attempts. On failure ignore. This is cache --> best effort
+        _execute_stmt(stmt, 3);
     }
 
     // cleaner helper method
     public void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
-    	String key = Long.toString(computeKey(when));
-    	SQLiteDatabase db = getWritableDatabase();
-    	db.delete(what.toString(), "`date` < ?", new String[] {key});
+        String key = Long.toString(computeKey(when));
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(what.toString(), "`date` < ?", new String[] {key});
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
     public List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when) {
-    	String key  = Long.toString(computeKey(when));
-    	byte[] blob = null;
+        String key  = Long.toString(computeKey(when));
+        byte[] blob = null;
 
-    	// load from db
-    	SQLiteDatabase db = getReadableDatabase();
-    	Cursor cur = db.query(what.toString(), new String[] {"lectures"}, "`date`=?", new String[] {key}, null, null, null, "1");
-    	if(cur != null && cur.getCount() > 0) {
-    		// any records ? load it
-    		cur.moveToFirst();
-    		blob = cur.getBlob(0);
+        // load from db
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.query(what.toString(), new String[] {"lectures"}, "`date`=?", new String[] {key}, null, null, null, "1");
+        if(cur != null && cur.getCount() > 0) {
+            // any records ? load it
+            cur.moveToFirst();
+            blob = cur.getBlob(0);
 
-    		try {
-    			ByteArrayInputStream bis = new ByteArrayInputStream(blob);
-    			ObjectInputStream ois = new ObjectInputStream(bis);
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(blob);
+                ObjectInputStream ois = new ObjectInputStream(bis);
 
-    			return (List<LectureItem>)ois.readObject();
-    		} catch (StreamCorruptedException e) {
-    			throw new RuntimeException(e);
-    			// FIXME: error recovery
-    		} catch (IOException e) {
-    			throw new RuntimeException(e);
-    			// FIXME: error recovery
-    		} catch (ClassNotFoundException e) {
-    			throw new RuntimeException(e);
-    			// FIXME: error recovery
-    		}
+                return (List<LectureItem>)ois.readObject();
+            } catch (StreamCorruptedException e) {
+                throw new RuntimeException(e);
+                // FIXME: error recovery
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+                // FIXME: error recovery
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+                // FIXME: error recovery
+            }
 
-    	} else {
-    		return null;
-    	}
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -137,22 +137,22 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
      */
     
     public void createCache(SQLiteDatabase db, LecturesController.WHAT what) {
-    	String sql = String.format(DB_TABLE_CREATE, what);
-		db.execSQL(sql);
+        String sql = String.format(DB_TABLE_CREATE, what);
+        db.execSQL(sql);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-    	for (LecturesController.WHAT what : LecturesController.WHAT.class.getEnumConstants()) {
-    		createCache(db, what);
-    	}
+        for (LecturesController.WHAT what : LecturesController.WHAT.class.getEnumConstants()) {
+            createCache(db, what);
+        }
     }
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    	if(oldVersion == 1) {
-    		createCache(db, LecturesController.WHAT.METAS);
-    	}
+        if(oldVersion == 1) {
+            createCache(db, LecturesController.WHAT.METAS);
+        }
     }
 
 }

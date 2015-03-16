@@ -31,8 +31,8 @@ class SupportDatePickerDialog extends DatePickerDialog {
     public boolean canceled = false;
     
     public void cancel() {
-    	canceled = true;
-    	super.cancel();
+        canceled = true;
+        super.cancel();
     }
 
     /**
@@ -66,11 +66,11 @@ class SupportDatePickerDialog extends DatePickerDialog {
      * @param dayOfMonth The initial day of the dialog.
      */
     public SupportDatePickerDialog(Context context,
-        	int theme,
-        	OnDateSetListener callBack,
-        	int year,
-        	int monthOfYear,
-        	int dayOfMonth) {
+            int theme,
+            OnDateSetListener callBack,
+            int year,
+            int monthOfYear,
+            int dayOfMonth) {
         super(context, theme, callBack, year, monthOfYear, dayOfMonth);
         DateFormatSymbols symbols = new DateFormatSymbols();
         mWeekDays = symbols.getShortWeekdays();
@@ -97,8 +97,8 @@ class SupportDatePickerDialog extends DatePickerDialog {
 
 public class DatePickerFragment extends DialogFragment
     implements DatePickerDialog.OnDateSetListener, DialogInterface.OnClickListener {
-	
-	protected SupportDatePickerDialog dialog;
+
+    protected SupportDatePickerDialog dialog;
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
@@ -115,71 +115,71 @@ public class DatePickerFragment extends DialogFragment
         super.onAttach(activity);
         // Verify that the host activity implements the callback interface
         try {
-        	mListener = (CalendarDialogListener) activity;
+            mListener = (CalendarDialogListener) activity;
         } catch (ClassCastException e) {
-        	throw new ClassCastException(activity.toString()+ " must implement NoticeDialogListener");
+            throw new ClassCastException(activity.toString()+ " must implement NoticeDialogListener");
         }
     }
 
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-    	Bundle args = getArguments();
-    	final Calendar c = Calendar.getInstance();
+        Bundle args = getArguments();
+        final Calendar c = Calendar.getInstance();
 
-    	// if we got an initial date --> load it
-    	if(args != null)
-    	{
-    		long timems = args.getLong("time");
-    		if(timems > 0) {
-    			c.setTimeInMillis(timems);
-    		}
-    	}
+        // if we got an initial date --> load it
+        if(args != null)
+        {
+            long timems = args.getLong("time");
+            if(timems > 0) {
+                c.setTimeInMillis(timems);
+            }
+        }
 
-    	// Use the current date as the default date in the picker
-    	int year = c.get(Calendar.YEAR);
-    	int month = c.get(Calendar.MONTH);
-    	int day = c.get(Calendar.DAY_OF_MONTH);
+        // Use the current date as the default date in the picker
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        int day = c.get(Calendar.DAY_OF_MONTH);
 
-    	// Create a new instance of DatePickerDialog and return it
-    	dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
-    	dialog.setCancelable(true);
-    	dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);
-    	dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
-    	return dialog;
+        // Create a new instance of DatePickerDialog and return it
+        dialog =  new SupportDatePickerDialog(getActivity(), this, year, month, day);
+        dialog.setCancelable(true);
+        dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);
+        dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
+        return dialog;
     }
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
-    	if(which == DialogInterface.BUTTON_NEUTRAL) {
-    		// set to today
-    		GregorianCalendar date = new GregorianCalendar();
+        if(which == DialogInterface.BUTTON_NEUTRAL) {
+            // set to today
+            GregorianCalendar date = new GregorianCalendar();
 
-    		// set date picker's date
-    		DatePickerDialog dateDialog = (DatePickerDialog)dialog;
-        	dateDialog.updateDate(
-        			date.get(Calendar.YEAR),
-        			date.get(Calendar.MONTH),
-        			date.get(Calendar.DAY_OF_MONTH));
+            // set date picker's date
+            DatePickerDialog dateDialog = (DatePickerDialog)dialog;
+            dateDialog.updateDate(
+                    date.get(Calendar.YEAR),
+                    date.get(Calendar.MONTH),
+                    date.get(Calendar.DAY_OF_MONTH));
 
-        	// trigger listener
-        	mListener.onCalendarDialogPicked(
-        			date.get(Calendar.YEAR),
-        			date.get(Calendar.MONTH),
-        			date.get(Calendar.DAY_OF_MONTH));
+            // trigger listener
+            mListener.onCalendarDialogPicked(
+                    date.get(Calendar.YEAR),
+                    date.get(Calendar.MONTH),
+                    date.get(Calendar.DAY_OF_MONTH));
 
-        	// quit the dialog
-        	dialog.dismiss();
+            // quit the dialog
+            dialog.dismiss();
 
-        	// FIXME: avoid flickering
-    	} else if(which == DialogInterface.BUTTON_NEGATIVE) {
-    		this.dialog.canceled = true;
-    	}
+            // FIXME: avoid flickering
+        } else if(which == DialogInterface.BUTTON_NEGATIVE) {
+            this.dialog.canceled = true;
+        }
     }
 
     public void onDateSet(DatePicker view, int year, int month, int day) {
-    	if(!dialog.canceled) {
-    		mListener.onCalendarDialogPicked(year, month, day);
-    	}
+        if(!dialog.canceled) {
+            mListener.onCalendarDialogPicked(year, month, day);
+        }
     }
 }

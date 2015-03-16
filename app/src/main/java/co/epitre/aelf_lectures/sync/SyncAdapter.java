@@ -47,15 +47,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         this.mContext = context;
         this.mController = LecturesController.getInstance(this.getContext());
 
-    	PendingIntent intent =
-    		    PendingIntent.getActivity(
-    		    mContext,
-    		    0,
-    		    new Intent(),
-    		    PendingIntent.FLAG_UPDATE_CURRENT
-    		);
+        PendingIntent intent =
+                PendingIntent.getActivity(
+                mContext,
+                0,
+                new Intent(),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            );
 
-    	mNotificationBuilder = new NotificationCompat.Builder(mContext)
+        mNotificationBuilder = new NotificationCompat.Builder(mContext)
             .setContentTitle("AELF")
             .setContentText("Pré-chargement des lectures...")
             .setContentIntent(intent)
@@ -74,7 +74,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     // code to display a sync notification
     // http://stackoverflow.com/questions/5061760/how-does-one-animate-the-android-sync-status-icon
     private void showNotification(int max, int cur) {
-    	mNotificationBuilder.setProgress(max, cur, false);
+        mNotificationBuilder.setProgress(max, cur, false);
         mNotificationManager.notify(SYNC_NOT_ID, mNotificationBuilder.build());
     }
 
@@ -86,17 +86,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     //  - 1 --> messe(0) && metas (8)
     //  - len(offices)
     private void syncDay(GregorianCalendar when, int max) throws IOException {
-		/*if(max == 1) { // FIXME: temporarily disable meta sync
-			// that's terrible code... Should use a list of items to sync and changing the IDs has terrible side effects...
-			// but at least we avoid doing it twice
-			mController.getLectures(LecturesController.WHAT.METAS, when, false);
-		}*/
+        /*if(max == 1) { // FIXME: temporarily disable meta sync
+            // that's terrible code... Should use a list of items to sync and changing the IDs has terrible side effects...
+            // but at least we avoid doing it twice
+            mController.getLectures(LecturesController.WHAT.METAS, when, false);
+        }*/
         while(max-- > 0) {
-        	LecturesController.WHAT what = LecturesController.WHAT.values()[max];
-        	// make sure it is not in cache
-        	if(mController.getLecturesFromCache(what, when) == null) {
-        		mController.getLecturesFromNetwork(what, when);
-        	}
+            LecturesController.WHAT what = LecturesController.WHAT.values()[max];
+            // make sure it is not in cache
+            if(mController.getLecturesFromCache(what, when) == null) {
+                mController.getLecturesFromNetwork(what, when);
+            }
         }
     }
 
@@ -143,17 +143,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         GregorianCalendar whenMax = new GregorianCalendar();
 
         if(pDuree.equals("auj")) {
-        	// take tomorrow for free as well or we might be quite late if running at 23h50..
-        	whenMax.add(Calendar.DATE, 1);
-        	todo += 1;
+            // take tomorrow for free as well or we might be quite late if running at 23h50..
+            whenMax.add(Calendar.DATE, 1);
+            todo += 1;
         } else if(pDuree.equals("auj-dim")) {
-        	todo += 2;
+            todo += 2;
         } else if(pDuree.equals("semaine")) {
-        	whenMax.add(Calendar.DATE, 7);
-        	todo += 7;
+            whenMax.add(Calendar.DATE, 7);
+            todo += 7;
         } else if(pDuree.equals("mois")) {
-        	whenMax.add(Calendar.DATE, 31);
-        	todo += 31;
+            whenMax.add(Calendar.DATE, 31);
+            todo += 31;
         }
 
         // notify user
@@ -161,39 +161,39 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // ** SYNC **
         try {
-        	// loop until when > dayMax
-        	GregorianCalendar when = new GregorianCalendar();
-        	do {
-        		syncDay(when, whatMax);
-        		when.add(Calendar.DATE, +1);
-        		this.showNotification(todo, ++done);
-        	} while(when.before(whenMax));
+            // loop until when > dayMax
+            GregorianCalendar when = new GregorianCalendar();
+            do {
+                syncDay(when, whatMax);
+                when.add(Calendar.DATE, +1);
+                this.showNotification(todo, ++done);
+            } while(when.before(whenMax));
 
-        	// finally, do we need to explicitly grab next Sunday ?
-        	if(pDuree.equals("auj-dim")) {
-        		when = new GregorianCalendar();
-        		do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
-        		syncDay(when, whatMax);
-        		this.showNotification(todo, ++done);
-        	}
-    	} catch (IOException e) {
-    		// Aelf servers down ? It appends ...
-    		Log.e(TAG, "I/O error while syncing. AELF servers down ?");
-    		syncResult.delayUntil = 60L*15; // Wait 15min before retrying
-    	} finally {
-    		this.cancelNotification();
-    	}
+            // finally, do we need to explicitly grab next Sunday ?
+            if(pDuree.equals("auj-dim")) {
+                when = new GregorianCalendar();
+                do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
+                syncDay(when, whatMax);
+                this.showNotification(todo, ++done);
+            }
+        } catch (IOException e) {
+            // Aelf servers down ? It appends ...
+            Log.e(TAG, "I/O error while syncing. AELF servers down ?");
+            syncResult.delayUntil = 60L*15; // Wait 15min before retrying
+        } finally {
+            this.cancelNotification();
+        }
 
         // ** CLEANUP **
         GregorianCalendar minConserv = new GregorianCalendar();
         if(pConserv.equals("semaine")) {
-        	minConserv.add(Calendar.DATE, -7);
+            minConserv.add(Calendar.DATE, -7);
         } else if (pConserv.equals("mois")) {
-        	minConserv.add(Calendar.MONTH, -1);
-    	} else if (pConserv.equals("toujours")) {
-    		// let's be honest: If I keep all, users will kill me !
-        	minConserv.add(Calendar.YEAR, -1);
-    	}
+            minConserv.add(Calendar.MONTH, -1);
+        } else if (pConserv.equals("toujours")) {
+            // let's be honest: If I keep all, users will kill me !
+            minConserv.add(Calendar.YEAR, -1);
+        }
         controller.truncateBefore(minConserv);
 
     }

@@ -19,14 +19,14 @@ public class AboutDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
-    	Context context = getActivity();
-    	String versionName = "";
-    	try {
-			versionName = "v"+context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-		} catch (NameNotFoundException e) {
-			// Only drawback here is no version displayed in about. Minor anoyance
-		}
-    	String message = getString(R.string.dialog_about_content).replace("#VERSION#", versionName);
+        Context context = getActivity();
+        String versionName = "";
+        try {
+            versionName = "v"+context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (NameNotFoundException e) {
+            // Only drawback here is no version displayed in about. Minor anoyance
+        }
+        String message = getString(R.string.dialog_about_content).replace("#VERSION#", versionName);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.dialog_about_title)
                .setMessage(message)
