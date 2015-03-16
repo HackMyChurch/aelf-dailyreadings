@@ -1,9 +1,25 @@
-src/co/epitre/aelf_lectures/data/Credentials.java
+app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java
 
+# Build artefacts
 *.apk
 *.class
 
+# Eclipse
 .settings
 bin/
 gen/
 proguard/
+
+# Temp files
+*.swp
+
+# Android Studio
+import-summary.txt
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+app/build
+
