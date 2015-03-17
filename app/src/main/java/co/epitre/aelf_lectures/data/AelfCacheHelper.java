@@ -55,7 +55,9 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 stmt.execute();
                 return true;
             } catch(SQLiteException e) {
-                Log.v(TAG, "Failed to save item in cache: "+e.toString());
+                Log.w(TAG, "Failed to save item in cache (SQLiteException): "+e.toString());
+            } catch(IllegalStateException e) {
+                Log.w(TAG, "Failed to save item in cache (IllegalStateException): "+e.toString());
             }
 
         } while (--max_retries > 0);
