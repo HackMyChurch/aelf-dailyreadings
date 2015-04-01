@@ -80,7 +80,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "	margin:24px;" +
                         "	background-color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2)+";" +
                         "	color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2)+";" +
-                        "   font-family: 'Droid Sans', Courier, sans-serif;" +
+                        "   font-family: sans-serif;" +
                         "	font-size: 15px;" + // regular body
                         "	font-weight: regular;"+
                         "}" +
