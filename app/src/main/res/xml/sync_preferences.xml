@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" 
-    android:title="Paramètres" 
-    android:key="pref_sync">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:title="Paramètres"
+    android:key="pref_sync"
+    tools:context=".SyncPrefActivity">
     <PreferenceCategory android:title="Affichage" />
     <ListPreference 
         android:title="Taille des textes"
