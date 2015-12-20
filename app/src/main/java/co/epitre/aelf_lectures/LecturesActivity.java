@@ -39,6 +39,7 @@ import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 class WhatWhen {
     public LecturesController.WHAT what;
     public GregorianCalendar when;
+    public boolean today;
     public int position;
     public boolean useCache = true;
 }
@@ -111,7 +112,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
         // upgrade logic, primitive at the moment...
         if(savedVersion != currentVersion) {
-            if(savedVersion < 11) {
+            if(savedVersion < 14) {
                 // delete cache DB: needs to force regenerate
                 getApplicationContext().deleteDatabase("aelf_cache.db");
                 // regenerate, according to user settings
@@ -152,12 +153,17 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             
             long timestamp = savedInstanceState.getLong("when");
             whatwhen.when = new GregorianCalendar();
-            if(timestamp != DATE_TODAY) {
+            if(timestamp == DATE_TODAY) {
+                whatwhen.when = new GregorianCalendar();
+                whatwhen.today = true;
+            } else {
                 whatwhen.when.setTimeInMillis(timestamp);
+                whatwhen.today = false;
             }
         } else {
             // load the "lectures" for today
             whatwhen.when = new GregorianCalendar();
+            whatwhen.today = true;
             whatwhen.what = WHAT.MESSE;
             whatwhen.position = 0; // 1st lecture of the office
         }
@@ -330,7 +336,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if(whatwhen != null) {
             if(whatwhen.what != null) what = whatwhen.what.getPosition();
             if(mViewPager    != null) position = mViewPager.getCurrentItem();
-            if(whatwhen.when != null && !isToday(whatwhen.when)) {
+            if(whatwhen.when != null && !whatwhen.today && !isToday(whatwhen.when)) {
                 when = whatwhen.when.getTimeInMillis();
             }
         }
@@ -387,6 +393,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             return;
 
         // Reset pager
+        whatwhen.today = isToday(date);
         whatwhen.when = date;
         whatwhen.position = 0;
         new DownloadXmlTask().execute(whatwhen);
