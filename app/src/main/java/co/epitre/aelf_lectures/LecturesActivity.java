@@ -1,5 +1,28 @@
 package co.epitre.aelf_lectures;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -9,36 +32,9 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.annotation.SuppressLint;
-import android.app.UiModeManager;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.provider.Settings.SettingNotFoundException;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.WindowCompat;
-import android.util.Log;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
-
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 
 class WhatWhen {
     public LecturesController.WHAT what;
@@ -47,7 +43,7 @@ class WhatWhen {
     public boolean useCache = true;
 }
 
-public class LecturesActivity extends SherlockFragmentActivity implements DatePickerFragment.CalendarDialogListener,
+public class LecturesActivity extends ActionBarActivity implements DatePickerFragment.CalendarDialogListener,
                                                                   ActionBar.OnNavigationListener {
 
     public static final String TAG = "AELFLecturesActivity";
@@ -177,8 +173,8 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
         actionBar = getSupportActionBar();
 
         Context context = actionBar.getThemedContext();
-        ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.sherlock_spinner_item);
-        list.setDropDownViewResource(R.layout.sherlock_spinner_dropdown_item);
+        ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.support_simple_spinner_dropdown_item);
+        list.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
 
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
@@ -414,7 +410,7 @@ public class LecturesActivity extends SherlockFragmentActivity implements DatePi
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
-        getSupportMenuInflater().inflate(R.menu.lectures, menu);
+        getMenuInflater().inflate(R.menu.lectures, menu);
 
         // Update to date button with "this.date"
         MenuItem calendarItem = menu.findItem(R.id.action_calendar);

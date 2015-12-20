@@ -1,31 +1,32 @@
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
 	<item
         android:id="@+id/action_calendar"
         android:orderInCategory="120"
-        android:showAsAction="always"
+        app:showAsAction="always"
         android:title="@string/action_calendar"/>
     <item
         android:id="@+id/action_sync_settings"
         android:orderInCategory="200"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/action_sync_settings"/>
     <item
         android:id="@+id/action_sync_do"
         android:orderInCategory="200"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/action_sync_do" 
         android:visible="false" 
         android:enabled="false"/>
     <item
         android:id="@+id/action_refresh"
         android:orderInCategory="200"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/action_refresh"/>
     <item
         android:id="@+id/action_about"
         android:orderInCategory="210"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/action_about"/>
 
 </menu>

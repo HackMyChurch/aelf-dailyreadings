@@ -1,13 +1,12 @@
 package co.epitre.aelf_lectures;
 
-import com.actionbarsherlock.app.SherlockPreferenceActivity;
-
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.ListPreference;
+import android.preference.PreferenceActivity;
 
-public class SyncPrefActivity extends SherlockPreferenceActivity implements OnSharedPreferenceChangeListener {
+public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
