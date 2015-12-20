@@ -156,8 +156,8 @@ public final class LecturesController {
     }
 
     private String sanitizeTitleCapitalization(String input) {
-        // sanitize capitalization
-        if(input.length() != 0) {
+        // sanitize capitalization. HACK for psalms, attempt to preserve trailing roman number
+        if(input.length() != 0 && ! input.toLowerCase().startsWith("psaume")) {
             // *keep* capitals only when first letter of a word
             // set capital on first *letter*
             char[] chars = input.toCharArray();
