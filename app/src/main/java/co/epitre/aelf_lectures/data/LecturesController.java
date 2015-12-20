@@ -250,6 +250,8 @@ public final class LecturesController {
                 .replace(", R/", "<br/>R/") // special case for lectures office introduction. *sights*
                 .replace("R/ ", "<strong>R/&nbsp;</strong>")
                 .replace("V/ ", "<strong>V/&nbsp;</strong>")
+                // verse numbering
+                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([0-9]*)</font>", "<span class=\"verse\">$1</span>")
                 // spacing fixes
                 .replaceAll("\\s*-\\s*", "-")
                 .replaceAll(":\\s+(\\s+)", "")
