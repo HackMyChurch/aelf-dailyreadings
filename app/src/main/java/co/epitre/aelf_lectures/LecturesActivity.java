@@ -386,13 +386,9 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if(isSameDay(whatwhen.when, date))
             return;
 
+        // Reset pager
         whatwhen.when = date;
-        // keep on the same reading on date change
-        if(mViewPager != null) {
-            whatwhen.position = mViewPager.getCurrentItem();
-        } else {
-            whatwhen.position = 0;
-        }
+        whatwhen.position = 0;
         new DownloadXmlTask().execute(whatwhen);
 
         // Update to date button with "this.date"
