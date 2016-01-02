@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.epitre.aelf_lectures"
     android:versionCode="14"
-    android:versionName="1.3.3" >
+    android:versionName="1.4.0" >
 	
     <!-- Required for fetching feed data. -->
     <uses-permission android:name="android.permission.INTERNET"/>
