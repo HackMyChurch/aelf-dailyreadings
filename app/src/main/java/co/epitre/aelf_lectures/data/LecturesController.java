@@ -156,6 +156,13 @@ public final class LecturesController {
     }
 
     private String sanitizeTitleCapitalization(String input) {
+        // HACK: (more hack than others) --> cleanup for METAS
+        input = input.replace("_nom", "")
+                     .replace("_", " ")
+                     .replace("fete", "fête")
+                     .replace("degre", "degré");
+        // /HACK
+
         // sanitize capitalization. HACK for psalms, attempt to preserve trailing roman number
         if(input.length() != 0 && ! input.toLowerCase().startsWith("psaume")) {
             // *keep* capitals only when first letter of a word
