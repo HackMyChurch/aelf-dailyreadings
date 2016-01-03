@@ -72,14 +72,19 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         // compute view --> HTML
         StringBuilder htmlString = new StringBuilder();
         String body = getArguments().getString(ARG_TEXT_HTML);
+
+        String col_red_hex = Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2);
+        String col_sepia_light = Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2);
+        String col_sepia_dark = Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2);
+
         htmlString.append("" +
                 "<html>" +
                     "<head>" +
                         "<style type=\"text/css\">" +
                         "body{" +
                         "	margin:24px;" +
-                        "	background-color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2)+";" +
-                        "	color:#"+Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2)+";" +
+                        "	background-color:#"+col_sepia_light+";" +
+                        "	color:#"+col_sepia_dark+";" +
                         "   font-family: sans-serif;" +
                         "	font-size: 15px;" + // regular body
                         "	font-weight: regular;"+
@@ -114,7 +119,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "   padding-top: 0;" +
                         "}" +
                         "font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
-                        "	color: #"+Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2)+";" +
+                        "	color: #"+col_red_hex+";" +
                         "} " +
                         ".verse {" + // psaume verse number
                         "	display: block;" +
@@ -124,7 +129,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "   margin-top: 4px;" +
                         "   margin-left: -30px;" +
                         "	font-size: 10px;" +
-                        "	color: #"+Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2)+";" +
+                        "	color: #"+col_red_hex+";" +
                         "}" +
 
                         "</style>" +
