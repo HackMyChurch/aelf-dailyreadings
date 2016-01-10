@@ -8,9 +8,12 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.AccessibilityDelegateCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.TextSize;
@@ -22,6 +25,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     /**
      * The fragment arguments
      */
+    private static final String TAG = "LectureFragment";
     public static final String ARG_TEXT_HTML = "text html";
     protected WebView lectureView;
     protected WebSettings websettings;
@@ -131,23 +135,43 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "	font-size: 10px;" +
                         "	color: #"+col_red_hex+";" +
                         "}" +
-
+                        ".underline {" +
+                        "    text-decoration: underline;" +
+                        "}" +
                         "</style>" +
                     "</head>" +
                     "<body>");
         htmlString.append(body);
         htmlString.append("</body></html>");
 
+        String reading = htmlString.toString();
+
         // actual UI refresh
+        Context context = getActivity();
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         lectureView = (WebView) rootView.findViewById(R.id.LectureView);
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
-        lectureView.loadDataWithBaseURL("file:///android_asset/", htmlString.toString(), "text/html", "utf-8", null);
+
+        // accessibility: enable (best effort)
+        websettings.setJavaScriptEnabled(true);
+        try {
+            lectureView.setAccessibilityDelegate(new View.AccessibilityDelegate());
+        } catch (java.lang.NoClassDefFoundError e) {
+            Log.w(TAG, "Accessibility support is not available on this device");
+        }
+
+        //accessibility: drop the underline attributes, they break the screen readers
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(context.ACCESSIBILITY_SERVICE);
+        if(am.isEnabled()) {
+            reading = reading.replaceAll("</?u>", "");
+        }
+
+        // load content
+        lectureView.loadDataWithBaseURL("file:///android_asset/", reading, "text/html", "utf-8", null);
         lectureView.setBackgroundColor(0x00000000);
 
         // register listener
-        Context context = getActivity();
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.registerOnSharedPreferenceChangeListener(this);
 

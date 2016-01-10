@@ -19,6 +19,7 @@ import-summary.txt
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries
+/.idea/dictionaries
 .DS_Store
 /build
 app/build

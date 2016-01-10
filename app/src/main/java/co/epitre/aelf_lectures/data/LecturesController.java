@@ -258,7 +258,10 @@ public final class LecturesController {
                 .replace("R/ ", "<strong>R/&nbsp;</strong>")
                 .replace("V/ ", "<strong>V/&nbsp;</strong>")
                 // verse numbering
-                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span class=\"verse\">$1</span>")
+                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse\">$1</span>")
+                // inflexion fixes && accessibility
+                .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
+                .replaceAll("<sup", "<sup aria-hidden=true")
                 // spacing fixes
                 .replaceAll("\\s*-\\s*", "-")
                 .replaceAll(":\\s+(\\s+)", "")
@@ -295,7 +298,15 @@ public final class LecturesController {
                     .replace("</p></p>", "</p>")
                     .replace("<p>&nbsp;</p>", " ")
                     .replace("</p><p>", "<br/>");
+        // some psalms only uses line breaks which breaks semantic (so sad) and screen readers. Let's fix for screen readers.
+        } else if(!input.contains("<p") && input.contains("<br")) {
+            input = "<p>"+input.replace("<br><br>", "</p><p>")+"</p>";
         }
+
+        // accessibility: don't split lines in screen readers
+        input = input.replace("<br>", "<br aria-hidden=true />");
+
+        //Log.d(TAG, "commonTextSanitizer: "+input);
         return input;
     }
 
