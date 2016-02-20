@@ -143,6 +143,15 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         ".underline {" +
                         "    text-decoration: underline;" +
                         "}" +
+                        // indent line when verse is too long to fit on the screen
+                        ".verse-v2 {" +
+                        "   margin-left: -45px;" +
+                        "}" +
+                        "line {" +
+                        "   display: block;" +
+                        "   padding-left: 15px;" +
+                        "   text-indent: -15px;" +
+                        "}" +
                         "</style>" +
                     "</head>" +
                     "<body>");
@@ -166,10 +175,13 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
             Log.w(TAG, "Accessibility support is not available on this device");
         }
 
-        //accessibility: drop the underline attributes, they break the screen readers
+        //accessibility: drop the underline attributes && line wrapper fixes, they break the screen readers
         AccessibilityManager am = (AccessibilityManager) context.getSystemService(context.ACCESSIBILITY_SERVICE);
         if(am.isEnabled()) {
-            reading = reading.replaceAll("</?u>", "");
+            reading = reading.replaceAll("</?u>", "")
+                             // FIXME: what do people prefer ? Line by line or § by § ?
+                             .replaceAll("</line><line>", "<br aria-hidden=true />")
+                             .replaceAll("</?line>", "");
         }
 
         // load content

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -251,14 +253,14 @@ public final class LecturesController {
                 // remove leading line breaks (cf Lectures.Repons)
                 .replaceAll("^(<br\\s*/>)*", "")
                 // R/, V/ formating
-                .replace("</p></font></p>", "</font></p>\n")
+                .replace("</p></font></p>", "</font></p>")
                 .replace("R/ <p>", "R/ ")
                 .replace("V/ <p>", "V/ ")
                 .replace(", R/", "<br/>R/") // special case for lectures office introduction. *sights*
                 .replace("R/ ", "<strong>R/&nbsp;</strong>")
                 .replace("V/ ", "<strong>V/&nbsp;</strong>")
                 // verse numbering
-                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse\">$1</span>")
+                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
                 // inflexion fixes && accessibility
                 .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
                 .replaceAll("<sup", "<sup aria-hidden=true")
@@ -266,12 +268,15 @@ public final class LecturesController {
                 .replaceAll("\\s*-\\s*", "-")
                 .replaceAll(":\\s+(\\s+)", "")
                 .replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
-                // ensure punctuation has required spaces
+                // ensure punctuation/inflexions have required spaces
                 .replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
+                .replaceAll("\\s*(<sup)", "&nbsp;$1")
                 // non adjacent semicolon
                 .replaceAll("\\s+;\\s*", "&#x202f;; ")
                 // adjacent semicolon NOT from entities
                 .replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
+                // Mixing nbsp and regular spaces is a non-sense
+                .replaceAll("\\s*&nbsp;\\s*", "&nbsp")
                 // fix suddenly smaller text in readings
                 .replace("size=\"1\"", "")
                 .replace("size=\"2\"", "")
@@ -285,6 +290,10 @@ public final class LecturesController {
                 // clean references
                 .replaceAll("<small><i>\\s*\\((cf.)?\\s*", "<small><i>— ")
                 .replaceAll("\\s*\\)</i></small>", "</i></small>")
+                // empty/nested §
+                .replaceAll("<p>\\s*</p>", "")
+                .replace("<p><p>", "<p>")
+                .replace("</p></p>", "</p>")
                 // grrrr
                 .replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
                 // ensure quotes have required spaces
@@ -294,8 +303,6 @@ public final class LecturesController {
         // Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
         if(input.contains("<p>&nbsp;</p>")) {
             input = input
-                    .replace("<p><p>", "<p>")
-                    .replace("</p></p>", "</p>")
                     .replace("<p>&nbsp;</p>", " ")
                     .replace("</p><p>", "<br/>");
         // some psalms only uses line breaks which breaks semantic (so sad) and screen readers. Let's fix for screen readers.
@@ -303,11 +310,43 @@ public final class LecturesController {
             input = "<p>"+input.replace("<br><br>", "</p><p>")+"</p>";
         }
 
-        // accessibility: don't split lines in screen readers
-        input = input.replace("<br>", "<br aria-hidden=true />");
+        // emulate "text-indent: 10px hanging each-line;" for psalms/cantique/hymns or looking like
+        boolean fix_line_wrap = false;
+        if(input.contains("class=\"verse")) {
+            fix_line_wrap = true;
+        } else {
+            // let's be smart: enable if we have a "good" <br> vs char ratio
+            int p_count = count_match(input, "<p>");
+            int br_count = count_match(input, "<br\\s*/?>");
+            //int rv_count = count_match(input, "[RV]/");
 
-        //Log.d(TAG, "commonTextSanitizer: "+input);
+            if (p_count > 0) {
+                int lines_per_strophes = (br_count + p_count) / p_count;
+                if (lines_per_strophes >= 2 && lines_per_strophes <= 8) {
+                    fix_line_wrap = true;
+                }
+            }
+        }
+
+        if(fix_line_wrap) {
+                input = input.replace("<p>", "<p><line>")
+                             .replace("</p>", "</line></p>")
+                             .replaceAll("<br\\s*/?>", "</line><line>");
+        } else {
+                input = input.replaceAll("<br\\s*/?>", "<br aria-hidden=true/>");
+        }
+
         return input;
+    }
+
+    private int count_match(String input, String search) {
+        int matches = 0;
+        Pattern pattern = Pattern.compile(search);
+        Matcher matcher = pattern.matcher(input);
+
+        while (matcher.find()) matches++;
+
+        return matches;
     }
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
