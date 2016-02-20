@@ -1,0 +1,23 @@
+# view res/layout/activity_lectures.xml #generated:13
+-keep class android.support.v4.view.PagerTabStrip { <init>(...); }
+
+# view res/layout/activity_lectures.xml #generated:1
+-keep class android.support.v4.view.ViewPager { <init>(...); }
+
+# view AndroidManifest.xml #generated:26
+-keep class co.epitre.aelf_lectures.LecturesActivity { <init>(...); }
+
+# view AndroidManifest.xml #generated:71
+-keep class co.epitre.aelf_lectures.accounts.GenericAccountService { <init>(...); }
+
+# view AndroidManifest.xml #generated:44
+-keep class co.epitre.aelf_lectures.sync.StubProvider { <init>(...); }
+
+# view AndroidManifest.xml #generated:52
+-keep class co.epitre.aelf_lectures.sync.SyncService { <init>(...); }
+
+# Fix bug on Samsung, Wiko (and other) devices running Android 4.2
+# See also: https://code.google.com/p/android/issues/detail?id=78377
+-keepattributes **
+-keep class !android.support.v7.view.menu.**,!android.support.design.internal.NavigationMenu,!android.support.design.internal.NavigationMenuPresenter,!android.support.design.internal.NavigationSubMenu,** {*;}
+
