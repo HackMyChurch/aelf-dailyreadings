@@ -135,6 +135,11 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "	font-size: 10px;" +
                         "	color: #"+col_red_hex+";" +
                         "}" +
+                        "sup {" + // inflections: do not affect line-height
+                        "   vertical-align: baseline;" +
+                        "   position: relative;" +
+                        "   top: -0.4em;" +
+                        "}" +
                         ".underline {" +
                         "    text-decoration: underline;" +
                         "}" +
