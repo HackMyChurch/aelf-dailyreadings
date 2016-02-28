@@ -36,6 +36,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     NotificationCompat.Builder mNotificationBuilder;
 
+    int mTodo;
+    int mDone;
+
     /**
      * Constructor. Obtains handle to content resolver for later use.
      */
@@ -73,8 +76,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     // code to display a sync notification
     // http://stackoverflow.com/questions/5061760/how-does-one-animate-the-android-sync-status-icon
-    private void showNotification(int max, int cur) {
-        mNotificationBuilder.setProgress(max, cur, false);
+    private void updateNotification() {
+        mNotificationBuilder.setProgress(mTodo, mDone, false);
         mNotificationManager.notify(SYNC_NOT_ID, mNotificationBuilder.build());
     }
 
@@ -88,6 +91,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if(mController.getLecturesFromCache(what, when) == null) {
             mController.getLecturesFromNetwork(what, when);
         }
+        mDone++;
+        updateNotification();
     }
 
     // Sync all readings for the day
@@ -136,8 +141,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         LecturesController controller = LecturesController.getInstance(this.getContext());
 
         // turn params into something usable
-        int todo = 1;
-        int done = 0;
+        int daysToSync = 0;
         // FIXME: -1 because 8 is Meta, which is always synced
         int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
         GregorianCalendar whenMax = new GregorianCalendar();
@@ -145,19 +149,22 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if(pDuree.equals("auj")) {
             // take tomorrow for free as well or we might be quite late if running at 23h50..
             whenMax.add(Calendar.DATE, 1);
-            todo += 1;
+            daysToSync += 1;
         } else if(pDuree.equals("auj-dim")) {
-            todo += 2;
+            daysToSync += 2;
         } else if(pDuree.equals("semaine")) {
             whenMax.add(Calendar.DATE, 7);
-            todo += 7;
+            daysToSync += 7;
         } else if(pDuree.equals("mois")) {
             whenMax.add(Calendar.DATE, 31);
-            todo += 31;
+            daysToSync += 31;
         }
 
+        mTodo = daysToSync * (whatMax+1); // all readings + meta for all days
+        mDone = 0;
+
         // notify user
-        this.showNotification(todo, done);
+        updateNotification();
 
         // ** SYNC **
         try {
@@ -166,7 +173,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             do {
                 syncDay(when, whatMax);
                 when.add(Calendar.DATE, +1);
-                this.showNotification(todo, ++done);
             } while(when.before(whenMax));
 
             // finally, do we need to explicitly grab next Sunday ?
@@ -174,7 +180,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 when = new GregorianCalendar();
                 do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax);
-                this.showNotification(todo, ++done);
             }
         } catch (IOException e) {
             // Aelf servers down ? It appends ...
