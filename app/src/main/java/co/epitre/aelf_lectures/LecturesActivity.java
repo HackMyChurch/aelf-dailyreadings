@@ -385,6 +385,12 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     }
 
     @SuppressLint("SimpleDateFormat") // I know but currently French only
+    private void updateCalendarButtonLabel() {
+        MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
+        SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
+        calendarItem.setTitle("Bon "+actionDateFormat.format(whatwhen.when.getTime()));
+    }
+
     public void onCalendarDialogPicked(int year, int month, int day) {
         GregorianCalendar date = new GregorianCalendar(year, month, day);
 
@@ -399,9 +405,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         new DownloadXmlTask().execute(whatwhen);
 
         // Update to date button with "this.date"
-        MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
-        SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
-        calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
+        updateCalendarButtonLabel();
     }
 
     @Override
@@ -420,14 +424,10 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
         getMenuInflater().inflate(R.menu.lectures, menu);
-
-        // Update to date button with "this.date"
-        MenuItem calendarItem = menu.findItem(R.id.action_calendar);
-        SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
-        calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
-
         mMenu = menu;
 
+        // Update to date button with "this.date"
+        updateCalendarButtonLabel();
         return true;
     }
 
