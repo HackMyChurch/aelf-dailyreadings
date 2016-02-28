@@ -82,21 +82,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mNotificationManager.cancel(SYNC_NOT_ID);
     }
 
-    // max is either
-    //  - 1 --> messe(0) && metas (8)
-    //  - len(offices)
+    // Sync one reading for the day
+    private void syncReading(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
+        // Load from network, if not in cache
+        if(mController.getLecturesFromCache(what, when) == null) {
+            mController.getLecturesFromNetwork(what, when);
+        }
+    }
+
+    // Sync all readings for the day
     private void syncDay(GregorianCalendar when, int max) throws IOException {
-        /*if(max == 1) { // FIXME: temporarily disable meta sync
-            // that's terrible code... Should use a list of items to sync and changing the IDs has terrible side effects...
-            // but at least we avoid doing it twice
-            mController.getLectures(LecturesController.WHAT.METAS, when, false);
-        }*/
+        syncReading(LecturesController.WHAT.METAS, when);
         while(max-- > 0) {
             LecturesController.WHAT what = LecturesController.WHAT.values()[max];
-            // make sure it is not in cache
-            if(mController.getLecturesFromCache(what, when) == null) {
-                mController.getLecturesFromNetwork(what, when);
-            }
+            syncReading(what, when);
         }
     }
 
@@ -139,7 +138,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // turn params into something usable
         int todo = 1;
         int done = 0;
-        int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1; // -1 --> FIXME: temporarily disable meta sync
+        // FIXME: -1 because 8 is Meta, which is always synced
+        int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
         GregorianCalendar whenMax = new GregorianCalendar();
 
         if(pDuree.equals("auj")) {
