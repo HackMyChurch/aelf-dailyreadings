@@ -388,7 +388,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     private void updateCalendarButtonLabel() {
         MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
         SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
-        calendarItem.setTitle("Bon "+actionDateFormat.format(whatwhen.when.getTime()));
+        calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
     }
 
     public void onCalendarDialogPicked(int year, int month, int day) {
