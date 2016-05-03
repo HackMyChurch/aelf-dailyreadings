@@ -19326,42 +19326,42 @@ co.epitre.aelf_lectures.LecturesActivity -> co.epitre.aelf_lectures.LecturesActi
     android.support.v7.app.ActionBar actionBar -> actionBar
     android.support.v4.view.ViewPager mViewPager -> mViewPager
     47:67:void <init>() -> <init>
-    95:214:void onCreate(android.os.Bundle) -> onCreate
-    218:239:long getLasySyncTime() -> getLasySyncTime
-    245:281:void prepare_fullscreen() -> prepare_fullscreen
-    284:299:boolean do_manual_sync() -> do_manual_sync
-    305:309:void onWindowFocusChanged(boolean) -> onWindowFocusChanged
-    312:314:boolean isSameDay(java.util.GregorianCalendar,java.util.GregorianCalendar) -> isSameDay
-    318:319:boolean isToday(java.util.GregorianCalendar) -> isToday
-    328:347:void onSaveInstanceState(android.os.Bundle) -> onSaveInstanceState
-    350:352:boolean onAbout(android.view.MenuItem) -> onAbout
-    356:358:boolean onSyncPref(android.view.MenuItem) -> onSyncPref
-    362:362:boolean onSyncDo(android.view.MenuItem) -> onSyncDo
-    366:373:boolean onRefresh(android.view.MenuItem) -> onRefresh
-    377:384:boolean onCalendar(android.view.MenuItem) -> onCalendar
-    389:392:void updateCalendarButtonLabel() -> updateCalendarButtonLabel
-    395:409:void onCalendarDialogPicked(int,int,int) -> onCalendarDialogPicked
-    414:419:boolean onNavigationItemSelected(int,long) -> onNavigationItemSelected
-    426:431:boolean onCreateOptionsMenu(android.view.Menu) -> onCreateOptionsMenu
-    436:448:boolean onOptionsItemSelected(android.view.MenuItem) -> onOptionsItemSelected
-    458:468:android.accounts.Account CreateSyncAccount(android.content.Context) -> CreateSyncAccount
-    473:486:void setLoading(boolean) -> setLoading
+    95:215:void onCreate(android.os.Bundle) -> onCreate
+    220:241:long getLasySyncTime() -> getLasySyncTime
+    247:283:void prepare_fullscreen() -> prepare_fullscreen
+    286:301:boolean do_manual_sync() -> do_manual_sync
+    307:311:void onWindowFocusChanged(boolean) -> onWindowFocusChanged
+    314:316:boolean isSameDay(java.util.GregorianCalendar,java.util.GregorianCalendar) -> isSameDay
+    320:321:boolean isToday(java.util.GregorianCalendar) -> isToday
+    330:349:void onSaveInstanceState(android.os.Bundle) -> onSaveInstanceState
+    352:354:boolean onAbout(android.view.MenuItem) -> onAbout
+    358:360:boolean onSyncPref(android.view.MenuItem) -> onSyncPref
+    364:364:boolean onSyncDo(android.view.MenuItem) -> onSyncDo
+    368:375:boolean onRefresh(android.view.MenuItem) -> onRefresh
+    379:386:boolean onCalendar(android.view.MenuItem) -> onCalendar
+    391:394:void updateCalendarButtonLabel() -> updateCalendarButtonLabel
+    397:411:void onCalendarDialogPicked(int,int,int) -> onCalendarDialogPicked
+    416:421:boolean onNavigationItemSelected(int,long) -> onNavigationItemSelected
+    428:433:boolean onCreateOptionsMenu(android.view.Menu) -> onCreateOptionsMenu
+    438:450:boolean onOptionsItemSelected(android.view.MenuItem) -> onOptionsItemSelected
+    460:470:android.accounts.Account CreateSyncAccount(android.content.Context) -> CreateSyncAccount
+    475:488:void setLoading(boolean) -> setLoading
 co.epitre.aelf_lectures.LecturesActivity$1 -> co.epitre.aelf_lectures.LecturesActivity$1:
     boolean val$loading -> val$loading
     android.widget.ProgressBar val$loadingIndicator -> val$loadingIndicator
     android.widget.RelativeLayout val$loadingOverlay -> val$loadingOverlay
     co.epitre.aelf_lectures.LecturesActivity this$0 -> this$0
-    476:476:void <init>(co.epitre.aelf_lectures.LecturesActivity,boolean,android.widget.ProgressBar,android.widget.RelativeLayout) -> <init>
-    478:484:void run() -> run
+    478:478:void <init>(co.epitre.aelf_lectures.LecturesActivity,boolean,android.widget.ProgressBar,android.widget.RelativeLayout) -> <init>
+    480:486:void run() -> run
 co.epitre.aelf_lectures.LecturesActivity$DownloadXmlTask -> co.epitre.aelf_lectures.LecturesActivity$DownloadXmlTask:
     co.epitre.aelf_lectures.LecturePagerAdapter mLecturesPager -> mLecturesPager
     co.epitre.aelf_lectures.LecturesActivity this$0 -> this$0
-    489:489:void <init>(co.epitre.aelf_lectures.LecturesActivity) -> <init>
-    494:513:java.util.List doInBackground(co.epitre.aelf_lectures.WhatWhen[]) -> doInBackground
-    522:544:void onPostExecute(java.util.List) -> onPostExecute
-    489:489:void onPostExecute(java.lang.Object) -> onPostExecute
-    489:489:java.lang.Object doInBackground(java.lang.Object[]) -> doInBackground
-    489:489:void <init>(co.epitre.aelf_lectures.LecturesActivity,co.epitre.aelf_lectures.LecturesActivity$1) -> <init>
+    491:491:void <init>(co.epitre.aelf_lectures.LecturesActivity) -> <init>
+    496:515:java.util.List doInBackground(co.epitre.aelf_lectures.WhatWhen[]) -> doInBackground
+    524:546:void onPostExecute(java.util.List) -> onPostExecute
+    491:491:void onPostExecute(java.lang.Object) -> onPostExecute
+    491:491:java.lang.Object doInBackground(java.lang.Object[]) -> doInBackground
+    491:491:void <init>(co.epitre.aelf_lectures.LecturesActivity,co.epitre.aelf_lectures.LecturesActivity$1) -> <init>
 co.epitre.aelf_lectures.R -> co.epitre.aelf_lectures.R:
     10:10:void <init>() -> <init>
 co.epitre.aelf_lectures.R$anim -> co.epitre.aelf_lectures.R$anim:
@@ -20717,15 +20717,17 @@ co.epitre.aelf_lectures.data.AelfCacheHelper -> co.epitre.aelf_lectures.data.Ael
     java.lang.String DB_NAME -> DB_NAME
     java.lang.String DB_TABLE_CREATE -> DB_TABLE_CREATE
     java.lang.String DB_TABLE_SET -> DB_TABLE_SET
-    37:38:void <init>(android.content.Context) -> <init>
-    45:48:long computeKey(java.util.GregorianCalendar) -> computeKey
-    55:66:boolean _execute_stmt(android.database.sqlite.SQLiteStatement,int) -> _execute_stmt
-    70:93:void store(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar,java.util.List) -> store
-    97:100:void truncateBefore(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar) -> truncateBefore
-    105:133:java.util.List load(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar) -> load
-    142:144:void createCache(android.database.sqlite.SQLiteDatabase,co.epitre.aelf_lectures.data.LecturesController$WHAT) -> createCache
-    148:151:void onCreate(android.database.sqlite.SQLiteDatabase) -> onCreate
-    155:158:void onUpgrade(android.database.sqlite.SQLiteDatabase,int,int) -> onUpgrade
+    java.text.SimpleDateFormat keyFormatter -> keyFormatter
+    40:41:void <init>(android.content.Context) -> <init>
+    49:49:java.lang.String computeKey(java.util.GregorianCalendar) -> computeKey
+    56:67:boolean _execute_stmt(android.database.sqlite.SQLiteStatement,int) -> _execute_stmt
+    71:94:void store(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar,java.util.List) -> store
+    98:101:void truncateBefore(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar) -> truncateBefore
+    106:134:java.util.List load(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar) -> load
+    143:145:void createCache(android.database.sqlite.SQLiteDatabase,co.epitre.aelf_lectures.data.LecturesController$WHAT) -> createCache
+    149:152:void onCreate(android.database.sqlite.SQLiteDatabase) -> onCreate
+    157:160:void onUpgrade(android.database.sqlite.SQLiteDatabase,int,int) -> onUpgrade
+    35:35:void <clinit>() -> <clinit>
 co.epitre.aelf_lectures.data.Credentials -> co.epitre.aelf_lectures.data.Credentials:
     java.lang.String API_ENDPOINT -> API_ENDPOINT
     java.lang.String API_KEY_MESSE -> API_KEY_MESSE
@@ -20842,7 +20844,7 @@ co.epitre.aelf_lectures.sync.SyncAdapter -> co.epitre.aelf_lectures.sync.SyncAda
     85:86:void cancelNotification() -> cancelNotification
     91:96:void syncReading(co.epitre.aelf_lectures.data.LecturesController$WHAT,java.util.GregorianCalendar) -> syncReading
     100:105:void syncDay(java.util.GregorianCalendar,int) -> syncDay
-    121:204:void onPerformSync(android.accounts.Account,android.os.Bundle,java.lang.String,android.content.ContentProviderClient,android.content.SyncResult) -> onPerformSync
+    121:206:void onPerformSync(android.accounts.Account,android.os.Bundle,java.lang.String,android.content.ContentProviderClient,android.content.SyncResult) -> onPerformSync
 co.epitre.aelf_lectures.sync.SyncService -> co.epitre.aelf_lectures.sync.SyncService:
     java.lang.String TAG -> TAG
     java.lang.Object sSyncAdapterLock -> sSyncAdapterLock

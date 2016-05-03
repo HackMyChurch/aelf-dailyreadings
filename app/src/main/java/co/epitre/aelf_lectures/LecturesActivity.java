@@ -112,7 +112,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
         // upgrade logic, primitive at the moment...
         if(savedVersion != currentVersion) {
-            if(savedVersion < 15) {
+            if(savedVersion < 19) {
                 // delete cache DB: needs to force regenerate
                 getApplicationContext().deleteDatabase("aelf_cache.db");
                 // regenerate, according to user settings
