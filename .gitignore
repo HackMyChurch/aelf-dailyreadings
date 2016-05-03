@@ -4,10 +4,11 @@ app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java
 *.apk
 *.class
 
-# Eclipse
+# Eclipse / Android stdio
 .settings
 gen/
 proguard/
+.idea/
 
 # Temp/build files
 *.swp
