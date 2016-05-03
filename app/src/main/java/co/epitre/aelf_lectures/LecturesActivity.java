@@ -203,6 +203,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
             // If the account has not been synced in a long time, fallback on "manual" trigger. This is an attempt
             // to solve Huawei y330 bug
+            // TODO: move last sync time to K/V store
             long last_sync = getLasySyncTime();
             long now = System.currentTimeMillis();
             long days = (now - last_sync) / (1000 * 3600 * 24);
@@ -214,6 +215,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     }
     
     private long getLasySyncTime() {
+        // TODO: move this value to K/V store
         // from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
         long result = 0;
         try {

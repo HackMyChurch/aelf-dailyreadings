@@ -6,10 +6,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -28,8 +29,10 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final int DB_VERSION = 2;
     private static final String DB_NAME = "aelf_cache.db";
 
-    private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (date INTEGER PRIMARY KEY, lectures BLOB)";
+    private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (date TEXT PRIMARY KEY, lectures BLOB)";
     private static final String DB_TABLE_SET = "INSERT OR REPLACE INTO `%s` VALUES (?,?)";
+
+    private static final SimpleDateFormat keyFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
     // TODO: prepare requests
 
@@ -41,11 +44,9 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
      * Api
      */
 
-    private long computeKey(GregorianCalendar when) {
-        return new GregorianCalendar(
-                when.get(Calendar.YEAR),
-                when.get(Calendar.MONTH),
-                when.get(Calendar.DAY_OF_MONTH)).getTimeInMillis();
+    @SuppressLint("SimpleDateFormat")
+    private String computeKey(GregorianCalendar when) {
+        return keyFormatter.format(when.getTime());
     }
     
     private boolean _execute_stmt(SQLiteStatement stmt, int max_retries) {
@@ -67,7 +68,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     public void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
-        long key  = computeKey(when);
+        String key  = computeKey(when);
         byte[] blob = null;
 
         // build blob
@@ -85,7 +86,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         // insert into the database
         String sql = String.format(DB_TABLE_SET, what);
         SQLiteStatement stmt = getWritableDatabase().compileStatement(sql);
-        stmt.bindLong(1, key);
+        stmt.bindString(1, key);
         stmt.bindBlob(2, blob);
 
         // Multiple attempts. On failure ignore. This is cache --> best effort
@@ -94,7 +95,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // cleaner helper method
     public void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
-        String key = Long.toString(computeKey(when));
+        String key = computeKey(when);
         SQLiteDatabase db = getWritableDatabase();
         db.delete(what.toString(), "`date` < ?", new String[] {key});
     }
@@ -102,7 +103,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
     public List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when) {
-        String key  = Long.toString(computeKey(when));
+        String key  = computeKey(when);
         byte[] blob = null;
 
         // load from db
@@ -152,6 +153,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // FIXME: how do I make sure all tables are always present ?
         if(oldVersion == 1) {
             createCache(db, LecturesController.WHAT.METAS);
         }

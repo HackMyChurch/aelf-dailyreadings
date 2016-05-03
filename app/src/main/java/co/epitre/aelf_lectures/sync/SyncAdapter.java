@@ -201,5 +201,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
         controller.truncateBefore(minConserv);
 
+        // TODO: persist last sync time
+
     }
 }
