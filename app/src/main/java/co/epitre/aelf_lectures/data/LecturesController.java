@@ -276,7 +276,7 @@ public final class LecturesController {
                 // adjacent semicolon NOT from entities
                 .replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
                 // Mixing nbsp and regular spaces is a non-sense
-                .replaceAll("\\s*&nbsp;\\s*", "&nbsp")
+                .replaceAll("\\s*&nbsp;\\s*", "&nbsp;")
                 // fix suddenly smaller text in readings
                 .replace("size=\"1\"", "")
                 .replace("size=\"2\"", "")
