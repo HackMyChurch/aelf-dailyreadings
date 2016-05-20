@@ -30,4 +30,25 @@
         android:entryValues="@array/pref_conserv_values"
         android:entries="@array/pref_conserv_title"
         android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>
+    <PreferenceCategory android:title="Contribuer" />
+    <Preference
+        android:title="Noter cette application" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="market://details?id=co.epitre.aelf_lectures" />
+    </Preference>
+    <Preference
+        android:title="Contact" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mailto:cathogeek@epitre.co?subject=Application AELF" />
+    </Preference>
+    <CheckBoxPreference
+        android:title="Participer aux tests (expert)"
+        android:summaryOn="@string/pref_contribute_beta_on"
+        android:key="pref_participate_beta" android:defaultValue="false"/>
+    <CheckBoxPreference
+        android:title="Désactiver le cache (expert)"
+        android:summaryOn="@string/pref_contribute_disable_cache_on"
+        android:key="pref_participate_nocache" android:defaultValue="false"/>
 </PreferenceScreen>

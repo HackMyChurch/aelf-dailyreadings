@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -16,8 +17,12 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
+
+import co.epitre.aelf_lectures.LecturesActivity;
 
 /**
  * Public data controller --> load either from cache, either from network
@@ -70,14 +75,18 @@ public final class LecturesController {
     private static final String TAG = "LectureController";
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
+    private SharedPreferences preference = null;
+
     private LecturesController(Context c) {
         super();
         cache = new AelfCacheHelper(c);
+        preference = PreferenceManager.getDefaultSharedPreferences(c);
+
     }
     public final static LecturesController getInstance(Context c) {
         if (LecturesController.instance == null) {
-           synchronized(LecturesController.class) {
-             if (LecturesController.instance == null) {
+            synchronized(LecturesController.class) {
+               if (LecturesController.instance == null) {
                  LecturesController.instance = new LecturesController(c);
              }
            }
@@ -143,6 +152,10 @@ public final class LecturesController {
     private boolean looksLikeError(List<LectureItem> lectures) {
         // does it look like an error message ? Only simple stupid heuristic for now.
         if(lectures.size() > 1) {
+            return false;
+        }
+
+        if(lectures.size() == 1 && !lectures.get(0).longTitle.contains("pas dans notre calendrier")) {
             return false;
         }
 
@@ -547,21 +560,35 @@ public final class LecturesController {
     // Attempts to load from network
     // throws IOException to allow for auto retry. Aelf servers are not that stable...
     private List<LectureItem> loadFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
-        InputStream in;
+        InputStream in = null;
         URL feedUrl;
 
         List<LectureItem> lectures = new ArrayList<LectureItem>();
 
-        // Attempts to load the feed
+        // Build feed URL
+        int version = preference.getInt("version", -1);
+        boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
+        boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
+
         try {
-            feedUrl = new URL(String.format(what.getUrl(), formater.format(when.getTime())));
-            in = feedUrl.openStream();
+            String url = String.format(what.getUrl()+"?version=%d", formater.format(when.getTime()), version);
+            if (pref_beta) {
+                url += "&beta=enabled";
+            }
+            feedUrl = new URL(url);
         } catch (MalformedURLException e) {
             return null;
         }
 
-        // Attempts to parse the feed
+        // Attempts to load and parse the feed
+        HttpURLConnection urlConnection = (HttpURLConnection) feedUrl.openConnection();
+
+        if (pref_nocache) {
+            urlConnection.setRequestProperty("x-aelf-nocache", "1");
+        }
+
         try {
+            in = urlConnection.getInputStream();
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             parser.setInput(in, null);
@@ -573,7 +600,8 @@ public final class LecturesController {
             return null;
         } finally {
             try {
-                in.close();
+                urlConnection.disconnect();
+                if(in!=null) in.close();
             } catch (IOException e) {
                 return null;
             }

@@ -56,5 +56,8 @@
         <item>toujours</item>
     </string-array>
     <string name="pref_conserv_def">semaine</string>
+
+    <string name="pref_contribute_beta_on">Participation bien notée. Merci !</string>
+    <string name="pref_contribute_disable_cache_on">Cache désactivé. La synchronisation sera plus lente que d\'habitude</string>
     
 </resources>

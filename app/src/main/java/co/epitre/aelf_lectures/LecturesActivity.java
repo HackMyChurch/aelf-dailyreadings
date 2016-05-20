@@ -11,6 +11,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -107,7 +108,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         currentVersion = packageInfo.versionCode;
 
         // load saved version, if any
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         savedVersion = settings.getInt("version", -1);
 
         // upgrade logic, primitive at the moment...
