@@ -3,16 +3,21 @@
 
     <!-- Taille de la police: def = normale (100%) -->
     <string-array name="pref_font_size_title">
+        <item>Très petite</item>
         <item>Petite</item>
         <item>Normale</item>
         <item>Grande</item>
+        <item>Plus grande</item>
         <item>Très grande</item>
     </string-array>
     <string-array name="pref_font_size_values">
-        <item>small</item>
+        <item>80</item>
+        <item>90</item>
         <item>normal</item>
-        <item>big</item>
-        <item>huge</item>
+        <item>110</item>
+        <item>120</item>
+        <item>150</item>
+        <item>small</item>
     </string-array>
     <string name="pref_font_size_def">normal</string>
     
