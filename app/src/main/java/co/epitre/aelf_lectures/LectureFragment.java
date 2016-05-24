@@ -55,17 +55,23 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         // set font size
         switch (fontSize) {
-            case "small":
-                websettings.setTextSize(TextSize.SMALLER);
+            case "80":
+                websettings.setTextZoom(80);
                 break;
-            case "big":
-                websettings.setTextSize(TextSize.LARGER);
+            case "90":
+                websettings.setTextZoom(90);
                 break;
-            case "huge":
-                websettings.setTextSize(TextSize.LARGEST);
+            case "110":
+                websettings.setTextZoom(110);
+                break;
+            case "120":
+                websettings.setTextZoom(120);
+                break;
+            case "150":
+                websettings.setTextZoom(150);
                 break;
             default:
-                websettings.setTextSize(TextSize.NORMAL);
+                websettings.setTextZoom(100);
         }
     }
 
