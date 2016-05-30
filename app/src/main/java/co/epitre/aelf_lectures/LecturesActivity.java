@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -30,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -112,8 +114,8 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         savedVersion = settings.getInt("version", -1);
 
         // upgrade logic, primitive at the moment...
-        if(savedVersion != currentVersion) {
-            if(savedVersion < 21) {
+        if (savedVersion != currentVersion) {
+            if (savedVersion < 21) {
                 // delete cache DB: needs to force regenerate
                 getApplicationContext().deleteDatabase("aelf_cache.db");
                 // regenerate, according to user settings
@@ -131,7 +133,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         try {
             // The way we do sync, we need at least Android 2.2
             // Android 2.1 is so old that it's not worth a workaround
-            if(android.os.Build.VERSION.SDK_INT >= 8) {
+            if (android.os.Build.VERSION.SDK_INT >= 8) {
                 mAccount = CreateSyncAccount(this);
             } else {
                 mAccount = null;
@@ -145,9 +147,45 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         // init the lecture controller
         lecturesCtrl = LecturesController.getInstance(this);
 
-        // need restore state ?
+        // Select where to go from here
         whatwhen = new WhatWhen();
-        if(savedInstanceState != null) {
+
+        Uri uri = this.getIntent().getData();
+        if (uri != null) {
+            // Launched from website
+            String path = uri.getPath();
+            String host = uri.getHost();
+
+            // TODO: somehow extract day ?
+            whatwhen.when = new GregorianCalendar();
+            whatwhen.today = true;
+            whatwhen.position = 0; // 1st lecture of the office
+
+            if (host.equals("mobile.aelf.org")) {
+                // Mobile version
+                if (path.startsWith("/mobile.php/liturgie-des-heures")) {
+                    // We don't know what was selected. Start some guess work \o/
+                    Calendar c = Calendar.getInstance();
+                    int hours = c.get(Calendar.HOUR);
+
+                    if (hours < 2) {
+                        // Cheat on day: load yesterday
+                        whatwhen.when.add(Calendar.DATE, -1);
+                        whatwhen.what = WHAT.COMPLIES;
+                    }
+                    else if (hours < 8) whatwhen.what = WHAT.LECTURES;
+                    else if (hours < 12) whatwhen.what = WHAT.LAUDES;
+                    else if (hours < 20) whatwhen.what = WHAT.VEPRES;
+                    else whatwhen.what = WHAT.COMPLIES;
+                } else {
+                    whatwhen.what = WHAT.MESSE;
+                }
+            } else {
+                // Desktop version
+                whatwhen.what = WHAT.MESSE;
+            }
+
+        } else if(savedInstanceState != null) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
             whatwhen.what = WHAT.values()[savedInstanceState.getInt("what")];
             whatwhen.position = savedInstanceState.getInt("position");
