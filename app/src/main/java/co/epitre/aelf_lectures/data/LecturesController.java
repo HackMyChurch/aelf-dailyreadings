@@ -166,7 +166,10 @@ public final class LecturesController {
         Empty,    // Initial. Do not commit
         Regular,  // post-process && commit
         Psaume,   // Merge Antienne + Psaume/Cantique/...
-        Pericope, // Merge Pericope + Repos + Verset
+        Pericope, // aka "Parole de Dieu"
+        Repons,   // usually comes right after the pericope, we'll want to merge them
+        Verse,    // verse needs to be inserted in preceding psaume, if any
+        Antienne, // This comes before the psaume, this will need to be buffered
         NeedFlush, // Force flush when item is known to be last of sequence
     }
 
@@ -383,23 +386,44 @@ public final class LecturesController {
 
             // compute new state
             if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
-                lectureIn.shortTitle.equalsIgnoreCase("lecture") ||
-                lectureIn.shortTitle.equalsIgnoreCase("repons") ||
-                lectureIn.shortTitle.equalsIgnoreCase("verset")) {
+                lectureIn.shortTitle.equalsIgnoreCase("lecture")) {
                 currentState = postProcessState.Pericope;
-            } else if(	lectureIn.longTitle.equalsIgnoreCase("antienne") ||
-                        lectureIn.longTitle.toLowerCase().startsWith("psaume") ||
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("repons")) {
+                currentState = postProcessState.Repons;
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("verset")) {
+                currentState = postProcessState.Verse;
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("antienne")) {
+                currentState = postProcessState.Antienne;
+            } else if ( lectureIn.longTitle.toLowerCase().startsWith("psaume") ||
                         lectureIn.longTitle.toLowerCase().startsWith("cantique")) {
                 currentState = postProcessState.Psaume;
             } else {
                 currentState = postProcessState.Regular;
             }
 
-            // state changed or Regular or NeedFlush ? Commit previous.
-            if(	previousState != postProcessState.Empty && (
-                previousState != currentState ||
-                previousState == postProcessState.NeedFlush ||
-                previousState == postProcessState.Regular)) {
+            // Do we need to flush ?
+            boolean needFlush = false;
+            if (previousState == postProcessState.Regular) {
+                // Regular text --> flush
+                needFlush = true;
+            } else if (previousState == postProcessState.NeedFlush) {
+                // Explicit request (will be removed)
+                needFlush = true;
+            } else if (previousState == postProcessState.Antienne && currentState == postProcessState.Psaume) {
+                // Antienne can be merged in psaume --> explicit false
+                needFlush = false;
+            } else if (previousState == postProcessState.Pericope && currentState == postProcessState.Repons) {
+                // Repons can be merged in Pericope --> explicit false
+                needFlush = false;
+            } else if (previousState == postProcessState.Psaume && currentState == postProcessState.Verse) {
+                // Verse can be merged in psaume --> explicit false
+                needFlush = false;
+            } else if (previousState != postProcessState.Empty && currentState != previousState) {
+                // State changed --> flush
+                needFlush = true;
+            }
+
+            if(	needFlush) {
                 cleaned.add(new LectureItem(
                         bufferTitle,
                         bufferDescription,
@@ -500,34 +524,31 @@ public final class LecturesController {
                 // TODO: exception ?
                 break;
             case Pericope:
-                if(lectureIn.shortTitle.equalsIgnoreCase("pericope") || lectureIn.shortTitle.equalsIgnoreCase("lecture")) {
-                    bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
-                    bufferCategory = lectureIn.category;
+                bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
+                bufferCategory = lectureIn.category;
+                bufferTitle = pagerTitle + " : " + lectureTitle;
+                break;
+            case Repons:
+            case Verse:
+                bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
+                bufferDescription = bufferDescription
+                        .replace("</blockquote><blockquote>", "")
+                        .replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
+                if(bufferTitle.equals("")) {
                     bufferTitle = pagerTitle + " : " + lectureTitle;
-                } else {
-                    bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
-                    bufferDescription = bufferDescription
-                            .replace("</blockquote><blockquote>", "")
-                            .replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
-                    if(bufferTitle.equals("")) {
-                        bufferTitle = pagerTitle + " : " + lectureTitle;
-                    }
+                }
+                break;
+            case Antienne:
+                currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
+                bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
+                if(bufferTitle.equals("")) {
+                    bufferTitle = pagerTitle + " : " + lectureTitle;
                 }
                 break;
             case Psaume:
-                if(lectureIn.longTitle.equalsIgnoreCase("antienne")) {
-                    currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
-                    bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
-                    if(bufferTitle.equals("")) {
-                        bufferTitle = pagerTitle + " : " + lectureTitle;
-                    }
-                } else { // Psaume|Cantique
-                    bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
-                    bufferCategory = lectureIn.category;
-                    bufferTitle = pagerTitle + " : " + lectureTitle;
-                    // force commit && buffer flush --> avoid to merge consecutives psaumes
-                    currentState = postProcessState.NeedFlush;
-                }
+                bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
+                bufferCategory = lectureIn.category;
+                bufferTitle = pagerTitle + " : " + lectureTitle;
                 break;
             case Regular:
                 bufferCategory = lectureIn.category;
