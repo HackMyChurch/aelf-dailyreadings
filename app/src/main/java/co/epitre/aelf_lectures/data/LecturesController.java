@@ -350,10 +350,12 @@ public final class LecturesController {
             int p_count = count_match(input, "<p>");
             int br_count = count_match(input, "<br\\s*/?>");
             //int rv_count = count_match(input, "[RV]/");
+            int char_count = input.length();
 
-            if (p_count > 0) {
-                int lines_per_strophes = (br_count + p_count) / p_count;
-                if (lines_per_strophes >= 2 && lines_per_strophes <= 8) {
+            // At least 2 lines
+            if ((p_count + br_count) > 1) {
+                int char_per_wrap = char_count/(br_count + p_count);
+                if (char_per_wrap < 120) {
                     fix_line_wrap = true;
                 }
             }
