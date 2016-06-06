@@ -152,6 +152,9 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "   padding-left: 25px;" +
                         "   text-indent: -25px;" +
                         "}" +
+                        "img {" +
+                        "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked
+                        "}" +
                         "</style>" +
                     "</head>" +
                     "<body>");
