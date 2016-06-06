@@ -317,7 +317,10 @@ public final class LecturesController {
                 // ensure quotes have required spaces
                 .replaceAll("\\s*(»|&raquo;)", "&nbsp;»")
                 .replaceAll("(«|&laquo;)\\s*", "«&nbsp;");
+        return input;
+    }
 
+    private String sanitizeBody(String input) {
         // Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
         if(input.contains("<p>&nbsp;</p>")) {
             input = input
@@ -326,6 +329,16 @@ public final class LecturesController {
         // some psalms only uses line breaks which breaks semantic (so sad) and screen readers. Let's fix for screen readers.
         } else if(!input.contains("<p") && input.contains("<br")) {
             input = "<p>"+input.replace("<br><br>", "</p><p>")+"</p>";
+        }
+
+        // Fix paragraph wrapping (sigh....)
+        if (!input.startsWith("<p")) {
+            if (input.contains("<p")) {
+                input = input.replaceFirst("<p", "</p><p");
+            } else {
+                input = input + "</p>";
+            }
+            input = "<p>" + input;
         }
 
         // emulate "text-indent: 10px hanging each-line;" for psalms/cantique/hymns or looking like
@@ -513,7 +526,7 @@ public final class LecturesController {
             pagerTitle = commonTextSanitizer(sanitizeTitleCapitalization(pagerTitle));
             lectureTitle = commonTextSanitizer(sanitizeTitleCapitalization(lectureTitle));
 
-            currentDescription = commonTextSanitizer(lectureIn.description);
+            currentDescription = sanitizeBody(commonTextSanitizer(lectureIn.description));
 
             // prepare reference, if any
             if(lectureReference != "") {

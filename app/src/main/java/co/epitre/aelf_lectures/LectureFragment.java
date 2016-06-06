@@ -125,6 +125,9 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
                         "	color: #"+col_red_hex+";" +
                         "} " +
+                        "font[color='#000000'] {" + // regular text
+                        "	color: #"+col_sepia_dark+";" +
+                        "} " +
                         ".verse {" + // psaume verse number
                         "	display: block;" +
                         "   float: left;" +
