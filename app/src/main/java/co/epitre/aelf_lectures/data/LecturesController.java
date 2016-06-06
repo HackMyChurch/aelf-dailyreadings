@@ -310,6 +310,8 @@ public final class LecturesController {
                 .replaceAll("<p>\\s*</p>", "")
                 .replace("<p><p>", "<p>")
                 .replace("</p></p>", "</p>")
+                // Some more typos
+                .replace("Eglise", "Église")
                 // grrrr
                 .replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
                 // ensure quotes have required spaces
