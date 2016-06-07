@@ -432,6 +432,12 @@ public final class LecturesController {
             } else if (previousState == postProcessState.Pericope && currentState == postProcessState.Repons) {
                 // Repons can be merged in Pericope --> explicit false
                 needFlush = false;
+            } else if (previousState == postProcessState.Pericope && currentState == postProcessState.Verse) {
+                // Verset can be merged in Pericope if after --> explicit false
+                needFlush = false;
+            } else if (previousState == postProcessState.Repons && currentState == postProcessState.Verse) {
+                // Verset can be merged in Repons if after (cf pericope --> repons --> verset) --> explicit false
+                needFlush = false;
             } else if (previousState == postProcessState.Psaume && currentState == postProcessState.Verse) {
                 // Verse can be merged in psaume --> explicit false
                 needFlush = false;
