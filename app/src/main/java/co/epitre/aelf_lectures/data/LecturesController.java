@@ -170,6 +170,8 @@ public final class LecturesController {
         Repons,   // usually comes right after the pericope, we'll want to merge them
         Verse,    // verse needs to be inserted in preceding psaume, if any
         Antienne, // This comes before the psaume, this will need to be buffered
+        Oraison,
+        Benediction,
         NeedFlush, // Force flush when item is known to be last of sequence
     }
 
@@ -411,6 +413,10 @@ public final class LecturesController {
                 currentState = postProcessState.Verse;
             } else if ( lectureIn.shortTitle.equalsIgnoreCase("antienne")) {
                 currentState = postProcessState.Antienne;
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("oraison")) {
+                currentState = postProcessState.Oraison;
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("bénédiction")) {
+                currentState = postProcessState.Benediction;
             } else if ( lectureIn.longTitle.toLowerCase().startsWith("psaume") ||
                         lectureIn.longTitle.toLowerCase().startsWith("cantique")) {
                 currentState = postProcessState.Psaume;
@@ -440,6 +446,9 @@ public final class LecturesController {
                 needFlush = false;
             } else if (previousState == postProcessState.Psaume && currentState == postProcessState.Verse) {
                 // Verse can be merged in psaume --> explicit false
+                needFlush = false;
+            } else if (previousState == postProcessState.Oraison && currentState == postProcessState.Benediction) {
+                // Benediction can be merged in Oraison
                 needFlush = false;
             } else if (previousState != postProcessState.Empty && currentState != previousState) {
                 // State changed --> flush
@@ -572,6 +581,17 @@ public final class LecturesController {
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
                 bufferCategory = lectureIn.category;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
+                break;
+            case Oraison:
+                bufferDescription = "<h3>Oraison</h3><div style=\"clear: both;\"></div>" + currentDescription;
+                bufferCategory = lectureIn.category;
+                bufferTitle = "Oraison";
+                break;
+            case Benediction:
+                bufferDescription = bufferDescription.replace("<h3>Oraison</h3>", "<h3>Oraison et bénédiction</h3>");
+                bufferDescription += currentDescription;
+                bufferCategory = lectureIn.category;
+                bufferTitle = "Oraison et bénédiction";
                 break;
             case Regular:
                 bufferCategory = lectureIn.category;
