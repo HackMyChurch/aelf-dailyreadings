@@ -353,9 +353,9 @@ public final class LecturesController {
             int char_count = input.length();
 
             // At least 2 lines
-            if ((p_count + br_count) > 1) {
-                int char_per_wrap = char_count/(br_count + p_count);
-                if (char_per_wrap < 120) {
+            if ((p_count + br_count) > 2) {
+                int char_per_wrap = char_count/(br_count + p_count - 1);
+                if (char_per_wrap < 100) {
                     fix_line_wrap = true;
                 }
             }
