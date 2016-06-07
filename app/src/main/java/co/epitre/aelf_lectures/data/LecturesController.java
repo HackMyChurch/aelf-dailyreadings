@@ -537,7 +537,7 @@ public final class LecturesController {
             currentDescription = sanitizeBody(commonTextSanitizer(lectureIn.description));
 
             // prepare reference, if any
-            if(lectureReference != "") {
+            if(!lectureReference.equals("")) {
                 lectureReference = "<small><i>— "+lectureReference+"</i></small>";
             }
 
