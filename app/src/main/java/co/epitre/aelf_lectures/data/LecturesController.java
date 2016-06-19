@@ -425,7 +425,8 @@ public final class LecturesController {
             }
 
             // Do we need to flush ?
-            boolean needFlush = false;
+            boolean needFlush = (previousState != postProcessState.Empty); // Unless first slide, flush by default
+
             if (previousState == postProcessState.Regular) {
                 // Regular text --> flush
                 needFlush = true;
@@ -450,9 +451,6 @@ public final class LecturesController {
             } else if (previousState == postProcessState.Oraison && currentState == postProcessState.Benediction) {
                 // Benediction can be merged in Oraison
                 needFlush = false;
-            } else if (previousState != postProcessState.Empty && currentState != previousState) {
-                // State changed --> flush
-                needFlush = true;
             }
 
             if(	needFlush) {
