@@ -22,8 +22,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
 
-import co.epitre.aelf_lectures.LecturesActivity;
-
 /**
  * Public data controller --> load either from cache, either from network
  */
@@ -32,18 +30,17 @@ public final class LecturesController {
     /**
      * "What to sync" constants
      */
-    private static final String API_ENDPOINT = Credentials.API_ENDPOINT;
 
     public enum WHAT {
-        MESSE   (0, "lectures_messe",    API_ENDPOINT+"/%s/"+Credentials.API_KEY_MESSE),
-        LECTURES(1, "lectures_lectures", API_ENDPOINT+"/%s/"+Credentials.API_KEY_LECTURES),
-        LAUDES  (2, "lectures_laudes",   API_ENDPOINT+"/%s/"+Credentials.API_KEY_LAUDES),
-        TIERCE  (3, "lectures_tierce",   API_ENDPOINT+"/%s/"+Credentials.API_KEY_TIERCE),
-        SEXTE   (4, "lectures_sexte",    API_ENDPOINT+"/%s/"+Credentials.API_KEY_SEXTE),
-        NONE    (5, "lectures_none",     API_ENDPOINT+"/%s/"+Credentials.API_KEY_NONE),
-        VEPRES  (6, "lectures_vepres",   API_ENDPOINT+"/%s/"+Credentials.API_KEY_VEPRES),
-        COMPLIES(7, "lectures_complies", API_ENDPOINT+"/%s/"+Credentials.API_KEY_COMPLIES),
-        METAS   (8, "lectures_metas",    API_ENDPOINT+"/%s/"+Credentials.API_KEY_METAS);
+        MESSE   (0, "lectures_messe",    "/%s/"+Credentials.API_KEY_MESSE),
+        LECTURES(1, "lectures_lectures", "/%s/"+Credentials.API_KEY_LECTURES),
+        LAUDES  (2, "lectures_laudes",   "/%s/"+Credentials.API_KEY_LAUDES),
+        TIERCE  (3, "lectures_tierce",   "/%s/"+Credentials.API_KEY_TIERCE),
+        SEXTE   (4, "lectures_sexte",    "/%s/"+Credentials.API_KEY_SEXTE),
+        NONE    (5, "lectures_none",     "/%s/"+Credentials.API_KEY_NONE),
+        VEPRES  (6, "lectures_vepres",   "/%s/"+Credentials.API_KEY_VEPRES),
+        COMPLIES(7, "lectures_complies", "/%s/"+Credentials.API_KEY_COMPLIES),
+        METAS   (8, "lectures_metas",    "/%s/"+Credentials.API_KEY_METAS);
 
         private String name = "";
         private String url = "";
@@ -55,8 +52,8 @@ public final class LecturesController {
             this.url = url;
         }
 
-        public String getUrl(){
-            return url;
+        public String getRelativeUrl() {
+            return Credentials.API_ENDPOINT+url;
         }
 
         public int getPosition(){
@@ -73,9 +70,9 @@ public final class LecturesController {
      * This class is a manager --> Singleton
      */
     private static final String TAG = "LectureController";
+    private SharedPreferences preference = null;
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
-    private SharedPreferences preference = null;
 
     private LecturesController(Context c) {
         super();
@@ -619,6 +616,16 @@ public final class LecturesController {
     // real work internal var
     private static final SimpleDateFormat formater = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
 
+    // Get Server URL. Supports developer mode where you want to run a server locally
+    private String getBasedUrl() {
+        return preference.getString("pref_participate_server", Credentials.API_ENDPOINT);
+    }
+
+    // Build final URL for an office
+    private String getUrl(WHAT what) {
+        return getBasedUrl()+what.getRelativeUrl();
+    }
+
     // Attempts to load from network
     // throws IOException to allow for auto retry. Aelf servers are not that stable...
     private List<LectureItem> loadFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
@@ -633,7 +640,7 @@ public final class LecturesController {
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
 
         try {
-            String url = String.format(what.getUrl()+"?version=%d", formater.format(when.getTime()), version);
+            String url = String.format(getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
             if (pref_beta) {
                 url += "&beta=enabled";
             }

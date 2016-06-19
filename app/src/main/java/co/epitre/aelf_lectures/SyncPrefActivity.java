@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.view.View;
@@ -14,6 +15,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
+    public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
 
     @SuppressWarnings("deprecation")
     @Override
@@ -26,6 +28,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_DUREE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_CONSERV);
+        onSharedPreferenceChanged(null, KEY_PREF_PARTICIPATE_SERVER);
     }
 
     @SuppressWarnings("deprecation")
@@ -52,6 +55,14 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             key.equals(KEY_PREF_SYNC_CONSERV)) {
             ListPreference pref = (ListPreference)findPreference(key);
             pref.setSummary(pref.getEntry());
+        } else if (key.equals(KEY_PREF_PARTICIPATE_SERVER)) {
+            EditTextPreference pref = (EditTextPreference)findPreference(key);
+            String server = pref.getText();
+            if (server.isEmpty()) {
+                pref.setSummary("Serveur par défaut (recommandé)");
+            } else {
+                pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
+            }
         }
         
         // called with null from the constructor

@@ -43,12 +43,22 @@
             android:action="android.intent.action.VIEW"
             android:data="mailto:cathogeek@epitre.co?subject=Application AELF" />
     </Preference>
-    <CheckBoxPreference
-        android:title="Participer aux tests (expert)"
-        android:summaryOn="@string/pref_contribute_beta_on"
-        android:key="pref_participate_beta" android:defaultValue="false"/>
-    <CheckBoxPreference
-        android:title="Désactiver le cache (expert)"
-        android:summaryOn="@string/pref_contribute_disable_cache_on"
-        android:key="pref_participate_nocache" android:defaultValue="false"/>
+
+    <PreferenceScreen
+        android:key="tester_preferencescreen"
+        android:title="Testeurs"
+        tools:context=".SyncPrefActivity">
+        <CheckBoxPreference
+            android:title="Participer aux tests"
+            android:summaryOn="@string/pref_contribute_beta_on"
+            android:key="pref_participate_beta" android:defaultValue="false"/>
+        <CheckBoxPreference
+            android:title="Désactiver le cache"
+            android:summaryOn="@string/pref_contribute_disable_cache_on"
+            android:key="pref_participate_nocache" android:defaultValue="false"/>
+        <EditTextPreference
+            android:title="Adresse du serveur"
+            android:key="pref_participate_server" android:defaultValue=""/>
+    </PreferenceScreen>
+
 </PreferenceScreen>
