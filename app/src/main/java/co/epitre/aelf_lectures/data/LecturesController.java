@@ -269,6 +269,7 @@ public final class LecturesController {
                 .replaceAll("^(<br\\s*/>)*", "")
                 // R/, V/ formating
                 .replace("</p></font></p>", "</font></p>")
+                .replaceAll("[.,!?:;]\\s*([R|V]/\\s*[A-Za-z0-9])", "<br/> $1") // Split lines...
                 .replaceAll("(?!\\s)([R|V])/", " $1/") // Ensure space before
                 .replaceAll("([R|V])/(?!\\s)", "$1/ ") // Ensure space after
                 .replaceAll("([R|V])/\\s*<p>", "$1/ ")
