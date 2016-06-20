@@ -269,11 +269,11 @@ public final class LecturesController {
                 .replaceAll("^(<br\\s*/>)*", "")
                 // R/, V/ formating
                 .replace("</p></font></p>", "</font></p>")
-                .replace("R/ <p>", "R/ ")
-                .replace("V/ <p>", "V/ ")
+                .replaceAll("(?!\\s)([R|V])/", " $1/") // Ensure space before
+                .replaceAll("([R|V])/(?!\\s)", "$1/ ") // Ensure space after
+                .replaceAll("([R|V])/\\s*<p>", "$1/ ")
                 .replace(", R/", "<br/>R/") // special case for lectures office introduction. *sights*
-                .replace("R/ ", "<strong>R/&nbsp;</strong>")
-                .replace("V/ ", "<strong>V/&nbsp;</strong>")
+                .replaceAll("([R|V])/ (?!(</font>)?\\s*(</p>|<br\\s*/?>))", " <strong>$1/&nbsp;</strong>")
                 // verse numbering
                 .replaceAll("(<font[-a-zA-Z0-9_\\s#=\"']*>[0-9]*.)&nbsp;", "$1") // For some reason, some verse numbers have an unsplitable space after the dot
                 .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
