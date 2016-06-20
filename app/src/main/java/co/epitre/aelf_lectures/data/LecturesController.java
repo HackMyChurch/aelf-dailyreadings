@@ -275,6 +275,7 @@ public final class LecturesController {
                 .replace("R/ ", "<strong>R/&nbsp;</strong>")
                 .replace("V/ ", "<strong>V/&nbsp;</strong>")
                 // verse numbering
+                .replaceAll("(<font[-a-zA-Z0-9_\\s#=\"']*>[0-9]*.)&nbsp;", "$1") // For some reason, some verse numbers have an unsplitable space after the dot
                 .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
                 // inflexion fixes && accessibility
                 .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
