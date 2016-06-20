@@ -256,7 +256,7 @@ public final class LecturesController {
     }
 
     private String commonTextSanitizer(String input) {
-        input = input
+        input = input.trim()
                 // drop F** MS Word Meta
                 .replaceAll("(?s)<!--.*-->", "")
                 // remove inline paragraph styling
@@ -317,6 +317,12 @@ public final class LecturesController {
                 // ensure quotes have required spaces
                 .replaceAll("\\s*(»|&raquo;)", "&nbsp;»")
                 .replaceAll("(«|&laquo;)\\s*", "«&nbsp;");
+        return input;
+    }
+
+    private String sanitizeForBlockQuote(String input) {
+        // Blockquotes are already a block --> drop leading <p> for now.
+        input = input.replaceAll("\\s*<p>(.*)</p>\\s*", "$1");
         return input;
     }
 
@@ -558,7 +564,7 @@ public final class LecturesController {
                 break;
             case Repons:
             case Verse:
-                bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
+                bufferDescription += "<blockquote>" + sanitizeForBlockQuote(currentDescription) + "</blockquote>";
                 bufferDescription = bufferDescription
                         .replace("</blockquote><blockquote>", "")
                         .replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
@@ -567,8 +573,7 @@ public final class LecturesController {
                 }
                 break;
             case Antienne:
-                currentDescription = currentDescription.replaceAll("^\\s*<p>", "");
-                bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> "+currentDescription+"</blockquote>";
+                bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> " + sanitizeForBlockQuote(currentDescription) + "</blockquote>";
                 if(bufferTitle.equals("")) {
                     bufferTitle = pagerTitle + " : " + lectureTitle;
                 }
