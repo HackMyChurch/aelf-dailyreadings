@@ -53,7 +53,7 @@ public final class LecturesController {
         }
 
         public String getRelativeUrl() {
-            return Credentials.API_ENDPOINT+url;
+            return url;
         }
 
         public int getPosition(){
