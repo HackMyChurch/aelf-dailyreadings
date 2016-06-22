@@ -625,7 +625,11 @@ public final class LecturesController {
 
     // Get Server URL. Supports developer mode where you want to run a server locally
     private String getBasedUrl() {
-        return preference.getString("pref_participate_server", Credentials.API_ENDPOINT);
+        String baseUrl = preference.getString("pref_participate_server", "");
+        if (baseUrl.equals("")) {
+            return Credentials.API_ENDPOINT;
+        }
+        return baseUrl;
     }
 
     // Build final URL for an office
