@@ -11,6 +11,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.AccessibilityDelegateCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
@@ -205,6 +207,27 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         {
             lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
         }
+
+
+        class MyPinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                Log.d("THIS IS A TEST", "PINCH! OUCH!");
+                return true;
+            }
+        }
+
+        final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new MyPinchListener());
+        lectureView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mScaleDetector.onTouchEvent(event);
+                return true;
+            }
+        });
+
+
+
 
         return rootView;
     }
