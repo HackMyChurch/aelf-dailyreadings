@@ -25,7 +25,7 @@
         <item>messe</item>
         <item>messe-offices</item>
     </string-array>
-    <string name="pref_lectures_def">messe</string>
+    <string name="pref_lectures_def">messe-offices</string>
 
     <!-- Durée de synchronisation: def = 1 Mois -->
     <string-array name="pref_duree_title">
