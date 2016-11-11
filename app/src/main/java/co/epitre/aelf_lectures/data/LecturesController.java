@@ -405,9 +405,6 @@ public final class LecturesController {
             String currentTitle = "";
             String currentDescription = "";
 
-            // ignore buggy/empty chunks
-            if(lectureIn.description.trim().equals("")) continue;
-
             // compute new state
             if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
                 lectureIn.shortTitle.equalsIgnoreCase("lecture")) {
@@ -547,6 +544,17 @@ public final class LecturesController {
             lectureTitle = commonTextSanitizer(sanitizeTitleCapitalization(lectureTitle));
 
             currentDescription = sanitizeBody(commonTextSanitizer(lectureIn.description));
+
+            // Insert note if the lecture is not available (AELF bug...)
+            if(lectureIn.description.trim().equals("")) {
+                if(!lectureReference.equals("")) {
+                    String link = "http://epitre.co/"+lectureReference.replace(" ", "");
+                    currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher la lecture... Peut être aurez vous plus de chance sur <a href=\""+link+"\">epitre.co</a> (Bible de Jérusalem)&nbsp;? Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                } else {
+                    currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher la lecture... Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                }
+            }
+
 
             // prepare reference, if any
             if(!lectureReference.equals("")) {
