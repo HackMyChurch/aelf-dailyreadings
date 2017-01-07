@@ -4,13 +4,6 @@
     android:title="Paramètres"
     android:key="pref_sync"
     tools:context=".SyncPrefActivity">
-    <PreferenceCategory android:title="Affichage" />
-    <ListPreference 
-        android:title="Taille des textes"
-        android:dialogTitle="Taille des textes"
-        android:entryValues="@array/pref_font_size_values"
-        android:entries="@array/pref_font_size_title"
-        android:key="pref_disp_font_size" android:defaultValue="@string/pref_font_size_def"/>
     <PreferenceCategory android:title="Mode hors connexion" />
     <ListPreference 
         android:title="Lectures à synchroniser"

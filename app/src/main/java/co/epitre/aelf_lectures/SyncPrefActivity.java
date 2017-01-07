@@ -24,7 +24,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         addPreferencesFromResource(R.xml.sync_preferences);
 
         // hacky hack, but does the job --> init summaries
-        onSharedPreferenceChanged(null, KEY_PREF_DISP_FONT_SIZE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_DUREE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_CONSERV);
@@ -49,8 +48,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // set summary
-        if (key.equals(KEY_PREF_DISP_FONT_SIZE) ||
-            key.equals(KEY_PREF_SYNC_LECTURES) ||
+        if (key.equals(KEY_PREF_SYNC_LECTURES) ||
             key.equals(KEY_PREF_SYNC_DUREE) ||
             key.equals(KEY_PREF_SYNC_CONSERV)) {
             ListPreference pref = (ListPreference)findPreference(key);

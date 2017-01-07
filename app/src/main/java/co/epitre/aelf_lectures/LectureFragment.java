@@ -52,22 +52,63 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         // load current zoom level
         Resources res = context.getResources();
-        String pDefFontSize = res.getString(R.string.pref_font_size_def);
-        String fontSize = preferences.getString(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, pDefFontSize);
+        int zoom = preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
+        setCurrentZoom(zoom);
+    }
 
-        // set font size
-        switch (fontSize) {
-            case "small":
-                websettings.setTextSize(TextSize.SMALLER);
-                break;
-            case "big":
-                websettings.setTextSize(TextSize.LARGER);
-                break;
-            case "huge":
-                websettings.setTextSize(TextSize.LARGEST);
-                break;
+
+    // Helper: get zoom as percent, even on older phones
+    protected int getCurrentZoom() {
+        if (websettings == null) {
+            return -1;
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= 14) {
+            return websettings.getTextZoom();
+        }
+
+        // Legacy
+        switch (websettings.getTextSize()) {
+            case SMALLEST:
+                return 50;
+            case SMALLER:
+                return 75;
+            case LARGER:
+                return 150;
+            case LARGEST:
+                return 200;
             default:
-                websettings.setTextSize(TextSize.NORMAL);
+                return 100;
+        }
+
+    }
+    // Helper: set zoom as percent, even on older phones
+    protected void setCurrentZoom(int zoom) {
+        if (websettings == null) {
+            return;
+        }
+
+        if (android.os.Build.VERSION.SDK_INT >= 14) {
+            websettings.setTextZoom(zoom);
+            return;
+        }
+
+        // Legacy
+        if (zoom <= 50) {
+            websettings.setTextSize(TextSize.SMALLEST);
+            return;
+        } else if (zoom <= 75) {
+            websettings.setTextSize(TextSize.SMALLER);
+            return;
+        } else if (zoom < 150) {
+            websettings.setTextSize(TextSize.NORMAL);
+            return;
+        } else if (zoom < 200) {
+            websettings.setTextSize(TextSize.LARGER);
+            return;
+        } else {
+            websettings.setTextSize(TextSize.LARGEST);
+            return;
         }
     }
 
@@ -208,26 +249,64 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
             lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
         }
 
+        class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+            private int initialScale;
+            private int newZoom;
 
-        class MyPinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
-                Log.d("THIS IS A TEST", "PINCH! OUCH!");
-                return true;
+                // Compute new zoom
+                float scale = detector.getScaleFactor();
+                newZoom = (int)(initialScale * scale);
+
+                // Minimum zoom is 100%. This helps keep something at least a little readable
+                // and intuitively reset to default zoom level.
+                if (newZoom < 100) {
+                    newZoom = 100;
+                }
+
+                // Apply zoom
+                Log.d(TAG, "pinch scaling factor: "+scale+"; new zoom: "+newZoom);
+                setCurrentZoom(newZoom);
+
+                // Do not restart scale factor to 1, until the user removed his fingers
+                return false;
+            }
+
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+                initialScale = getCurrentZoom();
+                return super.onScaleBegin(detector);
+            }
+
+            @Override
+            public void onScaleEnd(ScaleGestureDetector detector) {
+                // Save new scale preference
+                Context context = getActivity();
+                if(context == null) {
+                    return; // we're a dead object
+                }
+
+                // load current zoom level
+                Resources res = context.getResources();
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, newZoom);
+                editor.commit();
+
+                super.onScaleEnd(detector);
             }
         }
 
-        final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new MyPinchListener());
+        final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
         lectureView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 mScaleDetector.onTouchEvent(event);
-                return true;
+
+                // We do not want to override default behavior: that would break scroll
+                return false;
             }
         });
-
-
-
 
         return rootView;
     }

@@ -114,6 +114,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         savedVersion = settings.getInt("version", -1);
 
         // upgrade logic, primitive at the moment...
+        SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
             if (savedVersion < 22) {
                 // delete cache DB: needs to force regenerate
@@ -123,10 +124,30 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             }
 
             // update saved version
-            SharedPreferences.Editor editor = settings.edit();
             editor.putInt("version", currentVersion);
-            editor.commit();
         }
+
+        // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
+        try {
+            String fontSize = settings.getString(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, "normal");
+            int zoom = 100;
+            switch (fontSize) {
+                case "big":
+                    zoom = 150;
+                    break;
+                case "huge":
+                    zoom = 200;
+                    break;
+                default:
+                    // small is deprecated. Treat as "normal".
+                    zoom = 100;
+            }
+            editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, zoom);
+        } catch (ClassCastException e) {
+            // Ignore: already migrated :)
+        }
+
+        editor.commit();
         // ---- end upgrade
 
         // create dummy account for our background sync engine
