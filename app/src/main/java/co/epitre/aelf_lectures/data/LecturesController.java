@@ -547,11 +547,25 @@ public final class LecturesController {
 
             // Insert note if the lecture is not available (AELF bug...)
             if(lectureIn.description.trim().equals("")) {
-                if(!lectureReference.equals("")) {
-                    String link = "http://epitre.co/"+lectureReference.replace(" ", "");
-                    currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher la lecture... Peut être aurez vous plus de chance sur <a href=\""+link+"\">epitre.co</a> (Bible de Jérusalem)&nbsp;? Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                String name = null;
+
+                // What kind of reading is that ?
+                if(currentState == postProcessState.Pericope) {
+                    name = "cette lecture";
+                } else if(currentState == postProcessState.Psaume) {
+                    name = "ce psaume";
                 } else {
-                    currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher la lecture... Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                    currentState = postProcessState.Empty;
+                }
+
+                // If it is a major reading, recover
+                if (currentState != postProcessState.Empty) {
+                    if (!lectureReference.equals("")) {
+                        String link = "http://epitre.co/" + lectureReference.replace(" ", "");
+                        currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher "+name+"... Peut être aurez vous plus de chance sur <a href=\"" + link + "\">epitre.co</a> (Traduction liturgiqe, AELF)&nbsp;? Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                    } else {
+                        currentDescription = "<p>Oups... Il semble que nous n\'ayons pas réussis à afficher "+name+"... Nous ferons mieux la prochaine fois, promis&nbsp;!</p>";
+                    }
                 }
             }
 
