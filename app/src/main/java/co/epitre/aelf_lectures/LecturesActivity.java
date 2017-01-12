@@ -152,13 +152,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
         // create dummy account for our background sync engine
         try {
-            // The way we do sync, we need at least Android 2.2
-            // Android 2.1 is so old that it's not worth a workaround
-            if (android.os.Build.VERSION.SDK_INT >= 8) {
-                mAccount = CreateSyncAccount(this);
-            } else {
-                mAccount = null;
-            }
+            mAccount = CreateSyncAccount(this);
         } catch (SecurityException e) {
             // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
             Log.w(TAG, "Create/Get sync account was DENIED");
