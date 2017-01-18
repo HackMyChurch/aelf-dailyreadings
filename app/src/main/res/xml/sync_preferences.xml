@@ -22,7 +22,8 @@
         android:dialogTitle="Conserver les textes pendant"
         android:entryValues="@array/pref_conserv_values"
         android:entries="@array/pref_conserv_title"
-        android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>
+        android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>*
+
     <PreferenceCategory android:title="Contribuer" />
     <Preference
         android:title="Noter cette application" >
@@ -30,28 +31,49 @@
             android:action="android.intent.action.VIEW"
             android:data="market://details?id=co.epitre.aelf_lectures" />
     </Preference>
-    <Preference
-        android:title="Contact" >
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:data="mailto:cathogeek@epitre.co?subject=Application AELF" />
-    </Preference>
 
     <PreferenceScreen
         android:key="tester_preferencescreen"
         android:title="Testeurs"
         tools:context=".SyncPrefActivity">
+        <Preference
+            android:title="Devenir testeur de l'application" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://play.google.com/apps/testing/co.epitre.aelf_lectures" />
+        </Preference>
         <CheckBoxPreference
-            android:title="Participer aux tests"
+            android:title="Devenir testeur des lectures"
             android:summaryOn="@string/pref_contribute_beta_on"
+            android:summaryOff="@string/pref_contribute_beta_off"
             android:key="pref_participate_beta" android:defaultValue="false"/>
         <CheckBoxPreference
             android:title="Désactiver le cache"
             android:summaryOn="@string/pref_contribute_disable_cache_on"
+            android:summaryOff="@string/pref_contribute_disable_cache_off"
             android:key="pref_participate_nocache" android:defaultValue="false"/>
         <EditTextPreference
             android:title="Adresse du serveur"
             android:key="pref_participate_server" android:defaultValue=""/>
     </PreferenceScreen>
+    <Preference
+        android:title="Contribuer au code" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://github.com/HackMyChurch/aelf-dailyreadings" />
+    </Preference>
+    <PreferenceCategory android:title="Garder le contact" />
+    <Preference
+        android:title="Envoyer un e-mail au développeur" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="mailto:cathogeek@epitre.co?subject=Application AELF" />
+    </Preference>
+    <Preference
+        android:title="Suivre @AELF_officiel sur Twitter" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://twitter.com/AELF_officiel" />
+    </Preference>
 
 </PreferenceScreen>

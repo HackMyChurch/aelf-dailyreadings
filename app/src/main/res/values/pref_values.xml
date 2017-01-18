@@ -43,6 +43,8 @@
     <string name="pref_conserv_def">semaine</string>
 
     <string name="pref_contribute_beta_on">Participation bien enregistrée. Merci !</string>
-    <string name="pref_contribute_disable_cache_on">Cache désactivé. La synchronisation sera plus lente que d\'habitude</string>
+    <string name="pref_contribute_beta_off">Recevoir les nouvelles corrections de textes, amélioration typographiques, mises en forme...</string>
+    <string name="pref_contribute_disable_cache_on">Cache désactivé. La synchronisation sera plus lente que d\'habitude.</string>
+    <string name="pref_contribute_disable_cache_off">Désactiver le cache permet de voir les problèmes avant tout le monde. Ce n\'est probablement pas ce que vous voulez ;)</string>
     
 </resources>
