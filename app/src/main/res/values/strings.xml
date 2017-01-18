@@ -12,8 +12,16 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">Application \"AELF Lectures du jour\" version (#VERSION#) par @Catho_Geek.\n\
-Textes liturgiques reproduits avec l\'aimable autorisation d\'AELF (www.aelf.org). Tous droits réservés.</string>
+    <string name="dialog_about_content">
+        L\'application \"AELF Lectures du jour\" version #VERSION# est développée bénévolement par
+        cathogeek@epitre.co avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale pour la
+        Liturgie Francophone.
+
+        \n\nTextes liturgiques, logo et nom reproduits avec l\'aimable autorisation d\'AELF. Tous droits
+        réservés. AELF n\'est pas responsable de cette application.
+
+        \n\nPour plus d\'informations sur cette application, contactez cathogeek@epitre.co.
+    </string>
 	
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
