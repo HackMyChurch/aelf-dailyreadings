@@ -6,7 +6,9 @@ import java.util.GregorianCalendar;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.os.Build;
 import android.support.v4.app.DialogFragment;
+import android.support.v7.view.ContextThemeWrapper;
 import android.text.format.DateFormat;
 import android.app.DatePickerDialog;
 import android.content.Context;
@@ -62,11 +64,24 @@ public class DatePickerFragment extends DialogFragment
         int day = c.get(Calendar.DAY_OF_MONTH);
 
         // Create a new instance of DatePickerDialog and return it
-        dialog = new DatePickerDialog(getActivity(), this, year, month, day);
+        Context context = getActivity();
+        if (isBrokenSamsungDevice()) {
+            context = new ContextThemeWrapper(context, android.R.style.Theme_Holo_Light_Dialog);
+        }
+        dialog = new DatePickerDialog(context, this, year, month, day);
         dialog.setCancelable(true);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);
         dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
         return dialog;
+    }
+
+    private static boolean isBrokenSamsungDevice() {
+        // Samsung devices running 5.0 / 5.1 with talkback are broken when selecting a date. Yeah !
+        // http://stackoverflow.com/questions/28618405/datepicker-crashes-on-my-device-when-clicked-with-personal-app
+        return (Build.MANUFACTURER.equalsIgnoreCase("samsung")
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1
+                );
     }
 
     @Override
