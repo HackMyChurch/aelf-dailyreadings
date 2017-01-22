@@ -4,6 +4,12 @@
     android:title="Paramètres"
     android:key="pref_sync"
     tools:context=".SyncPrefActivity">
+    <PreferenceCategory android:title="Affichage" />
+    <Preference
+        android:title="Taille des textes"
+        android:selectable="false"
+        android:summary="Bonne nouvelle : vous pouvez à présent agrandir les textes autant que vous le souhaitez avec vos doigts !"
+        android:key="pref_static_field_key" />
     <PreferenceCategory android:title="Mode hors connexion" />
     <ListPreference 
         android:title="Lectures à synchroniser"
