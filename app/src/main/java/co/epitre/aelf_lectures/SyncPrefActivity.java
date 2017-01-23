@@ -84,12 +84,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         // Android 4.0+: make navigation bar 'discret' ('dots' instead of icons)
         int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
-        // Android 4.4+: hide navigation bar, make it accessible via edge scroll
-        if (android.os.Build.VERSION.SDK_INT >= 19) {
-            uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    |  View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }
-
         // apply settings
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
