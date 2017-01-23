@@ -676,6 +676,7 @@ public final class LecturesController {
             String url = String.format(getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
             if (pref_beta) {
                 url += "&beta=enabled";
+                url = url.replaceAll("^(https?://)", "$1beta.");
             }
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
@@ -684,6 +685,7 @@ public final class LecturesController {
 
         // Attempts to load and parse the feed
         HttpURLConnection urlConnection = (HttpURLConnection) feedUrl.openConnection();
+        urlConnection.setConnectTimeout(10);
 
         if (pref_nocache) {
             urlConnection.setRequestProperty("x-aelf-nocache", "1");
