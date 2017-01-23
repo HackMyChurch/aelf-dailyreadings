@@ -246,7 +246,14 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         if(android.os.Build.VERSION.SDK_INT > 11)
         {
-            lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+            // Attempt to workaround a strange native crash:
+            // http://stackoverflow.com/questions/19614526/android-crash-system-lib-libhwui-so
+            lectureView.post(new Runnable() {
+                @Override
+                public void run () {
+                    lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+                }
+            });
         }
 
         class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
