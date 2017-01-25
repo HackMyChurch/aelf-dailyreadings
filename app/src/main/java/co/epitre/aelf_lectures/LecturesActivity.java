@@ -167,38 +167,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
         Uri uri = this.getIntent().getData();
         if (uri != null) {
-            // Launched from website
-            String path = uri.getPath();
-            String host = uri.getHost();
-
-            // TODO: somehow extract day ?
-            whatwhen.when = new GregorianCalendar();
-            whatwhen.today = true;
-            whatwhen.position = 0; // 1st lecture of the office
-
-            if (host.equals("mobile.aelf.org")) {
-                // Mobile version
-                if (path.startsWith("/mobile.php/liturgie-des-heures")) {
-                    // We don't know what was selected. Start some guess work \o/
-                    Calendar c = Calendar.getInstance();
-                    int hours = c.get(Calendar.HOUR);
-
-                    if (hours < 2) {
-                        // Cheat on day: load yesterday
-                        whatwhen.when.add(Calendar.DATE, -1);
-                        whatwhen.what = WHAT.COMPLIES;
-                    }
-                    else if (hours < 8) whatwhen.what = WHAT.LECTURES;
-                    else if (hours < 12) whatwhen.what = WHAT.LAUDES;
-                    else if (hours < 20) whatwhen.what = WHAT.VEPRES;
-                    else whatwhen.what = WHAT.COMPLIES;
-                } else {
-                    whatwhen.what = WHAT.MESSE;
-                }
-            } else {
-                // Desktop version
-                whatwhen.what = WHAT.MESSE;
-            }
+            parseIntentUri(whatwhen, uri);
 
         } else if(savedInstanceState != null) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
@@ -265,6 +234,61 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
                 do_manual_sync();
             }
+        }
+    }
+
+    private void parseIntentUri(WhatWhen whatwhen, Uri uri) {
+        // Parse intent URI, update whatwhen in place
+        // http://www.aelf.org/                                        --> messe du jour, 1ère lecture
+        // http://www.aelf.org/#messe1_lecture4                        --> messe du jour, lecture N
+        // http://www.aelf.org/2017-01-27/romain/messe                 --> messe du 2017-01-27, calendrier romain
+        // http://www.aelf.org/2017-01-27/romain/messe#messe1_lecture3 --> messe du 2017-01-27, calendrier romain, lecture N
+        // http://www.aelf.org/2017-01-27/romain/complies              --> office des complies du 2017-01-27
+        // http://www.aelf.org/2017-01-27/romain/complies#office_psaume1 --> office_TYPE[N]
+
+        String path = uri.getPath();
+        String host = uri.getHost();
+        String fragment = uri.getFragment();
+
+        whatwhen.when = new GregorianCalendar();
+        whatwhen.today = true;
+        whatwhen.position = 0; // 1st lecture of the office
+
+        if (host.equals("www.aelf.org")) {
+            // AELF Website
+            String[] chunks = path.split("/");
+
+            // Attempt to parse date
+            if (chunks.length >= 2) {
+                // Doe it really look like a date ?
+                String potential_date = chunks[1];
+                if (potential_date.matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
+                    String[] date_chunks = potential_date.split("-");
+                    whatwhen.when.set(
+                            Integer.parseInt(date_chunks[0]),
+                            Integer.parseInt(date_chunks[1]) - 1,
+                            Integer.parseInt(date_chunks[2])
+                    );
+                } else {
+                    Log.w(TAG, "String '"+potential_date+"' should look like a date, but it does not!");
+                }
+            }
+
+            // Attempt to parse office
+            if (chunks.length >= 4) {
+                String office_name = chunks[3].toUpperCase();
+                try {
+                    whatwhen.what = WHAT.valueOf(office_name);
+                } catch (IllegalArgumentException e) {
+                    Log.w(TAG, "Failed to parse office '"+chunks[2]+"', falling back to messe", e);
+                    whatwhen.what = WHAT.MESSE;
+                }
+            }
+
+            // TODO: Attempt to parse anchor to go to the right slide ?
+        } else {
+            // Unknown domain ?!?
+            whatwhen.what = WHAT.MESSE;
         }
     }
     
