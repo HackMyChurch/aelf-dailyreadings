@@ -680,6 +680,7 @@ public final class LecturesController {
             }
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
+            Log.e(TAG, "Failed to parse URL", e);
             return null;
         }
 
@@ -698,14 +699,17 @@ public final class LecturesController {
             parser.nextTag();
             readFeed(parser, lectures);
         } catch (XmlPullParserException e) {
+            Log.e(TAG, "Failed to parse API result", e);
             return null;
         } catch (IOException e) {
+            Log.e(TAG, "Failed to read from API", e);
             return null;
         } finally {
             try {
                 urlConnection.disconnect();
                 if(in!=null) in.close();
             } catch (IOException e) {
+                Log.e(TAG, "Failed to close API connection", e);
                 return null;
             }
         }
