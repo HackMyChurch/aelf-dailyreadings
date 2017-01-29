@@ -245,11 +245,15 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         // http://www.aelf.org/2017-01-27/romain/messe#messe1_lecture3 --> messe du 2017-01-27, calendrier romain, lecture N
         // http://www.aelf.org/2017-01-27/romain/complies              --> office des complies du 2017-01-27
         // http://www.aelf.org/2017-01-27/romain/complies#office_psaume1 --> office_TYPE[N]
+        // Legacy shortcut URLs:
+        // https://www.aelf.org/office-[NOM]
 
         String path = uri.getPath();
         String host = uri.getHost();
         String fragment = uri.getFragment();
 
+        // Set default values
+        whatwhen.what = WHAT.MESSE;
         whatwhen.when = new GregorianCalendar();
         whatwhen.today = true;
         whatwhen.position = 0; // 1st lecture of the office
@@ -258,37 +262,44 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             // AELF Website
             String[] chunks = path.split("/");
 
-            // Attempt to parse date
-            if (chunks.length >= 2) {
-                // Doe it really look like a date ?
-                String potential_date = chunks[1];
-                if (potential_date.matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
-                    String[] date_chunks = potential_date.split("-");
-                    whatwhen.when.set(
-                            Integer.parseInt(date_chunks[0]),
-                            Integer.parseInt(date_chunks[1]) - 1,
-                            Integer.parseInt(date_chunks[2])
-                    );
-                } else {
-                    Log.w(TAG, "String '"+potential_date+"' should look like a date, but it does not!");
-                }
-            }
-
-            // Attempt to parse office
-            if (chunks.length >= 4) {
-                String office_name = chunks[3].toUpperCase();
+            if (chunks.length == 2 && chunks[1].startsWith("office-")) {
+                // Attempt to parse a legacy URL
+                String office_name = chunks[1].substring(7).toUpperCase();
                 try {
                     whatwhen.what = WHAT.valueOf(office_name);
                 } catch (IllegalArgumentException e) {
-                    Log.w(TAG, "Failed to parse office '"+chunks[2]+"', falling back to messe", e);
+                    Log.w(TAG, "Failed to parse office '" + chunks[2] + "', falling back to messe", e);
                     whatwhen.what = WHAT.MESSE;
                 }
-            }
+            } else {
+                // Attempt to parse NEW url format, starting with a date
+                if (chunks.length >= 2) {
+                    // Does it look like a date ?
+                    String potential_date = chunks[1];
+                    if (potential_date.matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
+                        String[] date_chunks = potential_date.split("-");
+                        whatwhen.when.set(
+                                Integer.parseInt(date_chunks[0]),
+                                Integer.parseInt(date_chunks[1]) - 1,
+                                Integer.parseInt(date_chunks[2])
+                        );
+                    } else {
+                        Log.w(TAG, "String '" + potential_date + "' should look like a date, but it does not!");
+                    }
+                }
 
-            // TODO: Attempt to parse anchor to go to the right slide ?
-        } else {
-            // Unknown domain ?!?
-            whatwhen.what = WHAT.MESSE;
+                // Attempt to parse office
+                if (chunks.length >= 4) {
+                    String office_name = chunks[3].toUpperCase();
+                    try {
+                        whatwhen.what = WHAT.valueOf(office_name);
+                    } catch (IllegalArgumentException e) {
+                        Log.w(TAG, "Failed to parse office '" + chunks[2] + "', falling back to messe", e);
+                        whatwhen.what = WHAT.MESSE;
+                    }
+                }
+                // TODO: Attempt to parse anchor to go to the right slide ?
+            }
         }
     }
     
