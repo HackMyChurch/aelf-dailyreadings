@@ -673,7 +673,7 @@ public final class LecturesController {
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
 
         try {
-            String url = String.format(getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
+            String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
             if (pref_beta) {
                 url += "&beta=enabled";
                 url = url.replaceAll("^(https?://)", "$1beta.");
