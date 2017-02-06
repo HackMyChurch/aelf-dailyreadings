@@ -31,6 +31,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     public static final String ARG_TEXT_HTML = "text html";
     protected WebView lectureView;
     protected WebSettings websettings;
+
     SharedPreferences preferences;
 
     public LectureFragment() {
@@ -288,6 +289,8 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
             @Override
             public void onScaleEnd(ScaleGestureDetector detector) {
+                super.onScaleEnd(detector);
+
                 // Save new scale preference
                 Context context = getActivity();
                 if(context == null) {
@@ -299,19 +302,18 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, newZoom);
                 editor.commit();
-
-                super.onScaleEnd(detector);
             }
         }
 
         final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
+        mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
+        mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
+
         lectureView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 mScaleDetector.onTouchEvent(event);
-
-                // We do not want to override default behavior: that would break scroll
-                return false;
+                return mScaleDetector.isInProgress();
             }
         });
 
