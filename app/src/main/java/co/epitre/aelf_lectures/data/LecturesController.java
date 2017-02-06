@@ -647,9 +647,20 @@ public final class LecturesController {
 
     // Get Server URL. Supports developer mode where you want to run a server locally
     private String getBasedUrl() {
+        boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
         String baseUrl = preference.getString("pref_participate_server", "");
-        if (baseUrl.equals("")) {
-            return Credentials.API_ENDPOINT;
+
+        // Manual overload: stop here
+        if (!baseUrl.equals("")) {
+            return baseUrl;
+        }
+
+        // Load default URL
+        baseUrl = Credentials.API_ENDPOINT;
+
+        // If applicable, switch to beta
+        if (pref_beta) {
+            baseUrl = baseUrl.replaceAll("^(https?://)", "$1beta.");
         }
         return baseUrl;
     }
@@ -669,15 +680,10 @@ public final class LecturesController {
 
         // Build feed URL
         int version = preference.getInt("version", -1);
-        boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
 
         try {
             String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
-            if (pref_beta) {
-                url += "&beta=enabled";
-                url = url.replaceAll("^(https?://)", "$1beta.");
-            }
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Failed to parse URL", e);
