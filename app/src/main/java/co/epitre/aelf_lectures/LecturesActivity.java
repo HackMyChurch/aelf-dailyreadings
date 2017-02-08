@@ -13,12 +13,16 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GestureDetectorCompat;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
@@ -65,6 +69,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     LecturesController lecturesCtrl = null;
     WhatWhen whatwhen;
     Menu mMenu;
+
+    /**
+     * Gesture detector. Detect single taps that do not look like a dismiss to toggle
+     * full screen mode.
+     */
+    private boolean isFullScreen = true;
+    private boolean isInLongPress = false;
+    private GestureDetectorCompat mGestureDetector;
 
     List<LectureItem> networkError = new ArrayList<LectureItem>(1);
     List<LectureItem> emptyOfficeError = new ArrayList<LectureItem>(1);
@@ -235,6 +247,9 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 do_manual_sync();
             }
         }
+
+        // Install gesture detector
+        mGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
     }
 
     private void parseIntentUri(WhatWhen whatwhen, Uri uri) {
@@ -332,43 +347,27 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     
     @SuppressLint("NewApi")
     public void prepare_fullscreen() {
-        // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                             WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        if (android.os.Build.VERSION.SDK_INT < 14) // 4.0 min
+        // Android < 4.0 --> skip most logic
+        if (android.os.Build.VERSION.SDK_INT < 14) {
+            // Hide status (top) bar. Navigation bar (> 4.0) still visible.
+            getWindow().setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+            );
             return;
-
-        // Android 4.0+: make navigation bar 'discret' ('dots' instead of icons)
-        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
-
-        // for android.os.Build.VERSION.SDK_INT >= 16 (4.1)
-        // we should explore
-        //  - navbar workflow.    --> hide with View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        //  - actionbar workflow. --> hide with View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        // BUT: navbar shows automatically and dont hide :(
-        //      actionbar does not show. (actionBar.hide/show();)
-        // an idea is to deal with scroll events on the UI.
-
-        // Android 4.4+: hide navigation bar, make it accessible via edge scroll
-        if (android.os.Build.VERSION.SDK_INT >= 19) {
-            uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                      |  View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         }
 
-        // apply settings
+        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        if (isFullScreen) {
+            uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            if (android.os.Build.VERSION.SDK_INT >= 19) {
+                uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            }
+        }
+
+        // Apply settings
         View decorView = getWindow().getDecorView();
-
         decorView.setSystemUiVisibility(uiOptions);
-
-        // TODO: explore artificially reducing luminosity
-        /*try {
-            int brightness = android.provider.Settings.System.getInt(
-            getContentResolver(), android.provider.Settings.System.SCREEN_BRIGHTNESS);
-            Log.v(TAG, "brightness="+brightness);
-        } catch (SettingNotFoundException e) {
-            // don't care
-        }*/
     }
     
     public boolean do_manual_sync() {
@@ -395,8 +394,9 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         // manage application's intrusiveness for different Android versions
         super.onWindowFocusChanged(hasFocus);
 
-        if(hasFocus)
-            prepare_fullscreen();
+        // Always pretend we are going fullscreen. This limits flickering considerably
+        isFullScreen = true;
+        prepare_fullscreen();
     }
     
     private boolean isSameDay(GregorianCalendar when, GregorianCalendar other){
@@ -537,6 +537,40 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             return onCalendar(item);
         }
         return true;
+    }
+
+    /**
+     * Override event dispatcher to detect any event and especially, intercept "single tap" which
+     * we'll use to toggle fullscreen.
+     *
+     * @param event
+     * @return
+     */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        mGestureDetector.onTouchEvent(event);
+        return super.dispatchTouchEvent(event);
+    }
+
+    /**
+     * Detect simple taps that are not immediately following a long press (ie: skip cancels)
+     */
+    class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
+        @Override
+        public void onLongPress(MotionEvent event) {
+            isInLongPress = true;
+            Log.d(TAG, "onLongPress: " + event.toString());
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event) {
+            if (!isInLongPress) {
+                isFullScreen = !isFullScreen;
+                prepare_fullscreen();
+            }
+            isInLongPress = false;
+            return true;
+        }
     }
 
     /**
