@@ -3,5 +3,6 @@
 	<color name="sepia_bg">#efe3ce</color>
 	<color name="sepia_fg">#5d451a</color>
 	<color name="aelf_red">#c2262a</color>
+	<color name="aelf_dark">#1a1c1f</color>
 </resources>
 

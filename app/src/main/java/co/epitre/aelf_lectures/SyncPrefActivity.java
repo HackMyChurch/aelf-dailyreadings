@@ -71,31 +71,4 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         }
     }
 
-    @SuppressLint("NewApi")
-    public void prepare_fullscreen() {
-        // copied from LectureActivity
-        // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        if (android.os.Build.VERSION.SDK_INT < 14) // 4.0 min
-            return;
-
-        // Android 4.0+: make navigation bar 'discret' ('dots' instead of icons)
-        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
-
-        // apply settings
-        View decorView = getWindow().getDecorView();
-        decorView.setSystemUiVisibility(uiOptions);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        // manage application's intrusiveness for different Android versions
-        super.onWindowFocusChanged(hasFocus);
-
-        if(hasFocus)
-            prepare_fullscreen();
-    }
-
 }

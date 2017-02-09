@@ -24,6 +24,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewParent;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ProgressBar;
@@ -226,6 +228,9 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setListNavigationCallbacks(list, this);
+        // Window.FEATURE_OVERLAY_ACTION_BAR
+        // actionBar.setShowHideAnimationEnabled(true);
+        //actionBar.setHideOnContentScrollEnabled(true);
 
         // restore active navigation item
         actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
@@ -347,26 +352,47 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     
     @SuppressLint("NewApi")
     public void prepare_fullscreen() {
+        Window window = getWindow();
+
         // Android < 4.0 --> skip most logic
         if (android.os.Build.VERSION.SDK_INT < 14) {
             // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-            getWindow().setFlags(
+            window.setFlags(
                     WindowManager.LayoutParams.FLAG_FULLSCREEN,
                     WindowManager.LayoutParams.FLAG_FULLSCREEN
             );
             return;
         }
 
-        int uiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        int uiOptions = 0;
         if (isFullScreen) {
+            uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
             uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             if (android.os.Build.VERSION.SDK_INT >= 19) {
                 uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             }
         }
 
+        // Transluent bar
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+
+            // Get action bar height
+            int height = actionBar.getHeight();
+
+            // Get status bar height
+            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+            if (resourceId > 0) {
+                height += getResources().getDimensionPixelSize(resourceId);
+            }
+
+            // Compensate height
+            mViewPager = (ViewPager) findViewById(R.id.pager);
+            mViewPager.setPaddingRelative(0, height, 0, 0);
+        }
+
         // Apply settings
-        View decorView = getWindow().getDecorView();
+        View decorView = window.getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
     }
     
