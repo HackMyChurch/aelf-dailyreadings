@@ -25,10 +25,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
@@ -382,13 +384,26 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
             // Get status bar height
             int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+            int statusBarHeight = 0;
             if (resourceId > 0) {
-                height += getResources().getDimensionPixelSize(resourceId);
+                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+                height += statusBarHeight;
             }
 
             // Compensate height
             mViewPager = (ViewPager) findViewById(R.id.pager);
             mViewPager.setPaddingRelative(0, height, 0, 0);
+
+            // Emulate colored status bar on 4.4 to 5.0 (native support)
+            // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
+            if (Build.VERSION.SDK_INT < 21) {
+                window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                View view = new View(this);
+                view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                view.getLayoutParams().height = statusBarHeight;
+                ((ViewGroup) window.getDecorView()).addView(view);
+                view.setBackgroundColor(this.getResources().getColor(R.color.aelf_dark));
+            }
         }
 
         // Apply settings
