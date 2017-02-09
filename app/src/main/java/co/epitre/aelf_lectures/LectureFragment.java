@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -113,7 +114,6 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
     }
 
-    @SuppressLint("NewApi") // surrounded by a runtime test
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -252,7 +252,9 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
             lectureView.post(new Runnable() {
                 @Override
                 public void run () {
-                    lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+                    if (Build.VERSION.SDK_INT >= 11) {
+                        lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+                    }
                 }
             });
         }
@@ -306,8 +308,12 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
-        mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
-        mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
+        if (android.os.Build.VERSION.SDK_INT >= 23) {
+            mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
+        }
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
+        }
 
         lectureView.setOnTouchListener(new View.OnTouchListener() {
             @Override
