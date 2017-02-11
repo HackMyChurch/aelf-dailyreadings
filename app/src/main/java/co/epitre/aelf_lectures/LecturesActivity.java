@@ -19,6 +19,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -249,6 +250,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             view.setBackgroundColor(this.getResources().getColor(R.color.aelf_dark));
         }
 
+
         // finally, turn on periodic lectures caching
         if(mAccount != null) {
             ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
@@ -396,8 +398,10 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             }
         }
 
-        // Transluent bar
-        if (Build.VERSION.SDK_INT >= 19) {
+        // Transluent bar, *ONLY* in portait mode (broken in landscape)
+        Display getOrient = getWindowManager().getDefaultDisplay();
+        boolean is_portrait = getOrient.getWidth() < getOrient.getHeight();
+        if (is_portrait && Build.VERSION.SDK_INT >= 19) {
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 
             // Get action + status bar height
