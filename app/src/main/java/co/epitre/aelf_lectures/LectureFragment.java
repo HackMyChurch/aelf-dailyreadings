@@ -9,9 +9,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.AccessibilityDelegateCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -32,6 +35,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     public static final String ARG_TEXT_HTML = "text html";
     protected WebView lectureView;
     protected WebSettings websettings;
+    private SwipeRefreshLayout swipeLayout;
 
     SharedPreferences preferences;
 
@@ -214,8 +218,20 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         Context context = getActivity();
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         lectureView = (WebView) rootView.findViewById(R.id.LectureView);
+        swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.LectureSwipeRefresh);
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
+
+        // capture refresh events
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                FragmentActivity activity = getActivity();
+                LecturesActivity test  = (LecturesActivity) activity;
+                test.onRefresh(null);
+                swipeLayout.setRefreshing(false); // we have our own spinner
+            }
+        });
 
         // accessibility: enable (best effort)
         websettings.setJavaScriptEnabled(true);
