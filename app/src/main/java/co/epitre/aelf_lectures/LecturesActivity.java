@@ -205,9 +205,16 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             whatwhen.position = 0; // 1st lecture of the office
         }
 
-        // error handler
-        networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
-        emptyOfficeError.add(new LectureItem("Office vide", "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>", "erreur"));
+        // Error handler
+        networkError.add(new LectureItem("Oups...", "" +
+                "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
+                "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur"));
+        emptyOfficeError.add(new LectureItem("Oups...", "" +
+                "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
+                "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
+                "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\\n\" +\n" +
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur"));
 
 
         // some UI. Most UI init are done in the prev async task
