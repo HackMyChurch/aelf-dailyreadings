@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -26,7 +25,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
@@ -40,7 +38,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -212,8 +209,6 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         networkError.add(new LectureItem("Erreur Réseau", "<p>Connexion au serveur AELF impossible<br />Veuillez ré-essayer plus tard.</p>", "erreur"));
         emptyOfficeError.add(new LectureItem("Office vide", "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>", "erreur"));
 
-        // TODO: explore possible overlay action bar lifecycle
-        //requestWindowFeature(WindowCompat.FEATURE_ACTION_BAR_OVERLAY);
 
         // some UI. Most UI init are done in the prev async task
         setContentView(R.layout.activity_lectures);
@@ -231,12 +226,21 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         actionBar.setDisplayShowTitleEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setListNavigationCallbacks(list, this);
-        // Window.FEATURE_OVERLAY_ACTION_BAR
-        // actionBar.setShowHideAnimationEnabled(true);
-        //actionBar.setHideOnContentScrollEnabled(true);
 
         // restore active navigation item
         actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+
+        // On older phones >= 44 < 6.0, we can set status bar to transluent but not its color.
+        // the trick is to place a view under the status bar to emulate it.
+        // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
+        if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            View view = new View(this);
+            view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            view.getLayoutParams().height = get_status_bar_height();
+            ((ViewGroup) getWindow().getDecorView()).addView(view);
+            view.setBackgroundColor(this.getResources().getColor(R.color.aelf_dark));
+        }
 
         // finally, turn on periodic lectures caching
         if(mAccount != null) {
@@ -352,6 +356,16 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
         return result;
     }
+
+    protected int get_status_bar_height() {
+        // Get status bar height
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int statusBarHeight = 0;
+        if (resourceId > 0) {
+            statusBarHeight = getResources().getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
+    }
     
     public void prepare_fullscreen() {
         Window window = getWindow();
@@ -379,31 +393,12 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if (Build.VERSION.SDK_INT >= 19) {
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
 
-            // Get action bar height
-            int height = actionBar.getHeight();
-
-            // Get status bar height
-            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-            int statusBarHeight = 0;
-            if (resourceId > 0) {
-                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
-                height += statusBarHeight;
-            }
+            // Get action + status bar height
+            int height = actionBar.getHeight() + get_status_bar_height();
 
             // Compensate height
             mViewPager = (ViewPager) findViewById(R.id.pager);
             mViewPager.setPaddingRelative(0, height, 0, 0);
-
-            // Emulate colored status bar on 4.4 to 5.0 (native support)
-            // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
-            if (Build.VERSION.SDK_INT < 21) {
-                window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-                View view = new View(this);
-                view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                view.getLayoutParams().height = statusBarHeight;
-                ((ViewGroup) window.getDecorView()).addView(view);
-                view.setBackgroundColor(this.getResources().getColor(R.color.aelf_dark));
-            }
         }
 
         // Apply settings
