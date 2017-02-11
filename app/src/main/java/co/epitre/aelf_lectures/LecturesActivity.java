@@ -32,6 +32,7 @@ import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -668,16 +669,29 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             WhatWhen ww = whatwhen[0];
 
             try {
+                List<LectureItem> lectures;
                 if(ww.useCache) {
                     // attempt to load from cache: skip loading indicator (avoids flickering)
-                    List<LectureItem> lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
-                    if(lectures != null)
+                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
+                    if(lectures != null) {
                         return lectures;
+                    }
                 }
 
                 // attempts to load from network, with loading indicator
                 setLoading(true);
-                return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                lectures = lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                if (lectures == null) {
+                    // Failed to load lectures from network AND we were asked to refresh so attempt
+                    // a fallback on the cache to avoid the big error message but still display a notification
+                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
+                    LecturesActivity.this.runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(LecturesActivity.this, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+                return lectures;
             } catch (IOException e) {
                 Log.e(TAG, "I/O error while loading. AELF servers down ?");
                 setLoading(false);
