@@ -383,38 +383,45 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         // Android < 4.0 --> skip most logic
         if (Build.VERSION.SDK_INT < 14) {
             // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-            window.setFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-            );
+            if(isFullScreen) {
+                window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            } else {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            }
             return;
         }
 
+        Display getOrient = getWindowManager().getDefaultDisplay();
+        boolean is_portrait = getOrient.getWidth() < getOrient.getHeight();
         int uiOptions = 0;
+
         if (isFullScreen) {
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-            uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            // Transluent bar, *ONLY* in portait mode (broken in landscape)
+            if (is_portrait) {
+                uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+            }
             if (Build.VERSION.SDK_INT >= 19) {
                 uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
             }
         }
 
         // Transluent bar, *ONLY* in portait mode (broken in landscape)
-        Display getOrient = getWindowManager().getDefaultDisplay();
-        boolean is_portrait = getOrient.getWidth() < getOrient.getHeight();
-        if (is_portrait && Build.VERSION.SDK_INT >= 19) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        if (Build.VERSION.SDK_INT >= 19) {
+            if (is_portrait) {
+                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            }
 
-            // Get action + status bar height
-            int height = actionBar.getHeight() + get_status_bar_height();
-
-            // Compensate height
-            mViewPager = (ViewPager) findViewById(R.id.pager);
-            mViewPager.setPaddingRelative(0, height, 0, 0);
+            // Always compensate the height but only on specific version Or *always* in portrait. Yeah!
+            if (is_portrait || Build.VERSION.SDK_INT < 21) {
+                int height = actionBar.getHeight() + get_status_bar_height();
+                mViewPager = (ViewPager) findViewById(R.id.pager);
+                mViewPager.setPaddingRelative(0, height, 0, 0);
+            }
         }
 
         // Apply settings
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (Build.VERSION.SDK_INT >= 11) {
             View decorView = window.getDecorView();
             decorView.setSystemUiVisibility(uiOptions);
         }
