@@ -695,6 +695,8 @@ public final class LecturesController {
 
         // Attempts to load and parse the feed
         HttpURLConnection urlConnection = (HttpURLConnection) feedUrl.openConnection();
+        urlConnection.setConnectTimeout(10*000); // 10 seconds
+        urlConnection.setReadTimeout(60*1000);   // 1 minute
 
         if (pref_nocache) {
             urlConnection.setRequestProperty("x-aelf-nocache", "1");
