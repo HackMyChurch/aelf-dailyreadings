@@ -407,9 +407,12 @@ public final class LecturesController {
 
             // compute new state
             if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
-                lectureIn.shortTitle.equalsIgnoreCase("lecture")) {
+                lectureIn.shortTitle.equalsIgnoreCase("lecture") ||
+                lectureIn.shortTitle.equalsIgnoreCase("lecture patristique") ||
+                lectureIn.shortTitle.equalsIgnoreCase("parole de dieu")) {
                 currentState = postProcessState.Pericope;
-            } else if ( lectureIn.shortTitle.equalsIgnoreCase("repons")) {
+            } else if ( lectureIn.shortTitle.equalsIgnoreCase("repons") ||
+                        lectureIn.shortTitle.equalsIgnoreCase("répons")) {
                 currentState = postProcessState.Repons;
             } else if ( lectureIn.shortTitle.equalsIgnoreCase("verset")) {
                 currentState = postProcessState.Verse;
