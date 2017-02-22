@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
@@ -8,12 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -39,9 +42,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.Timer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+
 
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
@@ -53,10 +65,20 @@ class WhatWhen {
     public boolean today;
     public int position;
     public boolean useCache = true;
+
+    public WhatWhen copy() {
+        WhatWhen c = new WhatWhen();
+        c.what = what;
+        c.when = when;
+        c.today = today;
+        c.position = position;
+        c.useCache = useCache;
+        return c;
+    }
 }
 
 public class LecturesActivity extends ActionBarActivity implements DatePickerFragment.CalendarDialogListener,
-                                                                  ActionBar.OnNavigationListener {
+        ActionBar.OnNavigationListener {
 
     public static final String TAG = "AELFLecturesActivity";
     public static final String PREFS_NAME = "aelf-prefs";
@@ -70,6 +92,8 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
      * intensive, it may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    DownloadXmlTask currentRefresh = null;
+    Lock preventCancel = new ReentrantLock();
     LecturesController lecturesCtrl = null;
     WhatWhen whatwhen;
     Menu mMenu;
@@ -95,10 +119,10 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     // The account name
     public static final String ACCOUNT = "www.aelf.org";
     // Sync interval in s. ~ 1 Day
-    public static final long SYNC_INTERVAL = 60L*60L*22L;
+    public static final long SYNC_INTERVAL = 60L * 60L * 22L;
     // Instance fields
     Account mAccount;
-    
+
     // action bar
     protected ActionBar actionBar;
 
@@ -185,14 +209,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if (uri != null) {
             parseIntentUri(whatwhen, uri);
 
-        } else if(savedInstanceState != null) {
+        } else if (savedInstanceState != null) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
             whatwhen.what = WHAT.values()[savedInstanceState.getInt("what")];
             whatwhen.position = savedInstanceState.getInt("position");
-            
+
             long timestamp = savedInstanceState.getLong("when");
             whatwhen.when = new GregorianCalendar();
-            if(timestamp == DATE_TODAY) {
+            if (timestamp == DATE_TODAY) {
                 whatwhen.when = new GregorianCalendar();
                 whatwhen.today = true;
             } else {
@@ -253,7 +277,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
 
         // finally, turn on periodic lectures caching
-        if(mAccount != null) {
+        if (mAccount != null) {
             ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
             ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
@@ -264,7 +288,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             long last_sync = getLasySyncTime();
             long now = System.currentTimeMillis();
             long days = (now - last_sync) / (1000 * 3600 * 24);
-            if(days >= 2) {
+            if (days >= 2) {
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
                 do_manual_sync();
             }
@@ -339,7 +363,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             }
         }
     }
-    
+
     private long getLasySyncTime() {
         // TODO: move this value to K/V store
         // from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
@@ -355,14 +379,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                     result = successTime.getLong(status);
                 }
             }
+        } catch (NoSuchMethodException e) {
+        } catch (IllegalAccessException e) {
+        } catch (InvocationTargetException e) {
+        } catch (IllegalArgumentException e) {
+        } catch (ClassNotFoundException e) {
+        } catch (NoSuchFieldException e) {
+        } catch (NullPointerException e) {
         }
-        catch (NoSuchMethodException e) {}
-        catch (IllegalAccessException e) {}
-        catch (InvocationTargetException e) {}
-        catch (IllegalArgumentException e) {}
-        catch (ClassNotFoundException e) {}
-        catch (NoSuchFieldException e) {}
-        catch (NullPointerException e) {}
 
         return result;
     }
@@ -376,14 +400,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         }
         return statusBarHeight;
     }
-    
+
     public void prepare_fullscreen() {
         Window window = getWindow();
 
         // Android < 4.0 --> skip most logic
         if (Build.VERSION.SDK_INT < 14) {
             // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-            if(isFullScreen) {
+            if (isFullScreen) {
                 window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
             } else {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -426,7 +450,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             decorView.setSystemUiVisibility(uiOptions);
         }
     }
-    
+
     public boolean do_manual_sync() {
         if (mAccount == null) {
             // TODO: patch the alg to work without ?
@@ -455,18 +479,46 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         isFullScreen = true;
         prepare_fullscreen();
     }
-    
-    private boolean isSameDay(GregorianCalendar when, GregorianCalendar other){
+
+    private boolean isSameDay(GregorianCalendar when, GregorianCalendar other) {
         return (when.get(GregorianCalendar.ERA) == other.get(GregorianCalendar.ERA) &&
                 when.get(GregorianCalendar.YEAR) == other.get(GregorianCalendar.YEAR) &&
                 when.get(GregorianCalendar.DAY_OF_YEAR) == other.get(GregorianCalendar.DAY_OF_YEAR));
     }
-    
-    private boolean isToday(GregorianCalendar when){
+
+    private boolean isToday(GregorianCalendar when) {
         GregorianCalendar today = new GregorianCalendar();
         return isSameDay(when, today);
     }
-    
+
+    private void loadLecture(WhatWhen whatwhen) {
+        cancelLectureLoad();
+        DownloadXmlTask loader = new DownloadXmlTask();;
+        loader.execute(whatwhen.copy());
+        whatwhen.useCache = true; // cache override are one-shot
+        currentRefresh = loader;
+    }
+
+    private void cancelLectureLoad() {
+        preventCancel.lock();
+        try {
+            currentRefresh.cancel(true);
+            if (currentRefresh.future !=null) {
+                currentRefresh.future.cancel(true);
+            }
+
+            Thread.sleep(100); // FIXME!!
+        } catch (NullPointerException e) {
+            // Asking for permission is racy
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            currentRefresh = null;
+            setLoading(false); // FIXME: should be in the cancel code path in the task imho
+            preventCancel.unlock();
+        }
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         // Save instance state. Especially useful on screen rotate on older phones
@@ -475,16 +527,16 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         // - position --> active tab (id)
         super.onSaveInstanceState(outState);
 
-        if(outState == null) return;
+        if (outState == null) return;
 
         int position = 0; // first slide by default
         int what = 0; // "Messe" by default
         long when = DATE_TODAY;
 
-        if(whatwhen != null) {
-            if(whatwhen.what != null) what = whatwhen.what.getPosition();
-            if(mViewPager    != null) position = mViewPager.getCurrentItem();
-            if(whatwhen.when != null && !whatwhen.today && !isToday(whatwhen.when)) {
+        if (whatwhen != null) {
+            if (whatwhen.what != null) what = whatwhen.what.getPosition();
+            if (mViewPager != null) position = mViewPager.getCurrentItem();
+            if (whatwhen.when != null && !whatwhen.today && !isToday(whatwhen.when)) {
                 when = whatwhen.when.getTimeInMillis();
             }
         }
@@ -509,15 +561,15 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     public boolean onSyncDo(MenuItem item) {
         return do_manual_sync();
     }
-    
+
     public boolean onRefresh(MenuItem item) {
         whatwhen.useCache = false;
-        if(mViewPager != null) {
+        if (mViewPager != null) {
             whatwhen.position = mViewPager.getCurrentItem();
         } else {
             whatwhen.position = 0;
         }
-        new DownloadXmlTask().execute(whatwhen);
+        this.loadLecture(whatwhen);
         return true;
     }
 
@@ -543,14 +595,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         GregorianCalendar date = new GregorianCalendar(year, month, day);
 
         // do not refresh if date did not change to avoid unnecessary flickering
-        if(isSameDay(whatwhen.when, date))
+        if (isSameDay(whatwhen.when, date))
             return;
 
         // Reset pager
         whatwhen.today = isToday(date);
         whatwhen.when = date;
         whatwhen.position = 0;
-        new DownloadXmlTask().execute(whatwhen);
+        this.loadLecture(whatwhen);
 
         // Update to date button with "this.date"
         updateCalendarButtonLabel();
@@ -559,11 +611,11 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     @Override
     public boolean onNavigationItemSelected(int position, long itemId) {
         // Are we actually *changing* ? --> maybe not if coming from state reload
-        if(whatwhen.what != LecturesController.WHAT.values()[position]) {
+        if (whatwhen.what != LecturesController.WHAT.values()[position]) {
             whatwhen.what = LecturesController.WHAT.values()[position];
             whatwhen.position = 0; // on what change, move to 1st
         }
-        new DownloadXmlTask().execute(whatwhen);
+        this.loadLecture(whatwhen);
         return true;
     }
 
@@ -582,16 +634,16 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-        case R.id.action_about:
-            return onAbout(item);
-        case R.id.action_sync_settings:
-            return onSyncPref(item);
-        case R.id.action_sync_do:
-            return onSyncDo(item);
-        case R.id.action_refresh:
-            return onRefresh(item);
-        case R.id.action_calendar:
-            return onCalendar(item);
+            case R.id.action_about:
+                return onAbout(item);
+            case R.id.action_sync_settings:
+                return onSyncPref(item);
+            case R.id.action_sync_do:
+                return onSyncDo(item);
+            case R.id.action_refresh:
+                return onRefresh(item);
+            case R.id.action_calendar:
+                return onCalendar(item);
         }
         return true;
     }
@@ -647,6 +699,12 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if (accountManager.addAccountExplicitly(newAccount, null, null)) {
             return newAccount;
         } else {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+                // This really should never be true as we need the permission only on older devices
+                // which still follows a "all or nothing" grant scheme. But the linter is too dump
+                // to take the manifest into account.
+                return null;
+            }
             return accountManager.getAccountsByType(ACCOUNT_TYPE)[0];
         }
     }
@@ -667,16 +725,28 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         });
     }
 
-    // Async loader
+    /* Async loader
+     *
+     * Cancel are unreliable using URLConnection class in the controller. What we do instead to manage
+     * cancels is:
+     * - track current load task in a "future", in a thread pool
+     * - set a flag
+     * - cancel current load future
+     * - on flag change, remove loading screen if any
+     * - if the flag is true, ignore any result
+     * Timeouts *should* limit the impact of threads / connections stacking. Should...
+     */
+    final ExecutorService executor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
     private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
         LecturePagerAdapter mLecturesPager;
+        Future<List<LectureItem>> future;
 
         @Override
         protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
-            WhatWhen ww = whatwhen[0];
+            final WhatWhen ww = whatwhen[0];
 
             try {
-                List<LectureItem> lectures;
+                List<LectureItem> lectures = null;
                 if(ww.useCache) {
                     // attempt to load from cache: skip loading indicator (avoids flickering)
                     lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
@@ -687,7 +757,28 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
                 // attempts to load from network, with loading indicator
                 setLoading(true);
-                lectures = lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                future = executor.submit(new Callable<List<LectureItem>>() {
+                    @Override
+                    public List<LectureItem> call() throws IOException {
+                        return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                    }
+                });
+
+                // When cancel is called, we first mark as cancelled then check for future
+                // but future may be created in the mean time, so recheck here to avoid race
+                if (isCancelled()) {
+                    future.cancel(true);
+                } else {
+                    // attempt to read the result
+                    try {
+                        lectures = future.get();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 if (lectures == null) {
                     // Failed to load lectures from network AND we were asked to refresh so attempt
                     // a fallback on the cache to avoid the big error message but still display a notification
@@ -703,9 +794,6 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 Log.e(TAG, "I/O error while loading. AELF servers down ?");
                 setLoading(false);
                 return null;
-            } finally {
-                // "useCache=false" is "fire and forget"
-                ww.useCache = true;
             }
         }
 
@@ -713,28 +801,35 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         protected void onPostExecute(final List<LectureItem> lectures) {
             List<LectureItem> pager_data;
 
-            // Failed to load
-            if(lectures == null) {
-                pager_data = networkError;
-            // Empty office ? Prevent crash
-            } else if(lectures.isEmpty()) {
-                pager_data = emptyOfficeError;
-            // Nominal case
-            } else {
-                pager_data = lectures;
-            }
-
-            // 1 slide fragment <==> 1 lecture
-            mLecturesPager= new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
-
-            // Set up the ViewPager with the sections adapter.
+            preventCancel.lock();
             try {
-                mViewPager = (ViewPager) findViewById(R.id.pager);
-                mViewPager.setAdapter(mLecturesPager);
-                mViewPager.setCurrentItem(whatwhen.position);
-                setLoading(false);
-            } catch(IllegalStateException e) {
-                // Fragment manager has gone away, will reload anyway so silently give up
+
+                // Failed to load
+                if (lectures == null) {
+                    pager_data = networkError;
+                    // Empty office ? Prevent crash
+                } else if (lectures.isEmpty()) {
+                    pager_data = emptyOfficeError;
+                    // Nominal case
+                } else {
+                    pager_data = lectures;
+                }
+
+                // 1 slide fragment <==> 1 lecture
+                mLecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
+
+                // Set up the ViewPager with the sections adapter.
+                try {
+                    mViewPager = (ViewPager) findViewById(R.id.pager);
+                    mViewPager.setAdapter(mLecturesPager);
+                    mViewPager.setCurrentItem(whatwhen.position);
+                    setLoading(false);
+                } catch (IllegalStateException e) {
+                    // Fragment manager has gone away, will reload anyway so silently give up
+                }
+            } finally {
+                currentRefresh = null;
+                preventCancel.unlock();
             }
         }
     }
