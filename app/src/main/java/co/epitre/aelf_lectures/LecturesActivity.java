@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -499,7 +500,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         currentRefresh = loader;
     }
 
-    private void cancelLectureLoad() {
+    public void cancelLectureLoad() {
         preventCancel.lock();
         try {
             currentRefresh.cancel(true);
@@ -517,6 +518,10 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             setLoading(false); // FIXME: should be in the cancel code path in the task imho
             preventCancel.unlock();
         }
+    }
+
+    public void cancelLectureLoad(View v) {
+        cancelLectureLoad();
     }
 
     @Override
