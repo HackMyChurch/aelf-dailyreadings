@@ -31,6 +31,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -43,7 +46,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
-import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -93,10 +95,12 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
      * intensive, it may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    private boolean isLoading = false;
     DownloadXmlTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
     LecturesController lecturesCtrl = null;
     WhatWhen whatwhen;
+    WhatWhen whatwhen_previous = null;
     Menu mMenu;
 
     /**
@@ -493,18 +497,18 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     }
 
     private void loadLecture(WhatWhen whatwhen) {
-        cancelLectureLoad();
-        DownloadXmlTask loader = new DownloadXmlTask();;
+        cancelLectureLoad(false);
+        DownloadXmlTask loader = new DownloadXmlTask();
         loader.execute(whatwhen.copy());
         whatwhen.useCache = true; // cache override are one-shot
         currentRefresh = loader;
     }
 
-    public void cancelLectureLoad() {
+    public void cancelLectureLoad(boolean restore) {
         preventCancel.lock();
         try {
             currentRefresh.cancel(true);
-            if (currentRefresh.future !=null) {
+            if (currentRefresh.future != null) {
                 currentRefresh.future.cancel(true);
             }
 
@@ -518,10 +522,25 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             setLoading(false); // FIXME: should be in the cancel code path in the task imho
             preventCancel.unlock();
         }
+
+        // Restore readings
+        if (restore && whatwhen_previous != null) {
+            whatwhen = whatwhen_previous;
+            whatwhen_previous = null;
+            whatwhen.useCache = true; // Make it fast, we are restoring !
+
+            // Restore UI state
+            actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+            updateCalendarButtonLabel();
+
+            // Load lectures
+            loadLecture(whatwhen);
+        }
     }
 
     public void cancelLectureLoad(View v) {
-        cancelLectureLoad();
+        // Cancel lecture load + restore previous state
+        cancelLectureLoad(true);
     }
 
     @Override
@@ -574,6 +593,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         } else {
             whatwhen.position = 0;
         }
+        this.whatwhen_previous = null;
         this.loadLecture(whatwhen);
         return true;
     }
@@ -604,6 +624,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             return;
 
         // Reset pager
+        this.whatwhen_previous = whatwhen.copy();
         whatwhen.today = isToday(date);
         whatwhen.when = date;
         whatwhen.position = 0;
@@ -620,6 +641,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             whatwhen.what = LecturesController.WHAT.values()[position];
             whatwhen.position = 0; // on what change, move to 1st
         }
+        this.whatwhen_previous = whatwhen.copy();
         this.loadLecture(whatwhen);
         return true;
     }
@@ -717,14 +739,39 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     protected void setLoading(final boolean loading) {
         final RelativeLayout loadingOverlay = (RelativeLayout)findViewById(R.id.loadingOverlay);
         final ProgressBar loadingIndicator = (ProgressBar)findViewById(R.id.loadingIndicator);
+        final Button cancelButton = (Button)findViewById(R.id.cancelButton);
+
+        // Do not trigger animations. That causes flickering.
+        if (isLoading == loading) {
+            return;
+        }
+        isLoading = loading;
 
         loadingOverlay.post(new Runnable() {
             public void run() {
                 if(loading) {
+                    Animation fadeIn = new AlphaAnimation(0, 1);
+                    fadeIn.setInterpolator(new DecelerateInterpolator());
+                    fadeIn.setDuration(500);
+
+                    Animation buttonFadeIn = new AlphaAnimation(0, 1);
+                    buttonFadeIn.setInterpolator(new DecelerateInterpolator());
+                    buttonFadeIn.setStartOffset(2500);
+                    buttonFadeIn.setDuration(500);
+
                     loadingIndicator.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.sepia_fg), android.graphics.PorterDuff.Mode.MULTIPLY);
+                    cancelButton.setVisibility(View.VISIBLE);
+                    cancelButton.setAnimation(buttonFadeIn);
                     loadingOverlay.setVisibility(View.VISIBLE);
+                    loadingOverlay.setAnimation(fadeIn);
                 } else {
+                    Animation fadeOut = new AlphaAnimation(1, 0);
+                    fadeOut.setInterpolator(new DecelerateInterpolator());
+                    fadeOut.setDuration(250);
+
+                    cancelButton.setVisibility(View.GONE);
                     loadingOverlay.setVisibility(View.INVISIBLE);
+                    loadingOverlay.setAnimation(fadeOut);
                 }
             }
         });
@@ -773,15 +820,20 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 // but future may be created in the mean time, so recheck here to avoid race
                 if (isCancelled()) {
                     future.cancel(true);
-                } else {
-                    // attempt to read the result
-                    try {
-                        lectures = future.get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
+                }
+
+                // attempt to read the result
+                try {
+                    lectures = future.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                // If cancel has been called while loading, we'll only catch it here
+                if (isCancelled()) {
+                    return null;
                 }
 
                 if (lectures == null) {

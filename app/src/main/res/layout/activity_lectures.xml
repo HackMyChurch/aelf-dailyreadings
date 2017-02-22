@@ -8,6 +8,7 @@
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/sepia_bg"
         tools:context=".LecturesActivity" >
 
         <android.support.v4.view.PagerTabStrip
@@ -24,6 +25,7 @@
 
     <RelativeLayout
         android:id="@+id/loadingOverlay"
+        android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@color/sepia_bg"
