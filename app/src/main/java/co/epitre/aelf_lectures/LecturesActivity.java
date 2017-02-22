@@ -444,8 +444,8 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             // Always compensate the height but only on specific version Or *always* in portrait. Yeah!
             if (is_portrait || Build.VERSION.SDK_INT < 21) {
                 int height = actionBar.getHeight() + get_status_bar_height();
-                mViewPager = (ViewPager) findViewById(R.id.pager);
-                mViewPager.setPaddingRelative(0, height, 0, 0);
+                View pagerPaddingView = findViewById(R.id.pager_padding);
+                pagerPaddingView.getLayoutParams().height = height;
             }
         }
 
@@ -539,6 +539,11 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     }
 
     public void cancelLectureLoad(View v) {
+        // Hack: if this event is triggered, there was a "tap", hence we toggled fullscreen mode
+        // ==> revert. This will flicker. But that's OK for now.
+        isFullScreen = !isFullScreen;
+        prepare_fullscreen();
+
         // Cancel lecture load + restore previous state
         cancelLectureLoad(true);
     }

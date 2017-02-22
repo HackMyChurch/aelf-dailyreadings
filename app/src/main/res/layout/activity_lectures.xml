@@ -4,24 +4,40 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
+    <android.support.v7.widget.LinearLayoutCompat
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/content"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/sepia_bg"
-        tools:context=".LecturesActivity" >
+        android:layout_height="match_parent">
 
-        <android.support.v4.view.PagerTabStrip
-            android:id="@+id/pager_title_strip"
+        <android.view.View
+            android:id="@+id/pager_padding"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"/>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:background="@color/aelf_red"
-            android:paddingBottom="4dp"
-            android:paddingTop="4dp"
-            android:textColor="@color/sepia_bg" >
-        </android.support.v4.view.PagerTabStrip>
-    </android.support.v4.view.ViewPager>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="top"
+            android:background="@color/sepia_bg"
+            tools:context=".LecturesActivity" >
+
+            <android.support.v4.view.PagerTabStrip
+                android:id="@+id/pager_title_strip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:background="@color/aelf_red"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:textColor="@color/sepia_bg" >
+            </android.support.v4.view.PagerTabStrip>
+        </android.support.v4.view.ViewPager>
+    </android.support.v7.widget.LinearLayoutCompat>
 
     <RelativeLayout
         android:id="@+id/loadingOverlay"
