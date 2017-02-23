@@ -38,6 +38,8 @@
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:host="www.aelf.org" />
+                <data android:path="/" />
+                <data android:pathPrefix="/20" />
             </intent-filter>
 
         </activity>
