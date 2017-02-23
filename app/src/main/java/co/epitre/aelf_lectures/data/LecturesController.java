@@ -393,6 +393,8 @@ public final class LecturesController {
         List<LectureItem> cleaned = new ArrayList<LectureItem>();
 
         postProcessState previousState = postProcessState.Empty;
+        String bufferKey = null;
+        String bufferReference = "";
         String bufferCategory = "";
         String bufferTitle = "";
         String pagerTitle = "";
@@ -404,6 +406,7 @@ public final class LecturesController {
             postProcessState currentState = postProcessState.Empty;
             String currentTitle = "";
             String currentDescription = "";
+            String currentKey = "";
 
             // compute new state
             if(	lectureIn.shortTitle.equalsIgnoreCase("pericope") ||
@@ -460,10 +463,13 @@ public final class LecturesController {
 
             if(	needFlush) {
                 cleaned.add(new LectureItem(
+                        bufferKey,
                         bufferTitle,
                         bufferDescription,
-                        bufferCategory));
+                        bufferCategory,
+                        bufferReference));
                 bufferCategory = bufferTitle = bufferDescription = "";
+                bufferKey = null;
             }
 
             /*
@@ -574,9 +580,15 @@ public final class LecturesController {
 
 
             // prepare reference, if any
+            if (lectureIn.reference != null && !lectureIn.reference.isEmpty()) {
+                lectureReference = lectureIn.reference;
+            }
             if(!lectureReference.equals("")) {
                 lectureReference = "<small><i>— "+lectureReference+"</i></small>";
             }
+
+            // Clean key
+            currentKey = lectureIn.key.replace("\n", "").trim();
 
             // accumulate into buffer, depending on current state
             switch(currentState) {
@@ -587,6 +599,8 @@ public final class LecturesController {
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
                 bufferCategory = lectureIn.category;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
+                bufferKey = currentKey;
+                bufferReference = lectureIn.category;
                 break;
             case Repons:
             case Verse:
@@ -608,22 +622,30 @@ public final class LecturesController {
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
                 bufferCategory = lectureIn.category;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
+                bufferKey = currentKey;
+                bufferReference = lectureIn.category;
                 break;
             case Oraison:
                 bufferDescription = "<h3>Oraison</h3><div style=\"clear: both;\"></div>" + currentDescription;
                 bufferCategory = lectureIn.category;
                 bufferTitle = "Oraison";
+                bufferKey = currentKey;
+                bufferReference = lectureIn.category;
                 break;
             case Benediction:
                 bufferDescription = bufferDescription.replace("<h3>Oraison</h3>", "<h3>Oraison et bénédiction</h3>");
                 bufferDescription += currentDescription;
                 bufferCategory = lectureIn.category;
                 bufferTitle = "Oraison et bénédiction";
+                bufferKey = currentKey;
+                bufferReference = lectureIn.category;
                 break;
             case Regular:
                 bufferCategory = lectureIn.category;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
+                bufferKey = currentKey;
+                bufferReference = lectureIn.category;
                 break;
             default:
                 // TODO: exception ?
@@ -637,9 +659,11 @@ public final class LecturesController {
         // Not empty ? --> do last commit
         if(	previousState != postProcessState.Empty) {
             cleaned.add(new LectureItem(
+                    bufferKey,
                     bufferTitle,
                     bufferDescription,
-                    bufferCategory));
+                    bufferCategory,
+                    bufferReference));
         }
 
         return cleaned;
@@ -766,9 +790,11 @@ public final class LecturesController {
     // item parser
     private LectureItem readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, null, "item");
+        String key = null;
         String title = null;
         String description = null;
         String category = null;
+        String reference = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
@@ -786,11 +812,19 @@ public final class LecturesController {
                 parser.require(XmlPullParser.START_TAG, null, name);
                 category = readText(parser);
                 parser.require(XmlPullParser.END_TAG, null, name);
+            } else if (name.equals("key")) {
+                parser.require(XmlPullParser.START_TAG, null, name);
+                key = readText(parser);
+                parser.require(XmlPullParser.END_TAG, null, name);
+            } else if (name.equals("reference")) {
+                parser.require(XmlPullParser.START_TAG, null, name);
+                reference = readText(parser);
+                parser.require(XmlPullParser.END_TAG, null, name);
             } else {
                 skip(parser);
             }
         }
-        return new LectureItem(title, description, category);
+        return new LectureItem(key, title, description, category, reference);
     }
 
     // Extract text from the feed

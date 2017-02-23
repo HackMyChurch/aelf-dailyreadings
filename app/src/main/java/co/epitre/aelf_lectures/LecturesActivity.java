@@ -68,6 +68,7 @@ class WhatWhen {
     public boolean today;
     public int position;
     public boolean useCache = true;
+    public String anchor = null;
 
     public WhatWhen copy() {
         WhatWhen c = new WhatWhen();
@@ -76,6 +77,7 @@ class WhatWhen {
         c.today = today;
         c.position = position;
         c.useCache = useCache;
+        c.anchor = anchor;
         return c;
     }
 }
@@ -237,15 +239,15 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         }
 
         // Error handler
-        networkError.add(new LectureItem("Oups...", "" +
+        networkError.add(new LectureItem("error_network", "Oups...", "" +
                 "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
                 "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur"));
-        emptyOfficeError.add(new LectureItem("Oups...", "" +
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur", null));
+        emptyOfficeError.add(new LectureItem("error_office", "Oups...", "" +
                 "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
                 "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
                 "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur"));
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur", null));
 
 
         // some UI. Most UI init are done in the prev async task
@@ -364,7 +366,9 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                         whatwhen.what = WHAT.MESSE;
                     }
                 }
-                // TODO: Attempt to parse anchor to go to the right slide ?
+
+                // Finally, grab anchor
+                whatwhen.anchor = fragment;
             }
         }
     }
@@ -593,6 +597,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
     public boolean onRefresh(MenuItem item) {
         whatwhen.useCache = false;
+        whatwhen.anchor = null;
         if (mViewPager != null) {
             whatwhen.position = mViewPager.getCurrentItem();
         } else {
@@ -633,6 +638,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         whatwhen.today = isToday(date);
         whatwhen.when = date;
         whatwhen.position = 0;
+        whatwhen.anchor = null;
         this.loadLecture(whatwhen);
 
         // Update to date button with "this.date"
@@ -645,6 +651,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         if (whatwhen.what != LecturesController.WHAT.values()[position]) {
             whatwhen.what = LecturesController.WHAT.values()[position];
             whatwhen.position = 0; // on what change, move to 1st
+            whatwhen.anchor = null;
         }
         this.whatwhen_previous = whatwhen.copy();
         this.loadLecture(whatwhen);
@@ -879,6 +886,18 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
 
                 // 1 slide fragment <==> 1 lecture
                 mLecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
+
+                // If we have an anchor, attempt to find corresponding position
+                if (whatwhen.anchor != null) {
+                    int position = -1;
+                    for(LectureItem lecture: lectures) {
+                        position++;
+                        if(whatwhen.anchor.equals(lecture.key)) {
+                            whatwhen.position = position;
+                            break;
+                        }
+                    }
+                }
 
                 // Set up the ViewPager with the sections adapter.
                 try {

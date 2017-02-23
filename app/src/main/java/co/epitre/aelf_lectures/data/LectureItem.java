@@ -12,15 +12,19 @@ public class LectureItem implements Serializable {
     public final String shortTitle;
     public final String description;
     public final String category;
+    public final String reference;
+    public final String key;
 
-    public LectureItem(String title, String description, String category) {
+    public LectureItem(String key, String title, String description, String category, String reference) {
         String[] titleChunks = title.split(":");
         String shortTitle = titleChunks[0].replace("\u00a0", " :").trim().replace("&nbsp;", " ");
         String longTitle = title.trim();
 
+        this.key = key;
         this.shortTitle = shortTitle;
         this.longTitle = longTitle;
         this.description = description;
         this.category = category;
+        this.reference = reference;
     }
 }
