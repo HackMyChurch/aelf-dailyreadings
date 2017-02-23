@@ -1,10 +1,14 @@
 package co.epitre.aelf_lectures;
 
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -20,9 +24,11 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.TextSize;
+import android.webkit.WebViewClient;
 
 /**
  * "Lecture" renderer
@@ -129,8 +135,9 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         String col_sepia_light = Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2);
         String col_sepia_dark = Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2);
 
-        htmlString.append("" +
+        htmlString.append("<!DOCTYPE html>" +
                 "<html>" +
+                    "<meta charset=\"utf-8\">" +
                     "<head>" +
                         "<style type=\"text/css\">" +
                         "body{" +
@@ -214,6 +221,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         String reading = htmlString.toString();
 
+
         // actual UI refresh
         Context context = getActivity();
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
@@ -221,6 +229,43 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.LectureSwipeRefresh);
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
+
+        // Capture links
+        lectureView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                Log.w(TAG, "Got a URL: "+url);
+
+                // Prepare URL
+                url = url.replace("file:///android_asset/", "");
+                if (url.startsWith("http%C2%A0:%20")) {
+                    url = "http:"+url.substring("http%C2%A0:%20".length());
+                } else if (url.startsWith("https%C2%A0:%20")) {
+                    url = "https:"+url.substring("https%C2%A0:%20".length());
+                }
+
+                // Parse URL
+                Uri uri = Uri.parse(url);
+                if (uri == null || uri.getHost() == null) {
+                    // Just give up,do not crash
+                    return true;
+                }
+
+                // If this is a request to AELF website, turn it onto an intent
+                if (uri.getHost().equals("www.aelf.org")) {
+                    try {
+                        Intent i = new Intent(Intent.ACTION_VIEW);
+                        i.setData(uri);
+                        startActivity(i);
+                    } catch (ActivityNotFoundException e) {
+                        Log.w(TAG, "Intent failed", e);
+                    }
+                }
+
+                // Always cancel default action
+                return true;
+            }
+        });
 
         // capture refresh events
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -236,8 +281,10 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         // accessibility: enable (best effort)
         websettings.setJavaScriptEnabled(true);
         try {
-            lectureView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-        } catch (java.lang.NoClassDefFoundError e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                lectureView.setAccessibilityDelegate(new View.AccessibilityDelegate());
+            }
+        } catch (NoClassDefFoundError e) {
             Log.w(TAG, "Accessibility support is not available on this device");
         }
 
@@ -261,7 +308,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         // font size
         this.refresh();
 
-        if(android.os.Build.VERSION.SDK_INT > 11)
+        if(Build.VERSION.SDK_INT > 11)
         {
             // Attempt to workaround a strange native crash:
             // http://stackoverflow.com/questions/19614526/android-crash-system-lib-libhwui-so
@@ -324,10 +371,10 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
-        if (android.os.Build.VERSION.SDK_INT >= 23) {
+        if (Build.VERSION.SDK_INT >= 23) {
             mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
         }
-        if (android.os.Build.VERSION.SDK_INT >= 19) {
+        if (Build.VERSION.SDK_INT >= 19) {
             mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
         }
 
