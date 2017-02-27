@@ -579,7 +579,7 @@ public final class LecturesController {
             }
 
 
-            // prepare reference, if any
+            // Prepare reference, if any
             if (lectureIn.reference != null && !lectureIn.reference.isEmpty()) {
                 lectureReference = lectureIn.reference;
             }
@@ -588,7 +588,9 @@ public final class LecturesController {
             }
 
             // Clean key
-            currentKey = lectureIn.key.replace("\n", "").trim();
+            if (lectureIn.key != null && !lectureIn.key.equals("")) {
+                currentKey = lectureIn.key;
+            }
 
             // accumulate into buffer, depending on current state
             switch(currentState) {
@@ -814,7 +816,7 @@ public final class LecturesController {
                 parser.require(XmlPullParser.END_TAG, null, name);
             } else if (name.equals("key")) {
                 parser.require(XmlPullParser.START_TAG, null, name);
-                key = readText(parser);
+                key = readText(parser).replace("\n", "").trim();
                 parser.require(XmlPullParser.END_TAG, null, name);
             } else if (name.equals("reference")) {
                 parser.require(XmlPullParser.START_TAG, null, name);
@@ -832,6 +834,7 @@ public final class LecturesController {
         String result = "";
         if (parser.next() == XmlPullParser.TEXT) {
             result = parser.getText();
+            result = result.replace("\n", "").trim();
             parser.nextTag();
         }
         return result;
