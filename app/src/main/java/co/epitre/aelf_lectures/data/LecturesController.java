@@ -278,6 +278,7 @@ public final class LecturesController {
                 // verse numbering
                 .replaceAll("(<font[-a-zA-Z0-9_\\s#=\"']*>[0-9]*.)&nbsp;", "$1") // For some reason, some verse numbers have an unsplitable space after the dot
                 .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
+                .replaceAll("<span class=\"verse_number\">([0-9]*)</span>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>") // convert new AELF verse numbers to our internal format
                 // inflexion fixes && accessibility
                 .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
                 .replaceAll("<sup", "<sup aria-hidden=true")
@@ -349,32 +350,30 @@ public final class LecturesController {
         }
 
         // emulate "text-indent: 10px hanging each-line;" for psalms/cantique/hymns or looking like
-        boolean fix_line_wrap = false;
+        String fix_line_wrap_class = "";
         if(input.contains("class=\"verse")) {
-            fix_line_wrap = true;
-        } else {
-            // let's be smart: enable if we have a "good" <br> vs char ratio
-            int p_count = count_match(input, "<p>");
-            int br_count = count_match(input, "<br\\s*/?>");
-            //int rv_count = count_match(input, "[RV]/");
-            int char_count = input.length();
+            fix_line_wrap_class = "wrap";
+        }
 
-            // At least 2 lines
-            if ((p_count + br_count) > 2) {
-                int char_per_wrap = char_count/(br_count + p_count - 1);
-                if (char_per_wrap < 100) {
-                    fix_line_wrap = true;
-                }
+        // let's be smart: enable if we have a "good" <br> vs char ratio
+        int p_count = count_match(input, "<p>");
+        int br_count = count_match(input, "<br\\s*/?>");
+        //int rv_count = count_match(input, "[RV]/");
+        int char_count = input.length();
+
+        // At least 2 lines
+        if ((p_count + br_count) > 2) {
+            int char_per_wrap = char_count/(br_count + p_count - 1);
+            if (char_per_wrap < 100) {
+                fix_line_wrap_class = "wrap";
+            } else if (char_per_wrap > 200) {
+                fix_line_wrap_class = ""; // do not wrap when lines are long on average. That actually makes it harder to read
             }
         }
 
-        if(fix_line_wrap) {
-                input = input.replace("<p>", "<p><line>")
-                             .replace("</p>", "</line></p>")
-                             .replaceAll("<br\\s*/?>", "</line><line>");
-        } else {
-                input = input.replaceAll("<br\\s*/?>", "<br aria-hidden=true/>");
-        }
+        input = input.replace("<p>", "<p><line class=\""+fix_line_wrap_class+"\">")
+                     .replace("</p>", "</line></p>")
+                     .replaceAll("<br\\s*/?>", "</line><line class=\""+fix_line_wrap_class+"\">");
 
         return input;
     }

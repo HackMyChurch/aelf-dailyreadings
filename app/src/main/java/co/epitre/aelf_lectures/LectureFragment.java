@@ -222,10 +222,16 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "    text-decoration: underline;" +
                         "}" +
                         // indent line when verse is too long to fit on the screen
-                        ".verse-v2 {" +
+                        "line .verse-v2 {" +
+                        "   margin-left: -30px;" +
+                        "}" +
+                        "line.wrap .verse-v2 {" +
                         "   margin-left: -55px;" +
                         "}" +
                         "line {" +
+                        "   display: block;" +
+                        "}" +
+                        "line.wrap {" +
                         "   display: block;" +
                         "   padding-left: 25px;" +
                         "   text-indent: -25px;" +
