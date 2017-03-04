@@ -1,10 +1,6 @@
 package co.epitre.aelf_lectures;
 
-import android.annotation.SuppressLint;
-import android.content.ActivityNotFoundException;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
@@ -14,17 +10,14 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.AccessibilityDelegateCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.TextSize;
@@ -44,6 +37,10 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     private SwipeRefreshLayout swipeLayout;
 
     SharedPreferences preferences;
+
+    public interface LectureLinkListener {
+        boolean onLectureLink(Uri link);
+    }
 
     public LectureFragment() {
     }
@@ -279,14 +276,17 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                     return true;
                 }
 
-                // If this is a request to AELF website, turn it onto an intent
+                // If this is a request to AELF website, forward it to the main activity
                 if (uri.getHost().equals("www.aelf.org")) {
+                    LectureLinkListener listener = null;
                     try {
-                        Intent i = new Intent(Intent.ACTION_VIEW);
-                        i.setData(uri);
-                        startActivity(i);
-                    } catch (ActivityNotFoundException e) {
-                        Log.w(TAG, "Intent failed", e);
+                        listener = (LectureLinkListener) getActivity();
+                    } catch (ClassCastException e) {
+                        // Ignore. Means the activity does not implement the interface
+                    }
+
+                    if (listener != null) {
+                        listener.onLectureLink(uri);
                     }
                 }
 

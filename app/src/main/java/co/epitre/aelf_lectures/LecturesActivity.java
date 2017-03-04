@@ -83,7 +83,7 @@ class WhatWhen {
 }
 
 public class LecturesActivity extends ActionBarActivity implements DatePickerFragment.CalendarDialogListener,
-        ActionBar.OnNavigationListener {
+        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener {
 
     public static final String TAG = "AELFLecturesActivity";
     public static final String PREFS_NAME = "aelf-prefs";
@@ -479,6 +479,11 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         return true;
     }
 
+    private void toggleFullscreen() {
+        isFullScreen = !isFullScreen;
+        prepare_fullscreen();
+    }
+
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         // manage application's intrusiveness for different Android versions
@@ -501,7 +506,14 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     }
 
     private void loadLecture(WhatWhen whatwhen) {
+        // Cancel any pending load
         cancelLectureLoad(false);
+
+        // Refresh UI
+        actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+        updateCalendarButtonLabel();
+
+        // Start Loading
         DownloadXmlTask loader = new DownloadXmlTask();
         loader.execute(whatwhen.copy());
         whatwhen.useCache = true; // cache override are one-shot
@@ -533,10 +545,6 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
             whatwhen_previous = null;
             whatwhen.useCache = true; // Make it fast, we are restoring !
 
-            // Restore UI state
-            actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
-            updateCalendarButtonLabel();
-
             // Load lectures
             loadLecture(whatwhen);
         }
@@ -545,8 +553,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     public void cancelLectureLoad(View v) {
         // Hack: if this event is triggered, there was a "tap", hence we toggled fullscreen mode
         // ==> revert. This will flicker. But that's OK for now.
-        isFullScreen = !isFullScreen;
-        prepare_fullscreen();
+        toggleFullscreen();
 
         // Cancel lecture load + restore previous state
         cancelLectureLoad(true);
@@ -700,6 +707,19 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         return super.dispatchTouchEvent(event);
     }
 
+    @Override
+    public boolean onLectureLink(Uri link) {
+        // This comes from a tap event --> revert
+        toggleFullscreen();
+
+        // Go to the reading
+        parseIntentUri(whatwhen, link);
+        loadLecture(whatwhen);
+
+        // All good
+        return true;
+    }
+
     /**
      * Detect simple taps that are not immediately following a long press (ie: skip cancels)
      */
@@ -713,8 +733,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isInLongPress) {
-                isFullScreen = !isFullScreen;
-                prepare_fullscreen();
+                toggleFullscreen();
             }
             isInLongPress = false;
             return true;
