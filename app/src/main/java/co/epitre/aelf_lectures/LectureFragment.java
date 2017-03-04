@@ -230,11 +230,13 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "}" +
                         "line {" +
                         "   display: block;" +
+                        "   margin-bottom: 5px;" +
                         "}" +
                         "line.wrap {" +
                         "   display: block;" +
                         "   padding-left: 25px;" +
                         "   text-indent: -25px;" +
+                        "   margin-bottom: 1px;" +
                         "}" +
                         "img {" +
                         "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked

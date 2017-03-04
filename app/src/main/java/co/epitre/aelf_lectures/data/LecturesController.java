@@ -278,7 +278,7 @@ public final class LecturesController {
                 // verse numbering
                 .replaceAll("(<font[-a-zA-Z0-9_\\s#=\"']*>[0-9]*.)&nbsp;", "$1") // For some reason, some verse numbers have an unsplitable space after the dot
                 .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
-                .replaceAll("<span class=\"verse_number\">([0-9]*)</span>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>") // convert new AELF verse numbers to our internal format
+                .replaceAll("<span class=\"verse_number\">([.0-9]*)</span>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>") // convert new AELF verse numbers to our internal format
                 // inflexion fixes && accessibility
                 .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
                 .replaceAll("<sup", "<sup aria-hidden=true")
