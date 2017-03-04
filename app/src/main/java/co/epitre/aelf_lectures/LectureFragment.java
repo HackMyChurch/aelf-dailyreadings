@@ -146,11 +146,14 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "	color:#"+col_sepia_dark+";" +
                         "   font-family: sans-serif;" +
                         "	font-size: 15px;" + // regular body
-                        "	font-weight: regular;"+
+                        "	font-weight: regular;" +
                         "}" +
                         "h3 {" + // title
                         "	font-size: 20px;" +
                         "	font-weight: bold;" +
+                        "}" +
+                        "p {" +
+                        "   line-height: 1.2;"+
                         "}" +
                         "div.app-office-navigation {" +
                         "    margin-top: 20px;" +
