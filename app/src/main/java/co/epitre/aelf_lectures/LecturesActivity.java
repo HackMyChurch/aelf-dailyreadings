@@ -907,7 +907,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 mLecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
 
                 // If we have an anchor, attempt to find corresponding position
-                if (whatwhen.anchor != null) {
+                if (whatwhen.anchor != null && lectures != null) {
                     int position = -1;
                     for(LectureItem lecture: lectures) {
                         position++;
