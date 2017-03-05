@@ -675,6 +675,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
     @SuppressLint("SimpleDateFormat") // I know but currently French only
     private void updateCalendarButtonLabel() {
+        if(mMenu == null) {
+            return;
+        }
         MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
         SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
         calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
