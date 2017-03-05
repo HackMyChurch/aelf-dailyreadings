@@ -20,7 +20,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -82,7 +82,7 @@ class WhatWhen {
     }
 }
 
-public class LecturesActivity extends ActionBarActivity implements DatePickerFragment.CalendarDialogListener,
+public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
         ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener {
 
     public static final String TAG = "AELFLecturesActivity";
@@ -101,6 +101,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
     DownloadXmlTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
     LecturesController lecturesCtrl = null;
+    List<LectureItem> lectures = null;
     WhatWhen whatwhen;
     WhatWhen whatwhen_previous = null;
     Menu mMenu;
@@ -626,6 +627,52 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
         return true;
     }
 
+    public boolean onShare(MenuItem item) {
+        // Make sure we DO have something to share
+        // FIXME: racy, the loader will update it and it's in a thread
+        if (lectures == null || mViewPager == null) {
+            return false;
+        }
+
+        // Get current position
+        int position = mViewPager.getCurrentItem();
+        LectureItem lecture = lectures.get(position);
+        String officeName = whatwhen.what.getWebName();
+        String date = new SimpleDateFormat("yyyy-MM-dd").format(whatwhen.when.getTimeInMillis());
+
+        // Build URL
+        String url = "http://www.aelf.org/"+date+"/romain/"+officeName;
+        if (lecture.key != null) {
+            url += "#"+lecture.key;
+        }
+
+        // Build the subject and message
+        String subject = officeName.substring(0,1).toUpperCase() + officeName.substring(1);
+        String message;
+        if (!whatwhen.today) {
+            subject += " du "+date;
+        }
+        message = subject;
+        subject += ", "+lecture.shortTitle;
+        message += ", "+lecture.longTitle.replace("&nbsp;", " ");
+
+        if (lecture.reference != null && !lecture.reference.equals("") && !lecture.reference.equalsIgnoreCase(lecture.shortTitle)) {
+            message += " ("+lecture.reference+")";
+        }
+
+        message += ". "+url;
+
+        // Create the intent
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
+
+        // All done !
+        return true;
+    }
+
     @SuppressLint("SimpleDateFormat") // I know but currently French only
     private void updateCalendarButtonLabel() {
         MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
@@ -690,6 +737,8 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                 return onRefresh(item);
             case R.id.action_calendar:
                 return onCalendar(item);
+            case R.id.action_share:
+                return onShare(item);
         }
         return true;
     }
@@ -923,6 +972,7 @@ public class LecturesActivity extends ActionBarActivity implements DatePickerFra
                     mViewPager = (ViewPager) findViewById(R.id.pager);
                     mViewPager.setAdapter(mLecturesPager);
                     mViewPager.setCurrentItem(whatwhen.position);
+                    LecturesActivity.this.lectures = lectures;
                     setLoading(false);
                 } catch (IllegalStateException e) {
                     // Fragment manager has gone away, will reload anyway so silently give up

@@ -56,6 +56,10 @@ public final class LecturesController {
             return url;
         }
 
+        public String getWebName() {
+            return name.split("_")[1];
+        }
+
         public int getPosition(){
             return position;
         }
@@ -599,9 +603,9 @@ public final class LecturesController {
             case Pericope:
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
                 bufferCategory = lectureIn.category;
+                bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferKey = currentKey;
-                bufferReference = lectureIn.category;
                 break;
             case Repons:
             case Verse:
@@ -622,31 +626,31 @@ public final class LecturesController {
             case Psaume:
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
                 bufferCategory = lectureIn.category;
+                bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferKey = currentKey;
-                bufferReference = lectureIn.category;
                 break;
             case Oraison:
                 bufferDescription = "<h3>Oraison</h3><div style=\"clear: both;\"></div>" + currentDescription;
                 bufferCategory = lectureIn.category;
+                bufferReference = lectureIn.reference;
                 bufferTitle = "Oraison";
                 bufferKey = currentKey;
-                bufferReference = lectureIn.category;
                 break;
             case Benediction:
                 bufferDescription = bufferDescription.replace("<h3>Oraison</h3>", "<h3>Oraison et bénédiction</h3>");
                 bufferDescription += currentDescription;
                 bufferCategory = lectureIn.category;
+                bufferReference = lectureIn.reference;
                 bufferTitle = "Oraison et bénédiction";
                 bufferKey = currentKey;
-                bufferReference = lectureIn.category;
                 break;
             case Regular:
                 bufferCategory = lectureIn.category;
+                bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
                 bufferKey = currentKey;
-                bufferReference = lectureIn.category;
                 break;
             default:
                 // TODO: exception ?

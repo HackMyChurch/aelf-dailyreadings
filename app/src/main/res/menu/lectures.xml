@@ -9,6 +9,12 @@
         app:showAsAction="always"
         android:title="@string/action_calendar"/>
     <item
+        android:id="@+id/action_share"
+        android:title="@string/action_share"
+        android:orderInCategory="130"
+        android:icon="@android:drawable/ic_menu_share"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_sync_settings"
         android:orderInCategory="200"
         app:showAsAction="never"
