@@ -11,12 +11,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
@@ -721,6 +724,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Inflate the menu; this adds items to the action bar
         getMenuInflater().inflate(R.menu.lectures, menu);
         mMenu = menu;
+
+        // Make the share image white
+        Drawable normalDrawable = getResources().getDrawable(R.drawable.ic_share_black_24dp);
+        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
+        DrawableCompat.setTint(wrapDrawable, getResources().getColor(R.color.white));
 
         // Update to date button with "this.date"
         updateCalendarButtonLabel();
