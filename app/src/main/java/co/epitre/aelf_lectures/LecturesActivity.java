@@ -168,7 +168,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
-            if (savedVersion < 22) {
+            if (savedVersion < 30) {
                 // delete cache DB: needs to force regenerate
                 getApplicationContext().deleteDatabase("aelf_cache.db");
                 // regenerate, according to user settings
