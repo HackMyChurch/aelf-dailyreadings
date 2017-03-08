@@ -49,6 +49,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -640,30 +641,61 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Get current position
         int position = mViewPager.getCurrentItem();
         LectureItem lecture = lectures.get(position);
-        String officeName = whatwhen.what.getWebName();
-        String date = new SimpleDateFormat("yyyy-MM-dd").format(whatwhen.when.getTimeInMillis());
+        String urlDate = new SimpleDateFormat("yyyy-MM-dd").format(whatwhen.when.getTimeInMillis());
 
         // Build URL
-        String url = "http://www.aelf.org/"+date+"/romain/"+officeName;
+        String url = "http://www.aelf.org/"+urlDate+"/romain/"+whatwhen.what.urlName();
         if (lecture.key != null) {
             url += "#"+lecture.key;
         }
 
-        // Build the subject and message
-        String subject = officeName.substring(0,1).toUpperCase() + officeName.substring(1);
-        String message;
-        if (!whatwhen.today) {
-            subject += " du "+date;
+        // Build the data
+        GregorianCalendar today = new GregorianCalendar();
+        String prettyDate;
+        if (whatwhen.when.get(Calendar.YEAR) == today.get(Calendar.YEAR)) {
+            prettyDate = new SimpleDateFormat("EEEE d MMMM").format(whatwhen.when.getTimeInMillis());
+        } else {
+            prettyDate = new SimpleDateFormat("EEEE d MMMM y").format(whatwhen.when.getTimeInMillis());
         }
-        message = subject;
-        subject += ", "+lecture.shortTitle;
-        message += ", "+lecture.longTitle.replace("&nbsp;", " ");
 
+        // Build the subject and message
+        String message;
+        String subject;
+        if (whatwhen.what == WHAT.MESSE && whatwhen.today) {
+            // If this is Today's mass, let's be concise
+            if (lecture.title != null) {
+                message = lecture.title;
+            } else {
+                message = lecture.shortTitle;
+            }
+        } else {
+            // Generic case
+            message = lecture.shortTitle+" "+whatwhen.what.prettyName();
+
+            // Append date if not today
+            if (!whatwhen.today) {
+                message += " du "+prettyDate;
+            }
+
+            // Append title if defined
+            if (lecture.title != null) {
+                message += ": "+lecture.title;
+            }
+        }
+
+        // Append the reference, IF defined AND not the same as the title
         if (lecture.reference != null && !lecture.reference.equals("") && !lecture.reference.equalsIgnoreCase(lecture.shortTitle)) {
             message += " ("+lecture.reference+")";
         }
 
+        // Append the link
         message += ". "+url;
+
+        // Generate the subject, let's be concise
+        subject = lecture.shortTitle+" "+whatwhen.what.prettyName();
+        if (!whatwhen.today) {
+            subject += " du "+prettyDate;
+        }
 
         // Create the intent
         Intent intent = new Intent(Intent.ACTION_SEND);
