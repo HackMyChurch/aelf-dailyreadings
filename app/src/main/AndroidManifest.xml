@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.epitre.aelf_lectures"
     android:installLocation="preferExternal"
-    android:versionCode="29"
-    android:versionName="1.7.5" >
-	
+    android:versionCode="30"
+    android:versionName="1.8.0" >
+
     <!-- Required for fetching feed data. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
