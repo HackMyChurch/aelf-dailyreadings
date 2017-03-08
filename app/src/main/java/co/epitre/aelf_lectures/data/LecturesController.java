@@ -56,8 +56,22 @@ public final class LecturesController {
             return url;
         }
 
-        public String getWebName() {
-            return name.split("_")[1];
+        public String urlName() {
+            return this.name.split("_")[1];
+        }
+
+        public String prettyName() {
+            if (this.position == 0) {
+                return "de la Messe";
+            }
+
+            String name = this.urlName();
+
+            if (name.charAt(name.length()-1) == 's') {
+                return "de l'office des "+name;
+            } else {
+                return "de l'office de "+name;
+            }
         }
 
         public int getPosition(){
