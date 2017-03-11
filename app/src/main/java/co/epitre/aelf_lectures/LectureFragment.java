@@ -1,6 +1,7 @@
 package co.epitre.aelf_lectures;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.res.Resources;
@@ -267,17 +268,19 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                     url = "http:"+url.substring("http%C2%A0:%20".length());
                 } else if (url.startsWith("https%C2%A0:%20")) {
                     url = "https:"+url.substring("https%C2%A0:%20".length());
+                } else if (url.startsWith("mailto%C2%A0:%20")) {
+                    url = "mailto:"+url.substring("mailto%C2%A0:%20".length());
                 }
 
                 // Parse URL
                 Uri uri = Uri.parse(url);
-                if (uri == null || uri.getHost() == null) {
-                    // Just give up,do not crash
+                if (uri == null) {
                     return true;
                 }
+                String host = uri.getHost();
 
-                // If this is a request to AELF website, forward it to the main activity
-                if (uri.getHost().equals("www.aelf.org")) {
+                if (host != null && host.equals("www.aelf.org")) {
+                    // If this is a request to AELF website, forward it to the main activity
                     LectureLinkListener listener = null;
                     try {
                         listener = (LectureLinkListener) getActivity();
@@ -288,6 +291,11 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                     if (listener != null) {
                         listener.onLectureLink(uri);
                     }
+                } else if (url.startsWith("mailto:")) {
+                    Intent intent = new Intent(Intent.ACTION_SENDTO);
+                    intent.setType("text/plain");
+                    intent.setData(uri);
+                    startActivity(Intent.createChooser(intent, "Envoyer un mail"));
                 }
 
                 // Always cancel default action
