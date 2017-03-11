@@ -62,13 +62,14 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 
+import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 
 class WhatWhen {
     public LecturesController.WHAT what;
-    public GregorianCalendar when;
+    public AelfDate when;
     public boolean today;
     public int position;
     public boolean useCache = true;
@@ -227,9 +228,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             whatwhen.position = savedInstanceState.getInt("position");
 
             long timestamp = savedInstanceState.getLong("when");
-            whatwhen.when = new GregorianCalendar();
+            whatwhen.when = new AelfDate();
             if (timestamp == DATE_TODAY) {
-                whatwhen.when = new GregorianCalendar();
+                whatwhen.when = new AelfDate();
                 whatwhen.today = true;
             } else {
                 whatwhen.when.setTimeInMillis(timestamp);
@@ -237,7 +238,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             }
         } else {
             // load the "lectures" for today
-            whatwhen.when = new GregorianCalendar();
+            whatwhen.when = new AelfDate();
             whatwhen.today = true;
             whatwhen.what = WHAT.MESSE;
             whatwhen.position = 0; // 1st lecture of the office
@@ -327,7 +328,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Set default values
         whatwhen.what = WHAT.MESSE;
-        whatwhen.when = new GregorianCalendar();
+        whatwhen.when = new AelfDate();
         whatwhen.today = true;
         whatwhen.position = 0; // 1st lecture of the office
 
@@ -499,17 +500,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         prepare_fullscreen();
     }
 
-    private boolean isSameDay(GregorianCalendar when, GregorianCalendar other) {
-        return (when.get(GregorianCalendar.ERA) == other.get(GregorianCalendar.ERA) &&
-                when.get(GregorianCalendar.YEAR) == other.get(GregorianCalendar.YEAR) &&
-                when.get(GregorianCalendar.DAY_OF_YEAR) == other.get(GregorianCalendar.DAY_OF_YEAR));
-    }
-
-    private boolean isToday(GregorianCalendar when) {
-        GregorianCalendar today = new GregorianCalendar();
-        return isSameDay(when, today);
-    }
-
     private void loadLecture(WhatWhen whatwhen) {
         // Cancel any pending load
         cancelLectureLoad(false);
@@ -581,7 +571,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         if (whatwhen != null) {
             if (whatwhen.what != null) what = whatwhen.what.getPosition();
             if (mViewPager != null) position = mViewPager.getCurrentItem();
-            if (whatwhen.when != null && !whatwhen.today && !isToday(whatwhen.when)) {
+            if (whatwhen.when != null && !whatwhen.today && !whatwhen.when.isToday()) {
                 when = whatwhen.when.getTimeInMillis();
             }
         }
@@ -641,22 +631,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Get current position
         int position = mViewPager.getCurrentItem();
         LectureItem lecture = lectures.get(position);
-        String urlDate = new SimpleDateFormat("yyyy-MM-dd").format(whatwhen.when.getTimeInMillis());
 
         // Build URL
-        String url = "http://www.aelf.org/"+urlDate+"/romain/"+whatwhen.what.urlName();
+        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.urlName();
         if (lecture.key != null) {
             url += "#"+lecture.key;
         }
 
         // Build the data
-        GregorianCalendar today = new GregorianCalendar();
-        String prettyDate;
-        if (whatwhen.when.get(Calendar.YEAR) == today.get(Calendar.YEAR)) {
-            prettyDate = new SimpleDateFormat("EEEE d MMMM").format(whatwhen.when.getTimeInMillis());
-        } else {
-            prettyDate = new SimpleDateFormat("EEEE d MMMM y").format(whatwhen.when.getTimeInMillis());
-        }
+        String prettyDate = whatwhen.when.toPrettyString();
 
         // Build the subject and message
         String message;
@@ -674,7 +657,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
             // Append date if not today
             if (!whatwhen.today) {
-                message += " du "+prettyDate;
+                message += " " + prettyDate;
             }
 
             // Append title if defined
@@ -694,7 +677,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Generate the subject, let's be concise
         subject = lecture.shortTitle+" "+whatwhen.what.prettyName();
         if (!whatwhen.today) {
-            subject += " du "+prettyDate;
+            subject += " " + prettyDate;
         }
 
         // Create the intent
@@ -708,26 +691,24 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         return true;
     }
 
-    @SuppressLint("SimpleDateFormat") // I know but currently French only
     private void updateCalendarButtonLabel() {
         if(mMenu == null) {
             return;
         }
         MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
-        SimpleDateFormat actionDateFormat = new SimpleDateFormat("E d MMM y"); //TODO: move str to cst
-        calendarItem.setTitle(actionDateFormat.format(whatwhen.when.getTime()));
+        calendarItem.setTitle(whatwhen.when.toShortPrettyString());
     }
 
     public void onCalendarDialogPicked(int year, int month, int day) {
-        GregorianCalendar date = new GregorianCalendar(year, month, day);
+        AelfDate date = new AelfDate(year, month, day);
 
         // do not refresh if date did not change to avoid unnecessary flickering
-        if (isSameDay(whatwhen.when, date))
+        if (whatwhen.when.isSameDay(date))
             return;
 
         // Reset pager
         this.whatwhen_previous = whatwhen.copy();
-        whatwhen.today = isToday(date);
+        whatwhen.today = date.isToday();
         whatwhen.when = date;
         whatwhen.position = 0;
         whatwhen.anchor = null;
@@ -750,7 +731,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         return true;
     }
 
-    @SuppressLint("SimpleDateFormat") // I know but currently French only
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
