@@ -98,7 +98,7 @@ public final class LecturesController {
         preference = PreferenceManager.getDefaultSharedPreferences(c);
 
     }
-    public final static LecturesController getInstance(Context c) {
+    public static LecturesController getInstance(Context c) {
         if (LecturesController.instance == null) {
             synchronized(LecturesController.class) {
                if (LecturesController.instance == null) {
@@ -110,7 +110,7 @@ public final class LecturesController {
     }
 
     public List<LectureItem> getLecturesFromCache(WHAT what, GregorianCalendar when) throws IOException {
-        List<LectureItem> lectures = null;
+        List<LectureItem> lectures;
 
         try {
             lectures = cache.load(what, when);
@@ -132,12 +132,12 @@ public final class LecturesController {
     }
     
     public List<LectureItem> getLecturesFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
-        List<LectureItem> lectures = null;
+        List<LectureItem> lectures;
 
         // fallback to network load
         lectures = loadFromNetwork(what, when);
         if(lectures == null) {
-            // big fail TODO: Log
+            Log.w(TAG, "Failed to load lectures from network");
             return null;
         }
 
@@ -155,8 +155,8 @@ public final class LecturesController {
     public void truncateBefore(GregorianCalendar when) {
         WHAT[] whatValues = WHAT.values();
 
-        for(int i = 0; i < whatValues.length; i++) {
-            cache.truncateBefore(whatValues[i], when);
+        for (WHAT whatValue : whatValues) {
+            cache.truncateBefore(whatValue, when);
         }
     }
 
@@ -231,6 +231,7 @@ public final class LecturesController {
             input = "";
             boolean isFirstWord = true;
             for (int i = 0; i < words.length; i++) {
+                //noinspection StatementWithEmptyBody
                 if(words[i].startsWith("L'Évangile")) {
                     // keep capitals
                 } else if (words[i].matches("^[0-9]*-Ii*$")) {
@@ -303,7 +304,7 @@ public final class LecturesController {
                 // spacing fixes
                 .replaceAll("\\s*-\\s*", "-")
                 .replaceAll(":\\s+(\\s+)", "")
-                .replaceAll("\\s*\\(", " (") // FIXME: move this, ensure space before '('
+                .replaceAll("\\s*\\(", " (")
                 // ensure punctuation/inflexions have required spaces
                 .replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
                 .replaceAll("\\s*(<sup)", "&nbsp;$1")
@@ -407,21 +408,21 @@ public final class LecturesController {
     }
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
-        List<LectureItem> cleaned = new ArrayList<LectureItem>();
+        List<LectureItem> cleaned = new ArrayList<>();
 
         postProcessState previousState = postProcessState.Empty;
         String bufferKey = null;
         String bufferReference = "";
         String bufferTitle = "";
-        String pagerTitle = "";
-        String lectureTitle = "";
-        String lectureReference = "";
+        String pagerTitle;
+        String lectureTitle;
+        String lectureReference;
         String bufferDescription = "";
 
         for(LectureItem lectureIn: lectures) {
-            postProcessState currentState = postProcessState.Empty;
-            String currentTitle = "";
-            String currentDescription = "";
+            postProcessState currentState;
+            String currentTitle;
+            String currentDescription;
             String currentKey = "";
 
             // compute new state
@@ -516,7 +517,7 @@ public final class LecturesController {
             }
 
             // filter title && content
-            currentTitle = currentDescription = currentTitle
+            currentTitle = currentTitle
                     // title specific fixes
                     .replaceAll("CANTIQUE", "Cantique")
                     .replaceFirst("(?i)pericope", "Parole de Dieu")
@@ -610,7 +611,6 @@ public final class LecturesController {
             // accumulate into buffer, depending on current state
             switch(currentState) {
             case Empty:
-                // TODO: exception ?
                 break;
             case Pericope:
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
@@ -660,7 +660,6 @@ public final class LecturesController {
                 bufferKey = currentKey;
                 break;
             default:
-                // TODO: exception ?
                 break;
             }
 
@@ -714,7 +713,7 @@ public final class LecturesController {
         InputStream in = null;
         URL feedUrl;
 
-        List<LectureItem> lectures = new ArrayList<LectureItem>();
+        List<LectureItem> lectures = new ArrayList<>();
 
         // Build feed URL
         int version = preference.getInt("version", -1);
@@ -756,7 +755,6 @@ public final class LecturesController {
                 if(in!=null) in.close();
             } catch (IOException e) {
                 Log.e(TAG, "Failed to close API connection", e);
-                return null;
             }
         }
 
@@ -810,24 +808,30 @@ public final class LecturesController {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("title")) {
-                parser.require(XmlPullParser.START_TAG, null, name);
-                title = readText(parser);
-                parser.require(XmlPullParser.END_TAG, null, name);
-            } else if (name.equals("description")) {
-                parser.require(XmlPullParser.START_TAG, null, name);
-                description = readText(parser);
-                parser.require(XmlPullParser.END_TAG, null, name);
-            } else if (name.equals("key")) {
-                parser.require(XmlPullParser.START_TAG, null, name);
-                key = readText(parser).replace("\n", "").trim();
-                parser.require(XmlPullParser.END_TAG, null, name);
-            } else if (name.equals("reference")) {
-                parser.require(XmlPullParser.START_TAG, null, name);
-                reference = readText(parser);
-                parser.require(XmlPullParser.END_TAG, null, name);
-            } else {
-                skip(parser);
+            switch (name) {
+                case "title":
+                    parser.require(XmlPullParser.START_TAG, null, name);
+                    title = readText(parser);
+                    parser.require(XmlPullParser.END_TAG, null, name);
+                    break;
+                case "description":
+                    parser.require(XmlPullParser.START_TAG, null, name);
+                    description = readText(parser);
+                    parser.require(XmlPullParser.END_TAG, null, name);
+                    break;
+                case "key":
+                    parser.require(XmlPullParser.START_TAG, null, name);
+                    key = readText(parser).replace("\n", "").trim();
+                    parser.require(XmlPullParser.END_TAG, null, name);
+                    break;
+                case "reference":
+                    parser.require(XmlPullParser.START_TAG, null, name);
+                    reference = readText(parser);
+                    parser.require(XmlPullParser.END_TAG, null, name);
+                    break;
+                default:
+                    skip(parser);
+                    break;
             }
         }
         return new LectureItem(key, title, description, reference);
@@ -839,16 +843,6 @@ public final class LecturesController {
         if (parser.next() == XmlPullParser.TEXT) {
             result = parser.getText();
             result = result.replace("\n", "").trim();
-            parser.nextTag();
-        }
-        return result;
-    }
-
-    // Extract int from the feed
-    private int readInt(XmlPullParser parser) throws IOException, XmlPullParserException {
-        int result = -1;
-        if (parser.next() == XmlPullParser.TEXT) {
-            result = Integer.parseInt(parser.getText());
             parser.nextTag();
         }
         return result;

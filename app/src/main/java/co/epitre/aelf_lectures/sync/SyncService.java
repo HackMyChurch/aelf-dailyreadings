@@ -28,7 +28,6 @@ public class SyncService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // android.os.Debug.waitForDebugger();
         Log.i(TAG, "Service created");
         synchronized (sSyncAdapterLock) {
             if (sSyncAdapter == null) {
@@ -38,9 +37,6 @@ public class SyncService extends Service {
     }
 
     @Override
-    /**
-     * Logging-only destructor.
-     */
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "Service destroyed");

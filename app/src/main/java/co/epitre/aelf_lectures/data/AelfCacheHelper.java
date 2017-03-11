@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -25,18 +24,19 @@ import android.util.Log;
  */
 
 final class AelfCacheHelper extends SQLiteOpenHelper {
-    public static final String TAG = "AELFCacheHelper";
+    private static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 2;
     private static final String DB_NAME = "aelf_cache.db";
 
     private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (date TEXT PRIMARY KEY, lectures BLOB)";
     private static final String DB_TABLE_SET = "INSERT OR REPLACE INTO `%s` VALUES (?,?)";
 
+    @SuppressLint("SimpleDateFormat")
     private static final SimpleDateFormat keyFormatter = new SimpleDateFormat("yyyy-MM-dd");
 
     // TODO: prepare requests
 
-    public AelfCacheHelper(Context context) {
+    AelfCacheHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
@@ -67,20 +67,19 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         return false;
     }
 
-    public void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
+    void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
         String key  = computeKey(when);
-        byte[] blob = null;
+        byte[] blob;
 
         // build blob
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = null;
+            ObjectOutputStream oos;
             oos = new ObjectOutputStream(bos);
             oos.writeObject(lectures);
             blob = bos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
-            // FIXME: error recovery
         }
 
         // insert into the database
@@ -94,7 +93,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     // cleaner helper method
-    public void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
+    void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
         String key = computeKey(when);
         SQLiteDatabase db = getWritableDatabase();
         db.delete(what.toString(), "`date` < ?", new String[] {key});
@@ -102,9 +101,9 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    public List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when) {
+    List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when) {
         String key  = computeKey(when);
-        byte[] blob = null;
+        byte[] blob;
 
         // load from db
         SQLiteDatabase db = getReadableDatabase();
@@ -119,15 +118,10 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 ObjectInputStream ois = new ObjectInputStream(bis);
 
                 return (List<LectureItem>)ois.readObject();
-            } catch (StreamCorruptedException e) {
+            } catch (ClassNotFoundException | IOException e) {
                 throw new RuntimeException(e);
-                // FIXME: error recovery
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-                // FIXME: error recovery
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-                // FIXME: error recovery
+            } finally {
+                cur.close();
             }
 
         } else {
@@ -139,7 +133,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
      * Internal logic
      */
     
-    public void createCache(SQLiteDatabase db, LecturesController.WHAT what) {
+    private void createCache(SQLiteDatabase db, LecturesController.WHAT what) {
         String sql = String.format(DB_TABLE_CREATE, what);
         db.execSQL(sql);
     }

@@ -3,7 +3,6 @@ package co.epitre.aelf_lectures;
 import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +10,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -19,6 +17,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
@@ -48,8 +47,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -58,7 +55,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 
@@ -66,32 +62,12 @@ import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
-
-class WhatWhen {
-    public LecturesController.WHAT what;
-    public AelfDate when;
-    public boolean today;
-    public int position;
-    public boolean useCache = true;
-    public String anchor = null;
-
-    public WhatWhen copy() {
-        WhatWhen c = new WhatWhen();
-        c.what = what;
-        c.when = when;
-        c.today = today;
-        c.position = position;
-        c.useCache = useCache;
-        c.anchor = anchor;
-        return c;
-    }
-}
+import co.epitre.aelf_lectures.data.WhatWhen;
 
 public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
         ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener {
 
     public static final String TAG = "AELFLecturesActivity";
-    public static final String PREFS_NAME = "aelf-prefs";
     public static final long DATE_TODAY = 0;
 
     /**
@@ -119,8 +95,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     private boolean isInLongPress = false;
     private GestureDetectorCompat mGestureDetector;
 
-    List<LectureItem> networkError = new ArrayList<LectureItem>(1);
-    List<LectureItem> emptyOfficeError = new ArrayList<LectureItem>(1);
+    List<LectureItem> networkError = new ArrayList<>(1);
+    List<LectureItem> emptyOfficeError = new ArrayList<>(1);
 
     /**
      * Sync account related vars
@@ -143,8 +119,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
-
-    // TODO: detect first launch + trigger initial sync
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +157,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
         try {
             String fontSize = settings.getString(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, "normal");
-            int zoom = 100;
+            int zoom;
             switch (fontSize) {
                 case "big":
                     zoom = 150;
@@ -200,7 +174,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             // Ignore: already migrated :)
         }
 
-        editor.commit();
+        editor.apply();
         // ---- end upgrade
 
         // create dummy account for our background sync engine
@@ -264,6 +238,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Spinner
         actionBar = getSupportActionBar();
+        assert actionBar != null;
 
         Context context = actionBar.getThemedContext();
         ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.support_simple_spinner_dropdown_item);
@@ -276,7 +251,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // restore active navigation item
         actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
 
-        // On older phones >= 44 < 6.0, we can set status bar to transluent but not its color.
+        // On older phones >= 44 < 6.0, we can set status bar to translucent but not its color.
         // the trick is to place a view under the status bar to emulate it.
         // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
         if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
@@ -285,7 +260,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             view.getLayoutParams().height = get_status_bar_height();
             ((ViewGroup) getWindow().getDecorView()).addView(view);
-            view.setBackgroundColor(this.getResources().getColor(R.color.aelf_dark));
+            view.setBackgroundColor(ContextCompat.getColor(this, R.color.aelf_dark));
         }
 
 
@@ -298,7 +273,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             // If the account has not been synced in a long time, fallback on "manual" trigger. This is an attempt
             // to solve Huawei y330 bug
             // TODO: move last sync time to K/V store
-            long last_sync = getLasySyncTime();
+            long last_sync = getLastSyncTime();
             long now = System.currentTimeMillis();
             long days = (now - last_sync) / (1000 * 3600 * 24);
             if (days >= 2) {
@@ -379,7 +354,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
     }
 
-    private long getLasySyncTime() {
+    private long getLastSyncTime() {
         // TODO: move this value to K/V store
         // from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
         long result = 0;
@@ -436,7 +411,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         if (isFullScreen) {
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-            // Transluent bar, *ONLY* in portait mode (broken in landscape)
+            // Translucent bar, *ONLY* in portait mode (broken in landscape)
             if (is_portrait) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
@@ -445,7 +420,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             }
         }
 
-        // Transluent bar, *ONLY* in portait mode (broken in landscape)
+        // Translucent bar, *ONLY* in portrait mode (broken in landscape)
         if (Build.VERSION.SDK_INT >= 19) {
             if (is_portrait) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -581,23 +556,23 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         outState.putLong("when", when);
     }
 
-    public boolean onAbout(MenuItem item) {
+    public boolean onAbout() {
         AboutDialogFragment aboutDialog = new AboutDialogFragment();
         aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
         return true;
     }
 
-    public boolean onSyncPref(MenuItem item) {
+    public boolean onSyncPref() {
         Intent intent = new Intent(this, SyncPrefActivity.class);
         startActivity(intent);
         return true;
     }
 
-    public boolean onSyncDo(MenuItem item) {
+    public boolean onSyncDo() {
         return do_manual_sync();
     }
 
-    public boolean onRefresh(MenuItem item) {
+    public boolean onRefresh() {
         whatwhen.useCache = false;
         whatwhen.anchor = null;
         if (mViewPager != null) {
@@ -610,7 +585,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         return true;
     }
 
-    public boolean onCalendar(MenuItem item) {
+    public boolean onCalendar() {
         Bundle args = new Bundle();
         args.putLong("time", whatwhen.when.getTimeInMillis());
 
@@ -621,7 +596,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         return true;
     }
 
-    public boolean onShare(MenuItem item) {
+    public boolean onShare() {
         // Make sure we DO have something to share
         // FIXME: racy, the loader will update it and it's in a thread
         if (lectures == null || mViewPager == null) {
@@ -738,9 +713,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         mMenu = menu;
 
         // Make the share image white
-        Drawable normalDrawable = getResources().getDrawable(R.drawable.ic_share_black_24dp);
+        Drawable normalDrawable = ContextCompat.getDrawable(this, R.drawable.ic_share_black_24dp);
         Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
-        DrawableCompat.setTint(wrapDrawable, getResources().getColor(R.color.white));
+        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(this, R.color.white));
 
         // Update to date button with "this.date"
         updateCalendarButtonLabel();
@@ -751,28 +726,21 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_about:
-                return onAbout(item);
+                return onAbout();
             case R.id.action_sync_settings:
-                return onSyncPref(item);
+                return onSyncPref();
             case R.id.action_sync_do:
-                return onSyncDo(item);
+                return onSyncDo();
             case R.id.action_refresh:
-                return onRefresh(item);
+                return onRefresh();
             case R.id.action_calendar:
-                return onCalendar(item);
+                return onCalendar();
             case R.id.action_share:
-                return onShare(item);
+                return onShare();
         }
         return true;
     }
 
-    /**
-     * Override event dispatcher to detect any event and especially, intercept "single tap" which
-     * we'll use to toggle fullscreen.
-     *
-     * @param event
-     * @return
-     */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
@@ -795,7 +763,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     /**
      * Detect simple taps that are not immediately following a long press (ie: skip cancels)
      */
-    class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
         @Override
         public void onLongPress(MotionEvent event) {
             isInLongPress = true;
@@ -862,7 +830,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                     buttonFadeIn.setStartOffset(2500);
                     buttonFadeIn.setDuration(500);
 
-                    loadingIndicator.getIndeterminateDrawable().setColorFilter(getResources().getColor(R.color.sepia_fg), android.graphics.PorterDuff.Mode.MULTIPLY);
+                    loadingIndicator.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(LecturesActivity.this, R.color.sepia_fg), android.graphics.PorterDuff.Mode.MULTIPLY);
                     cancelButton.setVisibility(View.VISIBLE);
                     cancelButton.setAnimation(buttonFadeIn);
                     loadingOverlay.setVisibility(View.VISIBLE);
@@ -928,9 +896,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 // attempt to read the result
                 try {
                     lectures = future.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
 

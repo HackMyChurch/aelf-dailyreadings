@@ -4,7 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.util.Log;
+import android.support.annotation.NonNull;
 
 /*
  * Define an implementation of ContentProvider that stubs out
@@ -14,7 +14,6 @@ import android.util.Log;
  * FIXME: merge them
  */
 public class StubProvider extends ContentProvider {
-    private static final String TAG = "AELFSyncDB";
 
     /*
      * Always return true, indicating that the
@@ -22,16 +21,14 @@ public class StubProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        Log.i(TAG, "Provider created");
         return true;
     }
     /*
      * Return an empty String for MIME type
      */
     @Override
-    public String getType(Uri arg0) {
-        Log.i(TAG, "Provider: Type");
-        return new String();
+    public String getType(@NonNull Uri arg0) {
+        return "";
     }
     /*
      * query() always returns no results
@@ -39,39 +36,35 @@ public class StubProvider extends ContentProvider {
      */
     @Override
     public Cursor query(
-            Uri uri,
+            @NonNull Uri uri,
             String[] projection,
             String selection,
             String[] selectionArgs,
             String sortOrder) {
-        Log.i(TAG, "Provider: query");
         return null;
     }
     /*
      * insert() always returns null (no URI)
      */
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        Log.i(TAG, "Provider: insert");
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         return null;
     }
     /*
      * delete() always returns "no rows affected" (0)
      */
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        Log.i(TAG, "Provider: delete");
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         return 0;
     }
     /*
      * update() always returns "no rows affected" (0)
      */
     public int update(
-            Uri uri,
+            @NonNull Uri uri,
             ContentValues values,
             String selection,
             String[] selectionArgs) {
-        Log.i(TAG, "Provider: update");
         return 0;
     }
 

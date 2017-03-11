@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,7 +40,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
     SharedPreferences preferences;
 
-    public interface LectureLinkListener {
+    interface LectureLinkListener {
         boolean onLectureLink(Uri link);
     }
 
@@ -61,7 +62,6 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         // load current zoom level
-        Resources res = context.getResources();
         int zoom = preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
         setCurrentZoom(zoom);
     }
@@ -78,18 +78,19 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         // Legacy
+        //noinspection deprecation
         switch (websettings.getTextSize()) {
-            case SMALLEST:
-                return 50;
-            case SMALLER:
-                return 75;
-            case LARGER:
-                return 150;
-            case LARGEST:
-                return 200;
-            default:
-                return 100;
-        }
+        case SMALLEST:
+            return 50;
+        case SMALLER:
+            return 75;
+        case LARGER:
+            return 150;
+        case LARGEST:
+            return 200;
+        default:
+            return 100;
+    }
 
     }
     // Helper: set zoom as percent, even on older phones
@@ -105,33 +106,34 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         // Legacy
         if (zoom <= 50) {
+            //noinspection deprecation
             websettings.setTextSize(TextSize.SMALLEST);
-            return;
         } else if (zoom <= 75) {
+            //noinspection deprecation
             websettings.setTextSize(TextSize.SMALLER);
-            return;
         } else if (zoom < 150) {
+            //noinspection deprecation
             websettings.setTextSize(TextSize.NORMAL);
-            return;
         } else if (zoom < 200) {
+            //noinspection deprecation
             websettings.setTextSize(TextSize.LARGER);
-            return;
         } else {
+            //noinspection deprecation
             websettings.setTextSize(TextSize.LARGEST);
-            return;
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Context context = getActivity();
 
         // compute view --> HTML
         StringBuilder htmlString = new StringBuilder();
         String body = getArguments().getString(ARG_TEXT_HTML);
 
-        String col_red_hex = Integer.toHexString(getResources().getColor(R.color.aelf_red)).substring(2);
-        String col_sepia_light = Integer.toHexString(getResources().getColor(R.color.sepia_bg)).substring(2);
-        String col_sepia_dark = Integer.toHexString(getResources().getColor(R.color.sepia_fg)).substring(2);
+        String col_red_hex = Integer.toHexString(ContextCompat.getColor(context, R.color.aelf_red)).substring(2);
+        String col_sepia_light = Integer.toHexString(ContextCompat.getColor(context, R.color.sepia_bg)).substring(2);
+        String col_sepia_dark = Integer.toHexString(ContextCompat.getColor(context, R.color.sepia_fg)).substring(2);
 
         htmlString.append("<!DOCTYPE html>" +
                 "<html>" +
@@ -249,7 +251,6 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
 
         // actual UI refresh
-        Context context = getActivity();
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         lectureView = (WebView) rootView.findViewById(R.id.LectureView);
         swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.LectureSwipeRefresh);
@@ -309,7 +310,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
             public void onRefresh() {
                 FragmentActivity activity = getActivity();
                 LecturesActivity test  = (LecturesActivity) activity;
-                test.onRefresh(null);
+                test.onRefresh();
                 swipeLayout.setRefreshing(false); // we have our own spinner
             }
         });
@@ -325,7 +326,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         }
 
         //accessibility: drop the underline attributes && line wrapper fixes, they break the screen readers
-        AccessibilityManager am = (AccessibilityManager) context.getSystemService(context.ACCESSIBILITY_SERVICE);
+        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
         if(am.isEnabled()) {
             reading = reading.replaceAll("</?u>", "")
                              // FIXME: what do people prefer ? Line by line or § by § ?
@@ -399,10 +400,9 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                 }
 
                 // load current zoom level
-                Resources res = context.getResources();
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, newZoom);
-                editor.commit();
+                editor.apply();
             }
         }
 

@@ -7,17 +7,16 @@ import co.epitre.aelf_lectures.data.LectureItem;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 
 /**
  * Adapter, return a fragment for each lecture / slide.
  */
-public class LecturePagerAdapter extends FragmentStatePagerAdapter {
+class LecturePagerAdapter extends FragmentStatePagerAdapter {
 
-    List<LectureItem> mlectures;
+    private List<LectureItem> mlectures;
 
-    public LecturePagerAdapter(FragmentManager fm, List<LectureItem> lectures) {
+    LecturePagerAdapter(FragmentManager fm, List<LectureItem> lectures) {
         super(fm);
         mlectures = lectures;
     }

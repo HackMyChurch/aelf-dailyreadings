@@ -1,14 +1,11 @@
 package co.epitre.aelf_lectures;
 
-import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
-import android.view.View;
-import android.view.WindowManager;
 
 public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";

@@ -27,17 +27,17 @@ import android.util.Log;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
-    public static final String TAG = "AELFSyncAdapter";
-    public static final int SYNC_NOT_ID = 1;
+    private static final String TAG = "AELFSyncAdapter";
+    private static final int SYNC_NOT_ID = 1;
 
-    Context mContext;
-    NotificationManager mNotificationManager;
-    LecturesController mController;
+    private Context mContext;
+    private NotificationManager mNotificationManager;
+    private LecturesController mController;
 
-    NotificationCompat.Builder mNotificationBuilder;
+    private NotificationCompat.Builder mNotificationBuilder;
 
-    int mTodo;
-    int mDone;
+    private int mTodo;
+    private int mDone;
 
     /**
      * Constructor. Obtains handle to content resolver for later use.
@@ -146,18 +146,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
         GregorianCalendar whenMax = new GregorianCalendar();
 
-        if(pDuree.equals("auj")) {
-            // take tomorrow for free as well or we might be quite late if running at 23h50..
-            whenMax.add(Calendar.DATE, 1);
-            daysToSync += 1;
-        } else if(pDuree.equals("auj-dim")) {
-            daysToSync += 2;
-        } else if(pDuree.equals("semaine")) {
-            whenMax.add(Calendar.DATE, 7);
-            daysToSync += 7;
-        } else if(pDuree.equals("mois")) {
-            whenMax.add(Calendar.DATE, 31);
-            daysToSync += 31;
+        switch (pDuree) {
+            case "auj":
+                // take tomorrow for free as well or we might be quite late if running at 23h50..
+                whenMax.add(Calendar.DATE, 1);
+                daysToSync += 1;
+                break;
+            case "auj-dim":
+                daysToSync += 2;
+                break;
+            case "semaine":
+                whenMax.add(Calendar.DATE, 7);
+                daysToSync += 7;
+                break;
+            case "mois":
+                whenMax.add(Calendar.DATE, 31);
+                daysToSync += 31;
+                break;
         }
 
         mTodo = daysToSync * (whatMax+1); // all readings + meta for all days
@@ -191,13 +196,17 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // ** CLEANUP **
         GregorianCalendar minConserv = new GregorianCalendar();
-        if(pConserv.equals("semaine")) {
-            minConserv.add(Calendar.DATE, -7);
-        } else if (pConserv.equals("mois")) {
-            minConserv.add(Calendar.MONTH, -1);
-        } else if (pConserv.equals("toujours")) {
-            // let's be honest: If I keep all, users will kill me !
-            minConserv.add(Calendar.YEAR, -1);
+        switch (pConserv) {
+            case "semaine":
+                minConserv.add(Calendar.DATE, -7);
+                break;
+            case "mois":
+                minConserv.add(Calendar.MONTH, -1);
+                break;
+            case "toujours":
+                // let's be honest: If I keep all, users will kill me !
+                minConserv.add(Calendar.YEAR, -1);
+                break;
         }
         controller.truncateBefore(minConserv);
 

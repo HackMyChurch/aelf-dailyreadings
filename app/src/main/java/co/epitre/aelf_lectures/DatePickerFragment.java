@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures;
 
-import java.text.DateFormatSymbols;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -9,12 +8,10 @@ import android.app.Dialog;
 import android.os.Build;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.view.ContextThemeWrapper;
-import android.text.format.DateFormat;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Message;
 import android.widget.DatePicker;
 
 public class DatePickerFragment extends DialogFragment
@@ -26,8 +23,8 @@ public class DatePickerFragment extends DialogFragment
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
-    public interface CalendarDialogListener {
-        public void onCalendarDialogPicked(int year, int month, int day);
+    interface CalendarDialogListener {
+        void onCalendarDialogPicked(int year, int month, int day);
     }
 
     CalendarDialogListener mListener;
