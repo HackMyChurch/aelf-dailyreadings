@@ -412,7 +412,6 @@ public final class LecturesController {
         postProcessState previousState = postProcessState.Empty;
         String bufferKey = null;
         String bufferReference = "";
-        String bufferCategory = "";
         String bufferTitle = "";
         String pagerTitle = "";
         String lectureTitle = "";
@@ -483,9 +482,8 @@ public final class LecturesController {
                         bufferKey,
                         bufferTitle,
                         bufferDescription,
-                        bufferCategory,
                         bufferReference));
-                bufferCategory = bufferTitle = bufferDescription = "";
+                bufferTitle = bufferDescription = "";
                 bufferKey = null;
             }
 
@@ -616,7 +614,6 @@ public final class LecturesController {
                 break;
             case Pericope:
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
-                bufferCategory = lectureIn.category;
                 bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferKey = currentKey;
@@ -639,14 +636,12 @@ public final class LecturesController {
                 break;
             case Psaume:
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
-                bufferCategory = lectureIn.category;
                 bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferKey = currentKey;
                 break;
             case Oraison:
                 bufferDescription = "<h3>Oraison</h3><div style=\"clear: both;\"></div>" + currentDescription;
-                bufferCategory = lectureIn.category;
                 bufferReference = lectureIn.reference;
                 bufferTitle = "Oraison";
                 bufferKey = currentKey;
@@ -654,13 +649,11 @@ public final class LecturesController {
             case Benediction:
                 bufferDescription = bufferDescription.replace("<h3>Oraison</h3>", "<h3>Oraison et bénédiction</h3>");
                 bufferDescription += currentDescription;
-                bufferCategory = lectureIn.category;
                 bufferReference = lectureIn.reference;
                 bufferTitle = "Oraison et bénédiction";
                 bufferKey = currentKey;
                 break;
             case Regular:
-                bufferCategory = lectureIn.category;
                 bufferReference = lectureIn.reference;
                 bufferTitle = pagerTitle + " : " + lectureTitle;
                 bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
@@ -681,7 +674,6 @@ public final class LecturesController {
                     bufferKey,
                     bufferTitle,
                     bufferDescription,
-                    bufferCategory,
                     bufferReference));
         }
 
@@ -812,7 +804,6 @@ public final class LecturesController {
         String key = null;
         String title = null;
         String description = null;
-        String category = null;
         String reference = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -827,10 +818,6 @@ public final class LecturesController {
                 parser.require(XmlPullParser.START_TAG, null, name);
                 description = readText(parser);
                 parser.require(XmlPullParser.END_TAG, null, name);
-            } else if (name.equals("category")) {
-                parser.require(XmlPullParser.START_TAG, null, name);
-                category = readText(parser);
-                parser.require(XmlPullParser.END_TAG, null, name);
             } else if (name.equals("key")) {
                 parser.require(XmlPullParser.START_TAG, null, name);
                 key = readText(parser).replace("\n", "").trim();
@@ -843,7 +830,7 @@ public final class LecturesController {
                 skip(parser);
             }
         }
-        return new LectureItem(key, title, description, category, reference);
+        return new LectureItem(key, title, description, reference);
     }
 
     // Extract text from the feed

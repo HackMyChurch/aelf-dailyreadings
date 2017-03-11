@@ -248,12 +248,12 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         networkError.add(new LectureItem("error_network", "Oups...", "" +
                 "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
                 "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur", null));
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", null));
         emptyOfficeError.add(new LectureItem("error_office", "Oups...", "" +
                 "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
                 "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
                 "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", "erreur", null));
+                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", null));
 
 
         // some UI. Most UI init are done in the prev async task

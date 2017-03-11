@@ -12,11 +12,10 @@ public class LectureItem implements Serializable {
     public final String shortTitle; // Title or part of the title before the ":"
     public final String title;      // Part of the title after the ":" or null
     public final String description;
-    public final String category;
     public final String reference;
     public final String key;
 
-    public LectureItem(String key, String title, String description, String category, String reference) {
+    public LectureItem(String key, String title, String description, String reference) {
         String[] titleChunks = title.split(":", 2);
         String shortTitle = titleChunks[0].replace("\u00a0", " :").trim().replace("&nbsp;", " ");
         String longTitle = title.trim();
@@ -37,7 +36,6 @@ public class LectureItem implements Serializable {
         this.longTitle = longTitle;
         this.title = title;
         this.description = description;
-        this.category = category;
         this.reference = reference;
     }
 }
