@@ -249,6 +249,8 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         String reading = htmlString.toString();
 
+        // Log.w(TAG, "\n\n"+reading+"\n\n");
+
 
         // actual UI refresh
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);

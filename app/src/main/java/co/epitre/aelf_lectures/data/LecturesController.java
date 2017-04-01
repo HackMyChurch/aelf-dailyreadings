@@ -190,213 +190,6 @@ public final class LecturesController {
         NeedFlush, // Force flush when item is known to be last of sequence
     }
 
-    private String sanitizeTitleCapitalization(String input) {
-        // HACK: (more hack than others) --> cleanup for METAS
-        input = input.replace("_nom", "")
-                     .replace("_", " ")
-                     .replace("fete", "fête")
-                     .replace("degre", "degré");
-        // /HACK
-
-        // sanitize capitalization. HACK for psalms, attempt to preserve trailing roman number
-        if(input.length() != 0 && ! input.toLowerCase().startsWith("psaume")) {
-            // *keep* capitals only when first letter of a word
-            // set capital on first *letter*
-            char[] chars = input.toCharArray();
-            boolean isFirstChar = true;
-            boolean handledCapital = false;
-            for (int i = 0; i < chars.length; i++) {
-                if (isFirstChar && Character.isLetter(chars[i])) {
-                    // First letter of sentence: always capitalize
-                    if(!handledCapital) {
-                        chars[i] = Character.toUpperCase(chars[i]);
-                        handledCapital = true;
-                    }
-                    isFirstChar = false;
-                } else if (!handledCapital && Character.isDigit(chars[i])) {
-                    // If first alnum char is number, cancel 1st letter capitalization
-                    handledCapital = true;
-                } else if (!isFirstChar && Character.isLetter(chars[i])) {
-                    // We are inside a word: never keep capitals
-                    chars[i] = Character.toLowerCase(chars[i]);
-                } else if (!Character.isLetterOrDigit(chars[i])) {
-                    isFirstChar = true;
-                }
-            }
-            input = String.valueOf(chars);
-
-            // force lower case on determinant and preposition
-            // except if 1st word
-            String[] words = input.split("\\s+");
-            input = "";
-            boolean isFirstWord = true;
-            for (int i = 0; i < words.length; i++) {
-                //noinspection StatementWithEmptyBody
-                if(words[i].startsWith("L'Évangile")) {
-                    // keep capitals
-                } else if (words[i].matches("^[0-9]*-Ii*$")) {
-                    // special case: undo this work for psaume Lecture Office reference ex: 103-Iii --> 103-III
-                    words[i] = words[i].toUpperCase();
-                } else if(!isFirstWord && (
-                    words[i].startsWith("D'") ||
-                    words[i].equals("De") ||
-                    words[i].equals("Des") ||
-                    words[i].startsWith("L'") ||
-                    words[i].equals("Le") ||
-                    words[i].equals("La") ||
-                    words[i].equals("Les") ||
-                    words[i].equals("Sur") ||
-                    words[i].equals("Sur") ||
-                    words[i].equals("En") ||
-                    words[i].startsWith("C'") ||
-                    words[i].equals("Ce") ||
-                    words[i].equals("Ces") ||
-                    words[i].equals("Celui") ||
-                    words[i].equals("Ça") ||
-                    words[i].equals("Sa") ||
-                    words[i].equals("Son") ||
-                    words[i].equals("Ses") ||
-                    words[i].equals("Dans") ||
-                    words[i].equals("Pour") ||
-                    words[i].equals("Contre") ||
-                    words[i].equals("Avec")
-                )) {
-                    words[i] = words[i].toLowerCase();
-                }
-                input += " "+words[i];
-
-                // Toggle once 1st word has been handled
-                if(Character.isLetterOrDigit(words[i].charAt(0))) {
-                    isFirstWord = false;
-                }
-            }
-        }
-        return input;
-    }
-
-    private String commonTextSanitizer(String input) {
-        input = input.trim()
-                // drop F** MS Word Meta
-                .replaceAll("(?s)<!--.*-->", "")
-                // remove inline paragraph styling
-                .replaceAll("<p.*?>", "<p>")
-                // fun with line feed at the beginning of §
-                .replaceAll("<p><br\\s*/>", "<p>")
-                // fix ugly typo in error message
-                .replace("n\\est", "n'est")
-                // remove leading line breaks (cf Lectures.Repons)
-                .replaceAll("^(<br\\s*/>)*", "")
-                // R/, V/ formating
-                .replace("</p></font></p>", "</font></p>")
-                .replaceAll("[.,!?:;]\\s*([R|V]/\\s*[A-Za-z0-9])", "<br/> $1") // Split lines...
-                .replaceAll("(?!\\s)([R|V])/", " $1/") // Ensure space before
-                .replaceAll("([R|V])/(?!\\s)", "$1/ ") // Ensure space after
-                .replaceAll("([R|V])/\\s*<p>", "$1/ ")
-                .replace(", R/", "<br/>R/") // special case for lectures office introduction. *sights*
-                .replaceAll("([R|V])/ (?!(</font>)?\\s*(</p>|<br\\s*/?>))", " <strong>$1/&nbsp;</strong>")
-                // verse numbering
-                .replaceAll("(<font[-a-zA-Z0-9_\\s#=\"']*>[0-9]*.)&nbsp;", "$1") // For some reason, some verse numbers have an unsplitable space after the dot
-                .replaceAll("<font[-a-zA-Z0-9_\\s#=\"']*>([.0-9]*)</font>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>")
-                .replaceAll("<span class=\"verse_number\">([.0-9]*)</span>", "<span aria-hidden=true class=\"verse verse-v2\">$1</span>") // convert new AELF verse numbers to our internal format
-                // inflexion fixes && accessibility
-                .replaceAll("([+*])\\s*<br", "<sup>$1</sup><br")
-                .replaceAll("<sup", "<sup aria-hidden=true")
-                // spacing fixes
-                .replaceAll("\\s*-\\s*", "-")
-                .replaceAll(":\\s+(\\s+)", "")
-                .replaceAll("\\s*\\(", " (")
-                // ensure punctuation/inflexions have required spaces
-                .replaceAll("\\s*([:?!])\\s*", "&nbsp;$1 ")
-                .replaceAll("\\s*(<sup)", "&nbsp;$1")
-                // non adjacent semicolon
-                .replaceAll("\\s+;\\s*", "&#x202f;; ")
-                // adjacent semicolon NOT from entities
-                .replaceAll("\\b(?<!&)(?<!&#)(\\w+);\\s*", "$1&#x202f;; ")
-                // Mixing nbsp and regular spaces is a non-sense
-                .replaceAll("\\s*&nbsp;\\s*", "&nbsp;")
-                // fix suddenly smaller text in readings
-                .replace("size=\"1\"", "")
-                .replace("size=\"2\"", "")
-                .replaceAll("face=\".*?\"", "")
-                .replaceAll("(font-size|font-family).*?(?=[;\"])", "")
-                // HTML entities bugs
-                .replace("&#156;", "œ")
-                // Evangile fixes
-                .replace("<br /><blockquote>", "<blockquote>")
-                .replaceAll("<b>Acclamation\\s*:\\s*</b>", "")
-                // clean references
-                .replaceAll("<small><i>\\s*\\((cf.)?\\s*", "<small><i>— ")
-                .replaceAll("\\s*\\)</i></small>", "</i></small>")
-                // empty/nested §
-                .replaceAll("<p>\\s*</p>", "")
-                .replace("<p><p>", "<p>")
-                .replace("</p></p>", "</p>")
-                // Some more typos
-                .replace("Eglise", "Église")
-                // grrrr
-                .replaceAll("<strong><font\\s*color=\"#[a-zA-Z0-9]*\"><br\\s*/></font></strong>", "")
-                // ensure quotes have required spaces
-                .replaceAll("\\s*(»|&raquo;)", "&nbsp;»")
-                .replaceAll("(«|&laquo;)\\s*", "«&nbsp;");
-        return input;
-    }
-
-    private String sanitizeForBlockQuote(String input) {
-        // Blockquotes are already a block --> drop leading <p> for now.
-        input = input.replaceAll("\\s*<p>(.*)</p>\\s*", "$1");
-        return input;
-    }
-
-    private String sanitizeBody(String input) {
-        // Recently, lectures started to use 1§ / line && 1 empty § between parts. This result is UGLY. Fiw this
-        if(input.contains("<p>&nbsp;</p>")) {
-            input = input
-                    .replace("<p>&nbsp;</p>", " ")
-                    .replace("</p><p>", "<br/>");
-        // some psalms only uses line breaks which breaks semantic (so sad) and screen readers. Let's fix for screen readers.
-        } else if(!input.contains("<p") && input.contains("<br")) {
-            input = "<p>"+input.replace("<br><br>", "</p><p>")+"</p>";
-        }
-
-        // Fix paragraph wrapping (sigh....)
-        if (!input.startsWith("<p")) {
-            if (input.contains("<p")) {
-                input = input.replaceFirst("<p", "</p><p");
-            } else {
-                input = input + "</p>";
-            }
-            input = "<p>" + input;
-        }
-
-        // emulate "text-indent: 10px hanging each-line;" for psalms/cantique/hymns or looking like
-        String fix_line_wrap_class = "";
-        if(input.contains("class=\"verse")) {
-            fix_line_wrap_class = "wrap";
-        }
-
-        // let's be smart: enable if we have a "good" <br> vs char ratio
-        int p_count = count_match(input, "<p>");
-        int br_count = count_match(input, "<br\\s*/?>");
-        //int rv_count = count_match(input, "[RV]/");
-        int char_count = input.length();
-
-        // At least 2 lines
-        if ((p_count + br_count) > 2) {
-            int char_per_wrap = char_count/(br_count + p_count - 1);
-            if (char_per_wrap < 100) {
-                fix_line_wrap_class = "wrap";
-            } else if (char_per_wrap > 200) {
-                fix_line_wrap_class = ""; // do not wrap when lines are long on average. That actually makes it harder to read
-            }
-        }
-
-        input = input.replace("<p>", "<p><line class=\""+fix_line_wrap_class+"\">")
-                     .replace("</p>", "</line></p>")
-                     .replaceAll("<br\\s*/?>", "</line><line class=\""+fix_line_wrap_class+"\">");
-
-        return input;
-    }
-
     private int count_match(String input, String search) {
         int matches = 0;
         Pattern pattern = Pattern.compile(search);
@@ -564,11 +357,7 @@ public final class LecturesController {
                 }
             }
 
-            // Sanitize titles capitalization
-            pagerTitle = commonTextSanitizer(sanitizeTitleCapitalization(pagerTitle));
-            lectureTitle = commonTextSanitizer(sanitizeTitleCapitalization(lectureTitle));
-
-            currentDescription = sanitizeBody(commonTextSanitizer(lectureIn.description));
+            currentDescription = lectureIn.description;
 
             // Insert note if the lecture is not available (AELF bug...)
             if(lectureIn.description.trim().equals("")) {
@@ -620,7 +409,7 @@ public final class LecturesController {
                 break;
             case Repons:
             case Verse:
-                bufferDescription += "<blockquote>" + sanitizeForBlockQuote(currentDescription) + "</blockquote>";
+                bufferDescription += "<blockquote>" + currentDescription + "</blockquote>";
                 bufferDescription = bufferDescription
                         .replace("</blockquote><blockquote>", "")
                         .replaceAll("(<br\\s*/>){2,}", "<br/><br/>");
@@ -629,7 +418,7 @@ public final class LecturesController {
                 }
                 break;
             case Antienne:
-                bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> " + sanitizeForBlockQuote(currentDescription) + "</blockquote>";
+                bufferDescription = "<blockquote><p><b>Antienne&nbsp;:</b> " + currentDescription + "</blockquote>";
                 if(bufferTitle.equals("")) {
                     bufferTitle = pagerTitle + " : " + lectureTitle;
                 }

@@ -17,11 +17,11 @@ public class LectureItem implements Serializable {
 
     public LectureItem(String key, String title, String description, String reference) {
         String[] titleChunks = title.split(":", 2);
-        String shortTitle = titleChunks[0].replace("\u00a0", " :").trim().replace("&nbsp;", " ");
+        String shortTitle = titleChunks[0].replace("\u00a0", " ").trim().replace("&nbsp;", " ");
         String longTitle = title.trim();
 
         if (titleChunks.length > 1) {
-            title = titleChunks[1].replace("\u00a0", " :").replace("&nbsp;", " ").trim();
+            title = titleChunks[1].replace("\u00a0", " ").replace("&nbsp;", " ").trim();
             if (title.equalsIgnoreCase(shortTitle)) {
                 title = null;
             } else if (title.equalsIgnoreCase(reference)) {
