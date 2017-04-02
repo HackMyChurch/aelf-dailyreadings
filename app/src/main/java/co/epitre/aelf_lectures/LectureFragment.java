@@ -20,6 +20,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
+import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebSettings.TextSize;
@@ -137,8 +138,8 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         htmlString.append("<!DOCTYPE html>" +
                 "<html>" +
-                    "<meta charset=\"utf-8\">" +
                     "<head>" +
+                        "<meta charset=\"utf-8\">" +
                         "<style type=\"text/css\">" +
                         "body{" +
                         "	margin:24px;" +
@@ -222,17 +223,17 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
                         "    text-decoration: underline;" +
                         "}" +
                         // indent line when verse is too long to fit on the screen
-                        "line .verse-v2 {" +
+                        ".line .verse {" +
                         "   margin-left: -30px;" +
                         "}" +
-                        "line.wrap .verse-v2 {" +
+                        ".line-wrap .verse {" +
                         "   margin-left: -55px;" +
                         "}" +
-                        "line {" +
+                        ".line {" +
                         "   display: block;" +
                         "   margin-bottom: 5px;" +
                         "}" +
-                        "line.wrap {" +
+                        ".line-wrap {" +
                         "   display: block;" +
                         "   padding-left: 25px;" +
                         "   text-indent: -25px;" +
@@ -249,9 +250,6 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
 
         String reading = htmlString.toString();
 
-        // Log.w(TAG, "\n\n"+reading+"\n\n");
-
-
         // actual UI refresh
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         lectureView = (WebView) rootView.findViewById(R.id.LectureView);
@@ -259,8 +257,27 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
 
+        // Log.d("HTML IN", "VERSION: "+lectureView.getSettings().getUserAgentString()+" DATA: "+reading);
+
         // Capture links
         lectureView.setWebViewClient(new WebViewClient() {
+            // DEBUG: print interpreted HTML
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    view.evaluateJavascript(
+                            "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
+                            new ValueCallback<String>() {
+                                @Override
+                                public void onReceiveValue(String html) {
+                                    // Log.d("HTML INTERPRETED", "VERSION: "+lectureView.getSettings().getUserAgentString()+" DATA: "+html.replace("\\u003C", "<").replace("\\\"", "\""));
+                                }
+                            }
+                    );
+                }
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 Log.w(TAG, "Got a URL: "+url);
