@@ -145,7 +145,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         if (savedVersion != currentVersion) {
             // update saved version
             editor.putInt("version", currentVersion);
-            editor.putInt("min_cache_version", 32); // Invalidate all readings loaded before this version
+            editor.putInt("min_cache_version", 33); // Invalidate all readings loaded before this version
         }
 
         // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
