@@ -109,14 +109,16 @@ public final class LecturesController {
         return LecturesController.instance;
     }
 
-    public List<LectureItem> getLecturesFromCache(WHAT what, GregorianCalendar when) throws IOException {
+    public List<LectureItem> getLecturesFromCache(WHAT what, GregorianCalendar when, boolean allowColdCache) throws IOException {
         List<LectureItem> lectures;
+        GregorianCalendar minLoadDate = null;
+        long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
 
         try {
-            lectures = cache.load(what, when);
+            lectures = cache.load(what, when, minLoadDate, minLoadVersion);
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
-            Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...");
+            Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);
             return null;
         }
 

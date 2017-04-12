@@ -143,15 +143,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
-            if (savedVersion < 32) {
-                // delete cache DB: needs to force regenerate
-                getApplicationContext().deleteDatabase("aelf_cache.db");
-                // regenerate, according to user settings
-                do_manual_sync();
-            }
-
             // update saved version
             editor.putInt("version", currentVersion);
+            editor.putInt("min_cache_version", 32); // Invalidate all readings loaded before this version
         }
 
         // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
@@ -872,7 +866,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 List<LectureItem> lectures = null;
                 if(ww.useCache) {
                     // attempt to load from cache: skip loading indicator (avoids flickering)
-                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
+                    // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
+                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, false);
                     if(lectures != null) {
                         return lectures;
                     }
@@ -908,7 +903,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 if (lectures == null) {
                     // Failed to load lectures from network AND we were asked to refresh so attempt
                     // a fallback on the cache to avoid the big error message but still display a notification
-                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when);
+                    // If the cache considers the lecture as outdated, still return it. We are in error recovery now
+                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, true);
                     LecturesActivity.this.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(LecturesActivity.this, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();

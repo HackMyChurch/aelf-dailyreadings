@@ -87,8 +87,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     // Sync one reading for the day
     private void syncReading(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
-        // Load from network, if not in cache
-        if(mController.getLecturesFromCache(what, when) == null) {
+        // Load from network, if not in cache and not outdated
+        if(mController.getLecturesFromCache(what, when, false) == null) {
             mController.getLecturesFromNetwork(what, when);
         }
         mDone++;
