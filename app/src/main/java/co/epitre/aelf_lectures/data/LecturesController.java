@@ -13,6 +13,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.piwik.sdk.Tracker;
+import org.piwik.sdk.extra.PiwikApplication;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -27,6 +29,11 @@ import android.util.Xml;
  */
 
 public final class LecturesController {
+    /**
+     * Statistics
+     */
+    Tracker tracker;
+
     /**
      * "What to sync" constants
      */
@@ -94,6 +101,8 @@ public final class LecturesController {
 
     private LecturesController(Context c) {
         super();
+
+        tracker = ((PiwikApplication) c.getApplicationContext()).getTracker();
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
 

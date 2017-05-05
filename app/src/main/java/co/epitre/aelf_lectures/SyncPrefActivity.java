@@ -7,17 +7,30 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 
+import org.piwik.sdk.Tracker;
+import org.piwik.sdk.extra.PiwikApplication;
+
 public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
+    public static final String KEY_PREF_PARTICIPATE_STATISTICS = "pref_participate_statistics";
+
+    /**
+     * Statistics
+     */
+    Tracker tracker;
 
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Load Tracker
+        tracker = ((PiwikApplication) getApplication()).getTracker();
+
         addPreferencesFromResource(R.xml.sync_preferences);
 
         // hacky hack, but does the job --> init summaries

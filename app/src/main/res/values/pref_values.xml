@@ -42,6 +42,8 @@
     </string-array>
     <string name="pref_conserv_def">semaine</string>
 
+    <string name="pref_contribute_statistics_on">Participation bien enregistrée. Merci ! Vous pouvez désactiver cette option à tout moment.</string>
+    <string name="pref_contribute_statistics_off">Envoyer des statistiques est un moyen simple de contribuer à l\'application.</string>
     <string name="pref_contribute_beta_on">Participation bien enregistrée. Merci !</string>
     <string name="pref_contribute_beta_off">Recevoir les nouvelles corrections de textes, amélioration typographiques, mises en forme...</string>
     <string name="pref_contribute_disable_cache_on">Cache désactivé. La synchronisation sera plus lente que d\'habitude.</string>

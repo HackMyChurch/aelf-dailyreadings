@@ -31,6 +31,12 @@
         android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>*
 
     <PreferenceCategory android:title="Contribuer" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="pref_participate_statistics"
+        android:summaryOff="@string/pref_contribute_statistics_off"
+        android:summaryOn="@string/pref_contribute_statistics_on"
+        android:title="Remonter des statistiques anonymes" />
     <Preference
         android:title="Noter cette application" >
         <intent

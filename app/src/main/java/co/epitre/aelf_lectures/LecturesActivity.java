@@ -43,6 +43,9 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import org.piwik.sdk.Tracker;
+import org.piwik.sdk.extra.PiwikApplication;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -116,6 +119,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     protected ActionBar actionBar;
 
     /**
+     * Statistics
+     */
+    Tracker tracker;
+
+    /**
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
@@ -123,6 +131,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Load Tracker
+        tracker = ((PiwikApplication) getApplication()).getTracker();
 
         // ---- need upgrade ?
         int currentVersion, savedVersion;
@@ -139,6 +150,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // load saved version, if any
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         savedVersion = settings.getInt("version", -1);
+
 
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();

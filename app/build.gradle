@@ -5,7 +5,7 @@ android {
     buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
-        minSdkVersion 9
+        minSdkVersion 10
         targetSdkVersion 25
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -25,4 +25,5 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:25.0.1'
     compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'org.piwik.sdk:piwik-sdk:2.0.0'
 }
