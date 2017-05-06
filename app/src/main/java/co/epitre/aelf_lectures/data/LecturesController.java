@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -33,6 +34,17 @@ public final class LecturesController {
      * Statistics
      */
     Tracker tracker;
+
+    /**
+     * Simple exception class to propagate error names to statistics handler
+     */
+    class DownloadException extends Exception {
+        public String name;
+        DownloadException(String name) {
+            super();
+            this.name = name;
+        }
+    }
 
     /**
      * "What to sync" constants
@@ -142,14 +154,32 @@ public final class LecturesController {
         return null;
     }
     
-    public List<LectureItem> getLecturesFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
+    public List<LectureItem> getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         List<LectureItem> lectures;
 
         // fallback to network load
-        lectures = loadFromNetwork(what, when);
-        if(lectures == null) {
+        long startTime = System.nanoTime();
+        String errorName = "success";
+        try {
+            lectures = loadFromNetwork(what, when);
+            if (lectures == null) {
+                errorName = "error.generic";
+                Log.w(TAG, "Failed to load lectures from network");
+                return null;
+            }
+        } catch (DownloadException e) {
+            errorName = "error."+e.name;
             Log.w(TAG, "Failed to load lectures from network");
             return null;
+        } catch (Exception e) {
+            errorName = "error."+e.getClass().getName();
+            throw e;
+        } finally {
+            // Push event
+            float deltaTime = (System.nanoTime() - startTime) / 1000;
+            long dayDelta = when.dayBetween(new GregorianCalendar());
+
+            TrackHelper.track().event("Office", "download."+errorName).name(what.urlName()+"."+dayDelta).value(deltaTime).with(tracker);
         }
 
         lectures = PostProcessLectures(lectures);
@@ -509,7 +539,7 @@ public final class LecturesController {
 
     // Attempts to load from network
     // throws IOException to allow for auto retry. Aelf servers are not that stable...
-    private List<LectureItem> loadFromNetwork(WHAT what, GregorianCalendar when) throws IOException {
+    private List<LectureItem> loadFromNetwork(WHAT what, AelfDate when) throws IOException, DownloadException {
         InputStream in = null;
         URL feedUrl;
 
@@ -524,7 +554,7 @@ public final class LecturesController {
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Failed to parse URL", e);
-            return null;
+            throw new DownloadException("url");
         }
 
         // Attempts to load and parse the feed
@@ -545,10 +575,10 @@ public final class LecturesController {
             readFeed(parser, lectures);
         } catch (XmlPullParserException e) {
             Log.e(TAG, "Failed to parse API result", e);
-            return null;
+            throw new DownloadException("parse");
         } catch (IOException e) {
             Log.e(TAG, "Failed to read from API", e);
-            return null;
+            throw new DownloadException("io");
         } finally {
             try {
                 urlConnection.disconnect();

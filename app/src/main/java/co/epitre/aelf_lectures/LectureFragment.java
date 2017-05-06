@@ -26,6 +26,8 @@ import android.webkit.WebView;
 import android.webkit.WebSettings.TextSize;
 import android.webkit.WebViewClient;
 
+import org.piwik.sdk.extra.TrackHelper;
+
 /**
  * "Lecture" renderer
  */
@@ -329,7 +331,7 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
             public void onRefresh() {
                 FragmentActivity activity = getActivity();
                 LecturesActivity test  = (LecturesActivity) activity;
-                test.onRefresh();
+                test.onRefresh("pull");
                 swipeLayout.setRefreshing(false); // we have our own spinner
             }
         });

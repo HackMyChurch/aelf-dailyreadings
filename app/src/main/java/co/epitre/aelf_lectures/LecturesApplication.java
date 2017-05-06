@@ -18,6 +18,10 @@ import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_STAT
 public class LecturesApplication extends PiwikApplication implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "LecturesApplication";
 
+    public static final int STATS_DIM_SOURCE = 1;
+    public static final int STATS_DIM_STATUS = 2;
+    public static final int STATS_DIM_DAY_DELTA = 3;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -59,8 +63,12 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
         // Track this app install, this will only trigger once per app version.
         Tracker tracker = getTracker();
         TrackHelper.track().download().identifier(new DownloadTracker.Extra.ApkChecksum(this)).with(tracker);
-        tracker.setDispatchGzipped(true);
         tracker.setOptOut(!settings.getBoolean(KEY_PREF_PARTICIPATE_STATISTICS, true));
+        // tracker.setDispatchInterval(1);
+
+        // TODO: enable gzip. Will require server side LUA
+        // http://www.pataliebre.net/howto-make-nginx-decompress-a-gzipped-request.html
+        // tracker.setDispatchGzipped(true);
 
         Log.i(TAG, "Piwik setup complete. OptOut status: "+tracker.isOptOut());
     }

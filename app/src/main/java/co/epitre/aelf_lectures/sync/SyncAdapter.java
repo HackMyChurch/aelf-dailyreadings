@@ -6,6 +6,7 @@ import java.util.GregorianCalendar;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
+import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController;
 
 import android.accounts.Account;
@@ -25,6 +26,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.piwik.sdk.Tracker;
+import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
+
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
@@ -40,12 +45,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private int mDone;
 
     /**
+     * Statistics
+     */
+    Tracker tracker;
+
+    /**
      * Constructor. Obtains handle to content resolver for later use.
      */
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
         Object service = context.getSystemService(Context.NOTIFICATION_SERVICE);
+        this.tracker = ((PiwikApplication) context.getApplicationContext()).getTracker();
         this.mNotificationManager = (NotificationManager) service;
         this.mContext = context;
         this.mController = LecturesController.getInstance(this.getContext());
@@ -86,7 +97,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync one reading for the day
-    private void syncReading(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
+    private void syncReading(LecturesController.WHAT what, AelfDate when) throws IOException {
         // Load from network, if not in cache and not outdated
         if(mController.getLecturesFromCache(what, when, false) == null) {
             mController.getLecturesFromNetwork(what, when);
@@ -96,7 +107,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync all readings for the day
-    private void syncDay(GregorianCalendar when, int max) throws IOException {
+    private void syncDay(AelfDate when, int max) throws IOException {
         syncReading(LecturesController.WHAT.METAS, when);
         while(max-- > 0) {
             LecturesController.WHAT what = LecturesController.WHAT.values()[max];
@@ -172,9 +183,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         updateNotification();
 
         // ** SYNC **
+        String errorName = "success";
         try {
             // loop until when > dayMax
-            GregorianCalendar when = new GregorianCalendar();
+            AelfDate when = new AelfDate();
             do {
                 syncDay(when, whatMax);
                 when.add(Calendar.DATE, +1);
@@ -182,7 +194,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // finally, do we need to explicitly grab next Sunday ?
             if(pDuree.equals("auj-dim")) {
-                when = new GregorianCalendar();
+                when = new AelfDate();
                 do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax);
             }
@@ -190,8 +202,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // Aelf servers down ? It appends ...
             Log.e(TAG, "I/O error while syncing. AELF servers down ?");
             syncResult.delayUntil = 60L*15; // Wait 15min before retrying
-        } finally {
+            errorName = "error.io";
+        } catch (Exception e) {
+            errorName = "error."+e.getClass().getName();
+            throw e;
+        }
+        finally {
             this.cancelNotification();
+            TrackHelper.track().event("Office", "sync."+errorName).name(pLectures+"."+pDuree).value(1f).with(tracker);
         }
 
         // ** CLEANUP **

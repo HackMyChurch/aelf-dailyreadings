@@ -124,4 +124,9 @@ public class AelfDate extends GregorianCalendar {
     public boolean isSameDay(GregorianCalendar other) {
         return (isSameYear(other) && get(GregorianCalendar.DAY_OF_YEAR) == other.get(GregorianCalendar.DAY_OF_YEAR));
     }
+
+    // Will return the number of days between self and other. If other is in the future, will be positive
+    public long dayBetween(GregorianCalendar other) {
+        return (getTimeInMillis() - other.getTimeInMillis()) / (1000 * 60 * 60 * 24);
+    }
 }

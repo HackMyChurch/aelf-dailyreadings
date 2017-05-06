@@ -45,11 +45,13 @@ import android.widget.Toast;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.GregorianCalendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -197,13 +199,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Select where to go from here
         whatwhen = new WhatWhen();
+        String openSource;
 
         Uri uri = this.getIntent().getData();
         if (uri != null) {
+            openSource = "intent";
             parseIntentUri(whatwhen, uri);
-
         } else if (savedInstanceState != null) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
+            openSource = "restore";
             whatwhen.what = WHAT.values()[savedInstanceState.getInt("what")];
             whatwhen.position = savedInstanceState.getInt("position");
 
@@ -216,13 +220,18 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 whatwhen.when.setTimeInMillis(timestamp);
                 whatwhen.today = false;
             }
+
         } else {
             // load the "lectures" for today
+            openSource = "fresh";
             whatwhen.when = new AelfDate();
             whatwhen.today = true;
             whatwhen.what = WHAT.MESSE;
             whatwhen.position = 0; // 1st lecture of the office
         }
+
+        // Track app open source + target
+        TrackHelper.track().event("OfficeActivity", "open."+openSource).name(whatwhen.toTrackerName()).value(1f).with(tracker);
 
         // Error handler
         networkError.add(new LectureItem("error_network", "Oups...", "" +
@@ -363,7 +372,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     private long getLastSyncTime() {
         // TODO: move this value to K/V store
         // from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
-        long result = 0;
+        long result = -1;
         try {
             Method getSyncStatus = ContentResolver.class.getMethod("getSyncStatus", Account.class, String.class);
             if (mAccount != null) {
@@ -384,6 +393,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         } catch (NullPointerException e) {
         }
 
+        TrackHelper.track().event("OfficeActivity", "sync.age_sec").name("start").value((float)result).with(tracker);
         return result;
     }
 
@@ -451,6 +461,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         if (mAccount == null) {
             // TODO: patch the alg to work without ?
             Log.w(TAG, "Failed to run manual sync: we have no account...");
+            TrackHelper.track().event("OfficeActivity", "sync.error.no-account").name("start").value(1f).with(tracker);
             return false;
         }
 
@@ -461,6 +472,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // start sync
         ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
+        TrackHelper.track().event("OfficeActivity", "sync.success").name("start").value(1f).with(tracker);
 
         // done
         return true;
@@ -565,12 +577,14 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     public boolean onAbout() {
         AboutDialogFragment aboutDialog = new AboutDialogFragment();
         aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
+        TrackHelper.track().event("OfficeActivity", "action.about").name("show").value(1f).with(tracker);
         return true;
     }
 
     public boolean onSyncPref() {
         Intent intent = new Intent(this, SyncPrefActivity.class);
         startActivity(intent);
+        TrackHelper.track().event("OfficeActivity", "action.preferences").name("show").value(1f).with(tracker);
         return true;
     }
 
@@ -578,7 +592,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         return do_manual_sync();
     }
 
-    public boolean onRefresh() {
+    public boolean onRefresh(String reason) {
         whatwhen.useCache = false;
         whatwhen.anchor = null;
         if (mViewPager != null) {
@@ -588,6 +602,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
         this.whatwhen_previous = null;
         this.loadLecture(whatwhen);
+        TrackHelper.track().event("OfficeActivity", "action.refresh."+reason).name(whatwhen.toTrackerName()).value(1f).with(tracker);
         return true;
     }
 
@@ -598,6 +613,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         DatePickerFragment calendarDialog = new DatePickerFragment();
         calendarDialog.setArguments(args);
         calendarDialog.show(getSupportFragmentManager(), "datePicker");
+
+        TrackHelper.track().event("OfficeActivity", "action.calendar").name("show").value(1f).with(tracker);
 
         return true;
     }
@@ -668,6 +685,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
 
+        // Track
+        TrackHelper.track().event("OfficeActivity", "share").name(whatwhen.toTrackerName()).value(1f).with(tracker);
+
         // All done !
         return true;
     }
@@ -708,6 +728,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             whatwhen.anchor = null;
         }
         this.whatwhen_previous = whatwhen.copy();
+
+        // Track
+        TrackHelper.track().event("OfficeActivity", "action.select-office").name("show").value(1f).with(tracker);
+
+        // Load
         this.loadLecture(whatwhen);
         return true;
     }
@@ -738,7 +763,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             case R.id.action_sync_do:
                 return onSyncDo();
             case R.id.action_refresh:
-                return onRefresh();
+                return onRefresh("menu");
             case R.id.action_calendar:
                 return onCalendar();
             case R.id.action_share:
@@ -759,6 +784,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         toggleFullscreen();
 
         // Go to the reading
+        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
         parseIntentUri(whatwhen, link);
         loadLecture(whatwhen);
 
@@ -779,6 +805,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isInLongPress) {
+                TrackHelper.track().event("OfficeActivity", "fullscreen.toggle").name("tap").value(1f).with(tracker);
                 toggleFullscreen();
             }
             isInLongPress = false;
@@ -869,10 +896,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
         LecturePagerAdapter mLecturesPager;
         Future<List<LectureItem>> future;
+        WhatWhen statWhatWhen = null;
+        boolean statIsFromCache = false; // True is the data came from the cache
 
         @Override
         protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
             final WhatWhen ww = whatwhen[0];
+            statWhatWhen = ww;
 
             try {
                 List<LectureItem> lectures = null;
@@ -881,6 +911,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                     // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
                     lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, false);
                     if(lectures != null) {
+                        statIsFromCache = true;
                         return lectures;
                     }
                 }
@@ -917,6 +948,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                     // a fallback on the cache to avoid the big error message but still display a notification
                     // If the cache considers the lecture as outdated, still return it. We are in error recovery now
                     lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, true);
+                    statIsFromCache = true;
                     LecturesActivity.this.runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(LecturesActivity.this, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
@@ -931,6 +963,26 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             }
         }
 
+        private void trackView(String status) {
+            long dayDelta = statWhatWhen.when.dayBetween(new GregorianCalendar());
+
+            TrackHelper.track()
+                    .screen("/office/"+whatwhen.what.urlName())
+                    .title("/office/"+whatwhen.what.urlName())
+                    .dimension(LecturesApplication.STATS_DIM_SOURCE, statIsFromCache ? "cache" : "network")
+                    .dimension(LecturesApplication.STATS_DIM_STATUS, status)
+                    .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int)dayDelta))
+                    .with(tracker);
+        }
+
+        @Override
+        protected void onCancelled(List<LectureItem> lectureItems) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                super.onCancelled(lectureItems);
+            }
+            trackView("cancelled");
+        }
+
         @Override
         protected void onPostExecute(final List<LectureItem> lectures) {
             List<LectureItem> pager_data;
@@ -940,12 +992,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
                 // Failed to load
                 if (lectures == null) {
+                    trackView("error");
                     pager_data = networkError;
                     // Empty office ? Prevent crash
                 } else if (lectures.isEmpty()) {
+                    trackView("empty");
                     pager_data = emptyOfficeError;
                     // Nominal case
                 } else {
+                    trackView("success");
                     pager_data = lectures;
                 }
 
