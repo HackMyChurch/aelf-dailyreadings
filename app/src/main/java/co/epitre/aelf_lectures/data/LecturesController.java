@@ -25,6 +25,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
 
+import com.getsentry.raven.android.Raven;
+
 /**
  * Public data controller --> load either from cache, either from network
  */
@@ -140,6 +142,7 @@ public final class LecturesController {
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);
+            Raven.capture(e);
             return null;
         }
 
@@ -170,9 +173,11 @@ public final class LecturesController {
         } catch (DownloadException e) {
             errorName = "error."+e.name;
             Log.w(TAG, "Failed to load lectures from network");
+            // No capture here, already done in callee
             return null;
         } catch (Exception e) {
             errorName = "error."+e.getClass().getName();
+            Raven.capture(e);
             throw e;
         } finally {
             // Push event
@@ -554,6 +559,7 @@ public final class LecturesController {
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Failed to parse URL", e);
+            Raven.capture(e);
             throw new DownloadException("url");
         }
 
@@ -575,9 +581,11 @@ public final class LecturesController {
             readFeed(parser, lectures);
         } catch (XmlPullParserException e) {
             Log.e(TAG, "Failed to parse API result", e);
+            Raven.capture(e);
             throw new DownloadException("parse");
         } catch (IOException e) {
             Log.e(TAG, "Failed to read from API", e);
+            Raven.capture(e);
             throw new DownloadException("io");
         } finally {
             try {
@@ -585,6 +593,7 @@ public final class LecturesController {
                 if(in!=null) in.close();
             } catch (IOException e) {
                 Log.e(TAG, "Failed to close API connection", e);
+                Raven.capture(e);
             }
         }
 

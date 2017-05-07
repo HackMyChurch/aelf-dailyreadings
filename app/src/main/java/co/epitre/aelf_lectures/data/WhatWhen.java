@@ -18,6 +18,10 @@ public class WhatWhen {
         return what.urlName()+"."+when.dayBetween(new GregorianCalendar());
     }
 
+    public String toUrlName() {
+        return what.urlName()+"/"+when.toIsoString();
+    }
+
     public WhatWhen copy() {
         WhatWhen c = new WhatWhen();
         c.what = what;

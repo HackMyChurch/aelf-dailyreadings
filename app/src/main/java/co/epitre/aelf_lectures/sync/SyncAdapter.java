@@ -26,6 +26,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.getsentry.raven.android.Raven;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
+
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
@@ -130,6 +134,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider,
             SyncResult syncResult) {
         Log.i(TAG, "Beginning network synchronization");
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting scheduled background sync").build());
 
         // ** PREFS **
 
@@ -156,6 +161,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // FIXME: -1 because 8 is Meta, which is always synced
         int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
         GregorianCalendar whenMax = new GregorianCalendar();
+        long currentTimeMillis = System.currentTimeMillis();
 
         switch (pDuree) {
             case "auj":
@@ -201,15 +207,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         } catch (IOException e) {
             // Aelf servers down ? It appends ...
             Log.e(TAG, "I/O error while syncing. AELF servers down ?");
+            Raven.capture(e);
             syncResult.delayUntil = 60L*15; // Wait 15min before retrying
             errorName = "error.io";
         } catch (Exception e) {
+            Raven.capture(e);
             errorName = "error."+e.getClass().getName();
             throw e;
         }
         finally {
             this.cancelNotification();
             TrackHelper.track().event("Office", "sync."+errorName).name(pLectures+"."+pDuree).value(1f).with(tracker);
+            SharedPreferences.Editor editor = syncPref.edit();
+            editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
+            if (errorName.equals("success")) {
+                editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
+            }
+            editor.apply();
         }
 
         // ** CLEANUP **
@@ -227,8 +241,5 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
         }
         controller.truncateBefore(minConserv);
-
-        // TODO: persist last sync time
-
     }
 }

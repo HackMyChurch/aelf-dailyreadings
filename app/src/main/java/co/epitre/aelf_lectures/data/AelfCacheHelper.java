@@ -20,6 +20,8 @@ import android.database.sqlite.SQLiteStatement;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.getsentry.raven.android.Raven;
+
 
 /**
  * Internal cache manager (SQLite). There is one table per office and one line per day.
@@ -74,8 +76,10 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 return true;
             } catch(SQLiteException e) {
                 Log.w(TAG, "Failed to save item in cache (SQLiteException): "+e.toString());
+                Raven.capture(e);
             } catch(IllegalStateException e) {
                 Log.w(TAG, "Failed to save item in cache (IllegalStateException): "+e.toString());
+                Raven.capture(e);
             }
 
         } while (--max_retries > 0);
@@ -100,6 +104,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
             oos.writeObject(lectures);
             blob = bos.toByteArray();
         } catch (IOException e) {
+            Raven.capture(e);
             throw new RuntimeException(e);
         }
 
@@ -153,6 +158,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
                 return (List<LectureItem>)ois.readObject();
             } catch (ClassNotFoundException | IOException e) {
+                Raven.capture(e);
                 throw new RuntimeException(e);
             } finally {
                 cur.close();
@@ -197,6 +203,9 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                     db.execSQL("UPDATE `" + what + "` SET create_date = '0000-00-00', create_version = 0;");
                 }
                 db.setTransactionSuccessful();
+            } catch (Exception e) {
+                Raven.capture(e);
+                throw e;
             } finally {
                 db.endTransaction();
             }

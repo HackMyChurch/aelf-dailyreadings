@@ -43,6 +43,10 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.getsentry.raven.android.Raven;
+import com.getsentry.raven.event.BreadcrumbBuilder;
+import com.getsentry.raven.event.Breadcrumbs;
+
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
@@ -145,6 +149,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         try {
             packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
         } catch (NameNotFoundException e) {
+            Raven.capture(e);
             throw new RuntimeException("Could not determine current version");
         }
         currentVersion = packageInfo.versionCode;
@@ -159,6 +164,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         if (savedVersion != currentVersion) {
             // update saved version
             editor.putInt("version", currentVersion);
+            editor.putInt("previous_version", savedVersion);
             editor.putInt("min_cache_version", 33); // Invalidate all readings loaded before this version
         }
 
@@ -191,6 +197,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         } catch (SecurityException e) {
             // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
             Log.w(TAG, "Create/Get sync account was DENIED");
+            Raven.capture(e);
             mAccount = null;
         }
 
@@ -231,6 +238,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
 
         // Track app open source + target
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open "+openSource).build());
         TrackHelper.track().event("OfficeActivity", "open."+openSource).name(whatwhen.toTrackerName()).value(1f).with(tracker);
 
         // Error handler
@@ -293,7 +301,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             long days = (now - last_sync) / (1000 * 3600 * 24);
             if (days >= 2) {
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
-                do_manual_sync();
+                do_manual_sync("outdated");
             }
         }
 
@@ -457,11 +465,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
     }
 
-    public boolean do_manual_sync() {
+    public boolean do_manual_sync(String reason) {
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting "+reason+" sync ").build());
+
         if (mAccount == null) {
             // TODO: patch the alg to work without ?
             Log.w(TAG, "Failed to run manual sync: we have no account...");
-            TrackHelper.track().event("OfficeActivity", "sync.error.no-account").name("start").value(1f).with(tracker);
+            TrackHelper.track().event("OfficeActivity", "sync."+reason+".error.no-account").name("start").value(1f).with(tracker);
             return false;
         }
 
@@ -472,7 +482,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // start sync
         ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        TrackHelper.track().event("OfficeActivity", "sync.success").name("start").value(1f).with(tracker);
+        TrackHelper.track().event("OfficeActivity", "sync."+reason+".success").name("start").value(1f).with(tracker);
 
         // done
         return true;
@@ -520,7 +530,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         } catch (NullPointerException e) {
             // Asking for permission is racy
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Raven.capture(e);
         } finally {
             currentRefresh = null;
             setLoading(false); // FIXME: should be in the cancel code path in the task imho
@@ -577,6 +587,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     public boolean onAbout() {
         AboutDialogFragment aboutDialog = new AboutDialogFragment();
         aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show About dialog").build());
         TrackHelper.track().event("OfficeActivity", "action.about").name("show").value(1f).with(tracker);
         return true;
     }
@@ -584,12 +595,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     public boolean onSyncPref() {
         Intent intent = new Intent(this, SyncPrefActivity.class);
         startActivity(intent);
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show Preference screen").build());
         TrackHelper.track().event("OfficeActivity", "action.preferences").name("show").value(1f).with(tracker);
         return true;
     }
 
     public boolean onSyncDo() {
-        return do_manual_sync();
+        return do_manual_sync("manual");
     }
 
     public boolean onRefresh(String reason) {
@@ -601,8 +613,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             whatwhen.position = 0;
         }
         this.whatwhen_previous = null;
-        this.loadLecture(whatwhen);
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Refresh "+whatwhen.toUrlName()).build());
         TrackHelper.track().event("OfficeActivity", "action.refresh."+reason).name(whatwhen.toTrackerName()).value(1f).with(tracker);
+        this.loadLecture(whatwhen);
         return true;
     }
 
@@ -614,6 +627,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         calendarDialog.setArguments(args);
         calendarDialog.show(getSupportFragmentManager(), "datePicker");
 
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show Calendar").build());
         TrackHelper.track().event("OfficeActivity", "action.calendar").name("show").value(1f).with(tracker);
 
         return true;
@@ -686,6 +700,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
 
         // Track
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Share "+whatwhen.toUrlName()).build());
         TrackHelper.track().event("OfficeActivity", "share").name(whatwhen.toTrackerName()).value(1f).with(tracker);
 
         // All done !
@@ -713,6 +728,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         whatwhen.when = date;
         whatwhen.position = 0;
         whatwhen.anchor = null;
+
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set date "+whatwhen.toUrlName()).build());
         this.loadLecture(whatwhen);
 
         // Update to date button with "this.date"
@@ -730,6 +747,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         this.whatwhen_previous = whatwhen.copy();
 
         // Track
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set office "+whatwhen.toUrlName()).build());
         TrackHelper.track().event("OfficeActivity", "action.select-office").name("show").value(1f).with(tracker);
 
         // Load
@@ -784,8 +802,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         toggleFullscreen();
 
         // Go to the reading
-        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
         parseIntentUri(whatwhen, link);
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link "+whatwhen.toUrlName()).build());
+        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
         loadLecture(whatwhen);
 
         // All good
@@ -935,7 +954,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 try {
                     lectures = future.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    Raven.capture(e);
                 }
 
                 // If cancel has been called while loading, we'll only catch it here
@@ -958,6 +977,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 return lectures;
             } catch (IOException e) {
                 Log.e(TAG, "I/O error while loading. AELF servers down ?");
+                Raven.capture(e);
                 setLoading(false);
                 return null;
             }
@@ -1010,9 +1030,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 // If we have an anchor, attempt to find corresponding position
                 if (whatwhen.anchor != null && lectures != null) {
                     int position = -1;
-                    for(LectureItem lecture: lectures) {
+                    for (LectureItem lecture : lectures) {
                         position++;
-                        if(whatwhen.anchor.equals(lecture.key)) {
+                        if (whatwhen.anchor.equals(lecture.key)) {
                             whatwhen.position = position;
                             break;
                         }
@@ -1029,6 +1049,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 } catch (IllegalStateException e) {
                     // Fragment manager has gone away, will reload anyway so silently give up
                 }
+            } catch (Exception e) {
+                Raven.capture(e);
+                throw e;
             } finally {
                 currentRefresh = null;
                 preventCancel.unlock();
