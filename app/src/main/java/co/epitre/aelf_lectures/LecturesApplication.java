@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import co.epitre.aelf_lectures.data.Credentials;
+import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
 import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_STATISTICS;
@@ -71,13 +72,6 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         return df.format(new Date(lastUpdateTime));
     }
 
-    private long millisDeltaAsHours(long since, long to) {
-        if (since < 0) {
-            return -1;
-        }
-        return (to - since)/1000/3600;
-    }
-
     private Map<String, Map<String, Object>> extendContexts(Map<String, Map<String, Object>> contexts) {
         Resources res = ctx.getResources();
         Map<String, Object> syncMap    = new HashMap<>();
@@ -85,15 +79,15 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         Map<String, Object> appMap     = contexts.get("app");
         contexts.put("sync",    syncMap);
         contexts.put("network", networkMap);
-        long currentTimeMillis = System.currentTimeMillis();
+
 
         // Application
         appMap.put("app_previous_build", settings.getInt(SyncPrefActivity.KEY_APP_PREVIOUS_VERSION, -1));
         appMap.put("app_upgrade_date", getLastUpdateDate());
 
         // Sync
-        syncMap.put("last_attempt", millisDeltaAsHours(settings.getLong(SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT, -1), currentTimeMillis));
-        syncMap.put("last_success", millisDeltaAsHours(settings.getLong(SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS, -1), currentTimeMillis));
+        syncMap.put("last_attempt", SyncAdapter.getLastSyncAttemptAgeMillis(ctx));
+        syncMap.put("last_success", SyncAdapter.getLastSyncSuccessAgeMillis(ctx));
         syncMap.put("cache_bypass", settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false));
         syncMap.put("beta",         settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA, false));
         syncMap.put("server",       settings.getString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "default"));
@@ -104,13 +98,18 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         // Network
         ConnectivityManager connManager = (ConnectivityManager) ctx.getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo netinfo = connManager.getActiveNetworkInfo();
-        networkMap.put("reason",    netinfo.getReason());
-        networkMap.put("type",      netinfo.getTypeName());
-        networkMap.put("subtype",   netinfo.getSubtypeName());
-        networkMap.put("state",     netinfo.getDetailedState().name());
-        networkMap.put("available", netinfo.isAvailable());
-        networkMap.put("connected", netinfo.isConnected());
-        networkMap.put("roaming",   netinfo.isRoaming());
+        if (netinfo != null) {
+            networkMap.put("available", true);
+            networkMap.put("reason", netinfo.getReason());
+            networkMap.put("type", netinfo.getTypeName());
+            networkMap.put("subtype", netinfo.getSubtypeName());
+            networkMap.put("state", netinfo.getDetailedState().name());
+            networkMap.put("available", netinfo.isAvailable());
+            networkMap.put("connected", netinfo.isConnected());
+            networkMap.put("roaming", netinfo.isRoaming());
+        } else {
+            networkMap.put("available", false);
+        }
 
         return contexts;
     }

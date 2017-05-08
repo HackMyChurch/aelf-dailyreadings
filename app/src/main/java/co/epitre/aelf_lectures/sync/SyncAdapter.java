@@ -34,6 +34,8 @@ import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
+// FIXME: this class is a *mess*. We need to rewrite it !
+
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
@@ -100,22 +102,36 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mNotificationManager.cancel(SYNC_NOT_ID);
     }
 
+    private boolean isInCache(LecturesController.WHAT what, AelfDate when) {
+        try {
+            return mController.getLecturesFromCache(what, when, false) != null;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     // Sync one reading for the day
-    private void syncReading(LecturesController.WHAT what, AelfDate when) throws IOException {
+    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) {
         // Load from network, if not in cache and not outdated
-        if(mController.getLecturesFromCache(what, when, false) == null) {
-            mController.getLecturesFromNetwork(what, when);
+        if(!isInCache(what, when)) {
+            try {
+                mController.getLecturesFromNetwork(what, when);
+            } catch (IOException e) {
+                Log.e(TAG, "I/O error while syncing. AELF servers down ?");
+                Raven.capture(e);
+                syncResult.stats.numIoExceptions++;
+            }
         }
         mDone++;
         updateNotification();
     }
 
     // Sync all readings for the day
-    private void syncDay(AelfDate when, int max) throws IOException {
-        syncReading(LecturesController.WHAT.METAS, when);
+    private void syncDay(AelfDate when, int max, SyncResult syncResult) {
+        syncReading(LecturesController.WHAT.METAS, when, syncResult);
         while(max-- > 0) {
             LecturesController.WHAT what = LecturesController.WHAT.values()[max];
-            syncReading(what, when);
+            syncReading(what, when, syncResult);
         }
     }
 
@@ -146,6 +162,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // read preferences
         SharedPreferences syncPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences syncStat = mContext.getSharedPreferences("sync-stats", Context.MODE_PRIVATE);
         pLectures = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, pLectures);
         pDuree    = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE,    pDuree);
         pConserv  = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_CONSERV,  pConserv);
@@ -194,7 +211,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // loop until when > dayMax
             AelfDate when = new AelfDate();
             do {
-                syncDay(when, whatMax);
+                syncDay(when, whatMax, syncResult);
                 when.add(Calendar.DATE, +1);
             } while(when.before(whenMax));
 
@@ -202,23 +219,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             if(pDuree.equals("auj-dim")) {
                 when = new AelfDate();
                 do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
-                syncDay(when, whatMax);
+                syncDay(when, whatMax, syncResult);
             }
-        } catch (IOException e) {
-            // Aelf servers down ? It appends ...
-            Log.e(TAG, "I/O error while syncing. AELF servers down ?");
-            Raven.capture(e);
-            syncResult.delayUntil = 60L*15; // Wait 15min before retrying
-            errorName = "error.io";
         } catch (Exception e) {
             Raven.capture(e);
             errorName = "error."+e.getClass().getName();
             throw e;
         }
         finally {
+            // Mark sync as done as far as the user is concerned
             this.cancelNotification();
+
+            // Track sync status
+            Log.d(TAG, "Sync result: "+syncResult.toDebugString());
+            if (syncResult.stats.numIoExceptions > 0) {
+                errorName = "io";
+            }
             TrackHelper.track().event("Office", "sync."+errorName).name(pLectures+"."+pDuree).value(1f).with(tracker);
-            SharedPreferences.Editor editor = syncPref.edit();
+
+            // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
+            SharedPreferences.Editor editor = syncStat.edit();
             editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
             if (errorName.equals("success")) {
                 editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
@@ -241,5 +261,27 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
         }
         controller.truncateBefore(minConserv);
+    }
+
+    /**
+     * Helpers: return the time in hours elapsed since the last sync attempt / success
+     */
+    private static long getHoursSincePreference(Context ctx, String preferenceName) {
+        SharedPreferences syncStat = ctx.getSharedPreferences("sync-stats", Context.MODE_PRIVATE);
+        long currentTimeMillis = System.currentTimeMillis();
+        long lastSync = syncStat.getLong(preferenceName, -1);
+
+        if (lastSync < 0) {
+            return -1;
+        }
+        return (currentTimeMillis - lastSync) / 1000 / 3600;
+    }
+
+    public static long getLastSyncAttemptAgeMillis(Context ctx) {
+        return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT);
+    }
+
+    public static long getLastSyncSuccessAgeMillis(Context ctx) {
+        return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS);
     }
 }

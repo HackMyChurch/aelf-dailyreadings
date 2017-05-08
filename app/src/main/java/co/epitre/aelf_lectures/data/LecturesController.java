@@ -175,6 +175,11 @@ public final class LecturesController {
             Log.w(TAG, "Failed to load lectures from network");
             // No capture here, already done in callee
             return null;
+        } catch (IOException e) {
+            errorName = "error.io";
+            Log.w(TAG, "Failed to load lectures from network");
+            Raven.capture(e);
+            throw e;
         } catch (Exception e) {
             errorName = "error."+e.getClass().getName();
             Raven.capture(e);
@@ -556,6 +561,7 @@ public final class LecturesController {
 
         try {
             String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
+            Log.d(TAG, "Getting "+url);
             feedUrl = new URL(url);
         } catch (MalformedURLException e) {
             Log.e(TAG, "Failed to parse URL", e);
@@ -583,10 +589,6 @@ public final class LecturesController {
             Log.e(TAG, "Failed to parse API result", e);
             Raven.capture(e);
             throw new DownloadException("parse");
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to read from API", e);
-            Raven.capture(e);
-            throw new DownloadException("io");
         } finally {
             try {
                 urlConnection.disconnect();

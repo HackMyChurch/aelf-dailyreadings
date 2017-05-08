@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures;
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.ContentResolver;
@@ -8,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -16,7 +14,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GestureDetectorCompat;
@@ -72,6 +69,7 @@ import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
         ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener {
@@ -193,7 +191,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // create dummy account for our background sync engine
         try {
-            mAccount = CreateSyncAccount(this);
+            mAccount = CreateSyncAccount();
         } catch (SecurityException e) {
             // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
             Log.w(TAG, "Create/Get sync account was DENIED");
@@ -293,13 +291,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
             ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
 
-            // If the account has not been synced in a long time, fallback on "manual" trigger. This is an attempt
-            // to solve Huawei y330 bug
-            // TODO: move last sync time to K/V store
-            long last_sync = getLastSyncTime();
-            long now = System.currentTimeMillis();
-            long days = (now - last_sync) / (1000 * 3600 * 24);
-            if (days >= 2) {
+            // If the account has not been synced in the last 48h OR never be synced at all, force sync
+            long hours = SyncAdapter.getLastSyncSuccessAgeMillis(this);
+            if (hours >= 48 || hours < 0) {
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
                 do_manual_sync("outdated");
             }
@@ -375,34 +369,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 whatwhen.anchor = fragment;
             }
         }
-    }
-
-    private long getLastSyncTime() {
-        // TODO: move this value to K/V store
-        // from http://stackoverflow.com/questions/6635790/how-to-retrieve-the-last-sync-time-for-an-account
-        long result = -1;
-        try {
-            Method getSyncStatus = ContentResolver.class.getMethod("getSyncStatus", Account.class, String.class);
-            if (mAccount != null) {
-                Object status = getSyncStatus.invoke(null, mAccount, AUTHORITY);
-                Class<?> statusClass = Class.forName("android.content.SyncStatusInfo");
-                boolean isStatusObject = statusClass.isInstance(status);
-                if (isStatusObject) {
-                    Field successTime = statusClass.getField("lastSuccessTime");
-                    result = successTime.getLong(status);
-                }
-            }
-        } catch (NoSuchMethodException e) {
-        } catch (IllegalAccessException e) {
-        } catch (InvocationTargetException e) {
-        } catch (IllegalArgumentException e) {
-        } catch (ClassNotFoundException e) {
-        } catch (NoSuchFieldException e) {
-        } catch (NullPointerException e) {
-        }
-
-        TrackHelper.track().event("OfficeActivity", "sync.age_sec").name("start").value((float)result).with(tracker);
-        return result;
     }
 
     protected int get_status_bar_height() {
@@ -834,29 +800,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
     /**
      * Create a new dummy account for the sync adapter
-     *
-     * @param context The application context
      */
-    public static Account CreateSyncAccount(Context context) {
-        // Create the account type and default account
+    public Account CreateSyncAccount() {
         Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
-        // Get an instance of the Android account manager
-        AccountManager accountManager = (AccountManager) context.getSystemService(ACCOUNT_SERVICE);
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
-        if (accountManager.addAccountExplicitly(newAccount, null, null)) {
-            return newAccount;
-        } else {
-            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
-                // This really should never be true as we need the permission only on older devices
-                // which still follows a "all or nothing" grant scheme. But the linter is too dump
-                // to take the manifest into account.
-                return null;
-            }
-            return accountManager.getAccountsByType(ACCOUNT_TYPE)[0];
-        }
+        AccountManager accountManager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
+
+        // Create the account explicitly. If account creation fails, it means that it already exists.
+        // In this case, keep and return the dummy instance. We'll need to trigger manual sync
+        accountManager.addAccountExplicitly(newAccount, null, null);
+        return newAccount;
     }
 
     protected void setLoading(final boolean loading) {
