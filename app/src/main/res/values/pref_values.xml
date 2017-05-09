@@ -42,6 +42,8 @@
     </string-array>
     <string name="pref_conserv_def">semaine</string>
 
+    <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
+    <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>
     <string name="pref_contribute_statistics_on">Participation bien enregistrée. Merci ! Vous pouvez désactiver cette option à tout moment.</string>
     <string name="pref_contribute_statistics_off">Envoyer des statistiques est un moyen simple de contribuer à l\'application.</string>
     <string name="pref_contribute_beta_on">Participation bien enregistrée. Merci !</string>

@@ -2,16 +2,21 @@ package co.epitre.aelf_lectures;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceScreen;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
 
 public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
+    public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
@@ -37,6 +42,13 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         tracker = ((PiwikApplication) getApplication()).getTracker();
 
         addPreferencesFromResource(R.xml.sync_preferences);
+
+        // Hide fullscreen option for oldest phones
+        if (Build.VERSION.SDK_INT < 14) {
+            Preference fullscreenPreference = this.findPreference(KEY_PREF_DISP_FULLSCREEN);
+            PreferenceScreen preferenceScreen = getPreferenceScreen();
+            preferenceScreen.removePreference(fullscreenPreference);
+        }
 
         // hacky hack, but does the job --> init summaries
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
@@ -76,6 +88,23 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             } else {
                 pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
             }
+        }
+
+        // Statistics
+        boolean enabled;
+        switch (key) {
+            case KEY_PREF_DISP_FULLSCREEN:
+                enabled = sharedPreferences.getBoolean(KEY_PREF_DISP_FULLSCREEN, false);
+                TrackHelper.track().event("OfficePreferences", "display.fullscreen").name(enabled?"enable":"disable").value(1f).with(tracker);
+                break;
+            case KEY_PREF_PARTICIPATE_BETA:
+                enabled = sharedPreferences.getBoolean(KEY_PREF_PARTICIPATE_BETA, false);
+                TrackHelper.track().event("OfficePreferences", "participate.beta").name(enabled?"enable":"disable").value(1f).with(tracker);
+                break;
+            case KEY_PREF_PARTICIPATE_NOCACHE:
+                enabled = sharedPreferences.getBoolean(KEY_PREF_PARTICIPATE_NOCACHE, false);
+                TrackHelper.track().event("OfficePreferences", "participate.cache").name(enabled?"disable":"enable").value(1f).with(tracker);
+                break;
         }
         
         // called with null from the constructor

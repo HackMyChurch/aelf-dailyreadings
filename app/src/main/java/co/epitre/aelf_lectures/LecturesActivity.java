@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -50,9 +51,6 @@ import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.GregorianCalendar;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -99,9 +97,12 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
      * Gesture detector. Detect single taps that do not look like a dismiss to toggle
      * full screen mode.
      */
+    private boolean isFocused = true;
     private boolean isFullScreen = true;
     private boolean isMultiWindow = false;
     private boolean isInLongPress = false;
+    private View statusBarBackgroundView = null;
+    SharedPreferences settings = null;
     private GestureDetectorCompat mGestureDetector;
 
     List<LectureItem> networkError = new ArrayList<>(1);
@@ -155,7 +156,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         currentVersion = packageInfo.versionCode;
 
         // load saved version, if any
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
         savedVersion = settings.getInt("version", -1);
 
 
@@ -279,11 +280,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
         if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            View view = new View(this);
-            view.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            view.getLayoutParams().height = get_status_bar_height();
-            ((ViewGroup) getWindow().getDecorView()).addView(view);
-            view.setBackgroundColor(ContextCompat.getColor(this, R.color.aelf_dark));
+            statusBarBackgroundView = new View(this);
+            statusBarBackgroundView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            statusBarBackgroundView.getLayoutParams().height = get_status_bar_height();
+            ((ViewGroup) getWindow().getDecorView()).addView(statusBarBackgroundView);
+            statusBarBackgroundView.setBackgroundColor(ContextCompat.getColor(this, R.color.aelf_dark));
         }
 
 
@@ -394,7 +395,10 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         Window window = getWindow();
 
         // Fullscreen does not make sense when in multi-window mode
-        boolean doFullScreen = isFullScreen && !isMultiWindow;
+        boolean doFullScreen = isFullScreen && !isMultiWindow && isFocused;
+
+        // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
+        boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
         // Android < 4.0 --> skip most logic
         if (Build.VERSION.SDK_INT < 14) {
@@ -411,8 +415,21 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         boolean is_portrait = getOrient.getRotation() == Surface.ROTATION_0 || getOrient.getRotation() == Surface.ROTATION_180;
         int uiOptions = 0;
 
+        // When the user wants fullscreen, always hide the status bar, even after a "tap"
+        if (hideStatusBar) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
+        // On Android versions supporting transluent but not colored status bar, manage "color" visibility
+        if (statusBarBackgroundView != null && Build.VERSION.SDK_INT >= 11) {
+            statusBarBackgroundView.setAlpha(hideStatusBar?0f:1f);
+        }
+
         if (doFullScreen) {
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+
             // Translucent bar, *ONLY* in portait mode (broken in landscape)
             if (is_portrait) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
@@ -423,6 +440,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
+        View pagerPaddingView = findViewById(R.id.pager_padding);
         if (Build.VERSION.SDK_INT >= 19) {
             if (is_portrait && !isMultiWindow) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -431,16 +449,21 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             }
 
             // Always compensate the height but only on specific version Or *always* in portrait. Yeah!
-            View pagerPaddingView = findViewById(R.id.pager_padding);
             if (!isMultiWindow) {
                 if (is_portrait || Build.VERSION.SDK_INT < 21) {
-                    int height = actionBar.getHeight() + get_status_bar_height();
+                    int height = actionBar.getHeight();
+                    if (!hideStatusBar) {
+                        height += get_status_bar_height();
+                    }
                     pagerPaddingView.getLayoutParams().height = height;
                 }
             } else {
                 // When switching between modes, reset height
                 pagerPaddingView.getLayoutParams().height = 0;
             }
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            pagerPaddingView.getLayoutParams().height = 0;
         }
 
         // Apply settings
@@ -484,7 +507,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         super.onWindowFocusChanged(hasFocus);
 
         // Always pretend we are going fullscreen. This limits flickering considerably
-        isFullScreen = true;
+        isFullScreen = hasFocus;
+        isFocused = hasFocus;
         prepare_fullscreen();
     }
 
