@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -21,6 +22,8 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.Xml;
@@ -112,10 +115,12 @@ public final class LecturesController {
     private SharedPreferences preference = null;
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
+    Context ctx;
 
     private LecturesController(Context c) {
         super();
 
+        ctx = c;
         tracker = ((PiwikApplication) c.getApplicationContext()).getTracker();
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
@@ -156,7 +161,13 @@ public final class LecturesController {
         
         return null;
     }
-    
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     public List<LectureItem> getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         List<LectureItem> lectures;
 
@@ -178,7 +189,9 @@ public final class LecturesController {
         } catch (IOException e) {
             errorName = "error.io";
             Log.w(TAG, "Failed to load lectures from network");
-            Raven.capture(e);
+            if (isNetworkAvailable()) {
+                Raven.capture(e);
+            }
             throw e;
         } catch (Exception e) {
             errorName = "error."+e.getClass().getName();
@@ -550,6 +563,7 @@ public final class LecturesController {
     // Attempts to load from network
     // throws IOException to allow for auto retry. Aelf servers are not that stable...
     private List<LectureItem> loadFromNetwork(WHAT what, AelfDate when) throws IOException, DownloadException {
+        HttpURLConnection urlConnection = null;
         InputStream in = null;
         URL feedUrl;
 
@@ -570,15 +584,15 @@ public final class LecturesController {
         }
 
         // Attempts to load and parse the feed
-        HttpURLConnection urlConnection = (HttpURLConnection) feedUrl.openConnection();
-        urlConnection.setConnectTimeout(60*1000); // 60 seconds
-        urlConnection.setReadTimeout(600*1000);   // 10 minutes
-
-        if (pref_nocache) {
-            urlConnection.setRequestProperty("x-aelf-nocache", "1");
-        }
-
         try {
+            urlConnection = (HttpURLConnection) feedUrl.openConnection();
+            urlConnection.setConnectTimeout(60*1000); // 60 seconds
+            urlConnection.setReadTimeout(600*1000);   // 10 minutes
+
+            if (pref_nocache) {
+                urlConnection.setRequestProperty("x-aelf-nocache", "1");
+            }
+
             in = urlConnection.getInputStream();
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -591,11 +605,13 @@ public final class LecturesController {
             throw new DownloadException("parse");
         } finally {
             try {
-                urlConnection.disconnect();
-                if(in!=null) in.close();
+                if(urlConnection != null) urlConnection.disconnect();
+                if(in != null)            in.close();
             } catch (IOException e) {
                 Log.e(TAG, "Failed to close API connection", e);
-                Raven.capture(e);
+                if (isNetworkAvailable()) {
+                    Raven.capture(e);
+                }
             }
         }
 

@@ -948,8 +948,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 setLoading(true);
                 future = executor.submit(new Callable<List<LectureItem>>() {
                     @Override
-                    public List<LectureItem> call() throws IOException {
-                        return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                    public List<LectureItem> call() {
+                        try {
+                            return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
+                        } catch (IOException e) {
+                            // Do nothing: the error has already been reported, if it makes sense
+                            return null;
+                        }
                     }
                 });
 
@@ -962,7 +967,9 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 // attempt to read the result
                 try {
                     lectures = future.get();
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    // Do not report: this is requested by the user
+                } catch (ExecutionException e) {
                     Raven.capture(e);
                 }
 
@@ -985,8 +992,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 }
                 return lectures;
             } catch (IOException e) {
+                // Error alredy propagated to Sentry. Do not propagate twice !
                 Log.e(TAG, "I/O error while loading. AELF servers down ?");
-                Raven.capture(e);
                 setLoading(false);
                 return null;
             }

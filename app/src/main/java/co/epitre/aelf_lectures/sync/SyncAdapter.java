@@ -117,8 +117,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             try {
                 mController.getLecturesFromNetwork(what, when);
             } catch (IOException e) {
+                // Error alredy propagated to Sentry. Do not propagate twice !
                 Log.e(TAG, "I/O error while syncing. AELF servers down ?");
-                Raven.capture(e);
                 syncResult.stats.numIoExceptions++;
             }
         }
