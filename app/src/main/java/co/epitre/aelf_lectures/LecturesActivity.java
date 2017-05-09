@@ -26,6 +26,7 @@ import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -99,6 +100,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
      * full screen mode.
      */
     private boolean isFullScreen = true;
+    private boolean isMultiWindow = false;
     private boolean isInLongPress = false;
     private GestureDetectorCompat mGestureDetector;
 
@@ -301,6 +303,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Install gesture detector
         mGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
+
+        // Init display state
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            isMultiWindow = isInMultiWindowMode();
+        }
     }
 
     private void parseIntentUri(WhatWhen whatwhen, Uri uri) {
@@ -382,12 +389,17 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     }
 
     public void prepare_fullscreen() {
+        // This code is a plate of spagetti but fullscreen is such a mess that I'm not even sure it's
+        // possible to make it clean...
         Window window = getWindow();
+
+        // Fullscreen does not make sense when in multi-window mode
+        boolean doFullScreen = isFullScreen && !isMultiWindow;
 
         // Android < 4.0 --> skip most logic
         if (Build.VERSION.SDK_INT < 14) {
             // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-            if (isFullScreen) {
+            if (doFullScreen) {
                 window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
             } else {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -396,10 +408,10 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         }
 
         Display getOrient = getWindowManager().getDefaultDisplay();
-        boolean is_portrait = getOrient.getWidth() < getOrient.getHeight();
+        boolean is_portrait = getOrient.getRotation() == Surface.ROTATION_0 || getOrient.getRotation() == Surface.ROTATION_180;
         int uiOptions = 0;
 
-        if (isFullScreen) {
+        if (doFullScreen) {
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
             // Translucent bar, *ONLY* in portait mode (broken in landscape)
             if (is_portrait) {
@@ -412,15 +424,22 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
         if (Build.VERSION.SDK_INT >= 19) {
-            if (is_portrait) {
+            if (is_portrait && !isMultiWindow) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+            } else  {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             }
 
             // Always compensate the height but only on specific version Or *always* in portrait. Yeah!
-            if (is_portrait || Build.VERSION.SDK_INT < 21) {
-                int height = actionBar.getHeight() + get_status_bar_height();
-                View pagerPaddingView = findViewById(R.id.pager_padding);
-                pagerPaddingView.getLayoutParams().height = height;
+            View pagerPaddingView = findViewById(R.id.pager_padding);
+            if (!isMultiWindow) {
+                if (is_portrait || Build.VERSION.SDK_INT < 21) {
+                    int height = actionBar.getHeight() + get_status_bar_height();
+                    pagerPaddingView.getLayoutParams().height = height;
+                }
+            } else {
+                // When switching between modes, reset height
+                pagerPaddingView.getLayoutParams().height = 0;
             }
         }
 
@@ -466,6 +485,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Always pretend we are going fullscreen. This limits flickering considerably
         isFullScreen = true;
+        prepare_fullscreen();
+    }
+
+    @Override
+    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
+        // Force fullscreen to false and refresh screen
+        super.onMultiWindowModeChanged(isInMultiWindowMode);
+        isFullScreen = false;
+        isMultiWindow = isInMultiWindowMode;
         prepare_fullscreen();
     }
 
