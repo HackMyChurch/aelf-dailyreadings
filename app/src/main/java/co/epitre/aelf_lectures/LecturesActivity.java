@@ -43,15 +43,21 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.getsentry.raven.android.Raven;
+import com.getsentry.raven.android.event.helper.AndroidEventBuilderHelper;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
+import com.getsentry.raven.event.EventBuilder;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -105,9 +111,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     SharedPreferences settings = null;
     private GestureDetectorCompat mGestureDetector;
 
-    List<LectureItem> networkError = new ArrayList<>(1);
-    List<LectureItem> emptyOfficeError = new ArrayList<>(1);
-
     /**
      * Sync account related vars
      */
@@ -124,6 +127,20 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
     // action bar
     protected ActionBar actionBar;
+
+    /**
+     * Error messages
+     */
+    // Error handler
+    private static final String networkErrorMessage = ""+
+         "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
+         "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
+         "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">cathogeek@epitre.co</a>.<p>";
+    private static final String emptyOfficeErrorMessage = "" +
+         "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
+         "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
+         "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
+         "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co?subject=Report:%20Empty%20%##OFFICE##20Office%20(version:%20##VERSION##)&body=##REPORT##\">cathogeek@epitre.co</a>.<p>";
 
     /**
      * Statistics
@@ -241,18 +258,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Track app open source + target
         Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open "+openSource).build());
         TrackHelper.track().event("OfficeActivity", "open."+openSource).name(whatwhen.toTrackerName()).value(1f).with(tracker);
-
-        // Error handler
-        networkError.add(new LectureItem("error_network", "Oups...", "" +
-                "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
-                "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", null));
-        emptyOfficeError.add(new LectureItem("error_office", "Oups...", "" +
-                "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
-                "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
-                "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-                "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co\">cathogeek@epitre.co</a>.<p>", null));
-
 
         // some UI. Most UI init are done in the prev async task
         setContentView(R.layout.activity_lectures);
@@ -1007,6 +1012,63 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             trackView("cancelled");
         }
 
+        private List<LectureItem> buildErrorMessage(String message) {
+            List<LectureItem> error = new ArrayList<>(1);
+
+            // Get version name
+            String versionName = "";
+            try {
+                versionName = "v"+getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+            } catch (NameNotFoundException e) {
+                // Only drawback here is no version displayed in about. Minor anoyance
+            }
+            message = message.replace("##VERSION##", versionName);
+
+            // Get office name / date
+            message = message.replace("##OFFICE##", whatwhen.toUrlName());
+
+            // Build detailed report, using data from AelfEventBuilderHelper
+            EventBuilder eventBuilder = new EventBuilder();
+            new AndroidEventBuilderHelper(LecturesActivity.this).helpBuildingEvent(eventBuilder);
+            new AelfEventBuilderHelper(LecturesActivity.this, tracker.getUserId()).helpBuildingEvent(eventBuilder);
+            Map<String, Map<String, Object>> contexts = eventBuilder.getEvent().getContexts();
+
+            String report = "";
+            report += "Bonjour !\n\n" +
+                    "Merci d'avoir pris le temps d'envoyer un message pour signaler une erreur !\n\n" +
+                    "Ce message a été pré-rempli avec les informations dont j'ai habituellement besoin pour diagnostiquer les erreurs. " +
+                    "Si vous le souhaitez, vous pouvez prendre le temps de les relire ou même les supprimer. Mais cela m'aidera beaucoup si vous les conservez.\n\n" +
+                    "VOUS POUVEZ AJOUTER UN MESSAGE ICI\n\n";
+            report += "Debug informations:\n";
+            report += "===================\n";
+
+            for (Map.Entry<String, Map<String, Object>> context : contexts.entrySet()) {
+                String key = context.getKey();
+                report += "\n"+key+"\n"+new String(new char[key.length()]).replace("\0", "-")+"\n";
+
+                for (Map.Entry<String, Object> entry : context.getValue().entrySet()) {
+                    Object value = entry.getValue();
+                    if (value != null) {
+                        report += entry.getKey()+"="+value.toString()+"\n";
+                    } else {
+                        report += entry.getKey()+"=null\n";
+                    }
+                }
+            }
+
+            try {
+                message = message.replace("##REPORT##", URLEncoder.encode(report, "utf-8").replace("+", "%20"));
+            } catch (UnsupportedEncodingException e) {
+                // That's exactly the same informations as we would have sent, except that the user has no chance to give us extra info
+                Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Building error report for "+whatwhen.toUrlName()).build());
+                Raven.capture(e);
+            }
+
+            // Build and return error
+            error.add(new LectureItem("error", "Oups...", message, null));
+            return error;
+        }
+
         @Override
         protected void onPostExecute(final List<LectureItem> lectures) {
             List<LectureItem> pager_data;
@@ -1017,12 +1079,10 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 // Failed to load
                 if (lectures == null) {
                     trackView("error");
-                    pager_data = networkError;
-                    // Empty office ? Prevent crash
+                    pager_data = buildErrorMessage(networkErrorMessage);
                 } else if (lectures.isEmpty()) {
                     trackView("empty");
-                    pager_data = emptyOfficeError;
-                    // Nominal case
+                    pager_data = buildErrorMessage(emptyOfficeErrorMessage);;
                 } else {
                     trackView("success");
                     pager_data = lectures;

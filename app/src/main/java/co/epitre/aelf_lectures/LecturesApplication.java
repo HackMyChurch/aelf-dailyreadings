@@ -84,6 +84,7 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         // Application
         appMap.put("app_previous_build", settings.getInt(SyncPrefActivity.KEY_APP_PREVIOUS_VERSION, -1));
         appMap.put("app_upgrade_date", getLastUpdateDate());
+        appMap.put("user", piwikUserId);
 
         // Sync
         syncMap.put("last_attempt", SyncAdapter.getLastSyncAttemptAgeMillis(ctx));
