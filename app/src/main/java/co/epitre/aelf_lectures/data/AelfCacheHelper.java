@@ -22,6 +22,10 @@ import android.util.Log;
 
 import com.getsentry.raven.android.Raven;
 
+import org.piwik.sdk.Tracker;
+import org.piwik.sdk.extra.PiwikApplication;
+import org.piwik.sdk.extra.TrackHelper;
+
 
 /**
  * Internal cache manager (SQLite). There is one table per office and one line per day.
@@ -37,6 +41,8 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final int DB_VERSION = 3;
     private static final String DB_NAME = "aelf_cache.db";
     private SharedPreferences preference = null;
+    private Context ctx;
+    Tracker tracker;
 
     private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (" +
             "date TEXT PRIMARY KEY," +
@@ -54,6 +60,8 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     AelfCacheHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
         preference = PreferenceManager.getDefaultSharedPreferences(context);
+        ctx = context;
+        tracker = ((PiwikApplication) context.getApplicationContext()).getTracker();
     }
 
     /**
@@ -66,6 +74,18 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
             return "0000-00-00";
         }
         return keyFormatter.format(when.getTime());
+    }
+
+    private void onSqliteError(SQLiteException e) {
+        // If a migration did not go well, the best we can do is drop the database and re-create
+        // it from scratch. This is hackish but should allow more or less graceful recoveries.
+        Log.e(TAG, "Critical database error. Droping + Re-creating", e);
+        Raven.capture(e);
+        TrackHelper.track().event("Office", "cache.db.error").name("critical").value(1f).with(tracker);
+
+        // Close and drop the database. It will be re-opened automatically
+        close();
+        ctx.deleteDatabase(DB_NAME);
     }
     
     private boolean _execute_stmt(SQLiteStatement stmt, int max_retries) {
@@ -110,7 +130,15 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
         // insert into the database
         String sql = String.format(DB_TABLE_SET, what);
-        SQLiteStatement stmt = getWritableDatabase().compileStatement(sql);
+        SQLiteStatement stmt;
+        try {
+            stmt = getWritableDatabase().compileStatement(sql);
+        } catch (SQLiteException e) {
+            // Drop DB and retry
+            onSqliteError(e);
+            stmt = getWritableDatabase().compileStatement(sql);
+        }
+
         stmt.bindString(1, key);
         stmt.bindBlob(2, blob);
         stmt.bindString(3, create_date);
@@ -124,7 +152,13 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
         String key = computeKey(when);
         SQLiteDatabase db = getWritableDatabase();
-        db.delete(what.toString(), "`date` < ?", new String[] {key});
+        try {
+            db.delete(what.toString(), "`date` < ?", new String[] {key});
+        } catch (SQLiteException e) {
+            // Drop DB and retry
+            onSqliteError(e);
+            db.delete(what.toString(), "`date` < ?", new String[] {key});
+        }
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
@@ -138,13 +172,27 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = db.query(
-                what.toString(),                                            // FROM
-                new String[] {"lectures", "create_date", "create_version"}, // SELECT
-                "`date`=? AND `create_date` >= ? AND create_version >= ?",  // WHERE
-                new String[] {key, min_create_date, min_create_version},    // params
-                null, null, null, "1"                                       // GROUP BY, HAVING, ORDER, LIMIT
-        );
+        Cursor cur;
+        try {
+            cur = db.query(
+                    what.toString(),                                           // FROM
+                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
+                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
+                    new String[]{key, min_create_date, min_create_version},    // params
+                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
+            );
+        } catch (SQLiteException e) {
+            // Drop DB and retry
+            onSqliteError(e);
+            cur = db.query(
+                    what.toString(),                                           // FROM
+                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
+                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
+                    new String[]{key, min_create_date, min_create_version},    // params
+                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
+            );
+        }
+
         if(cur != null && cur.getCount() > 0) {
             // any records ? load it
             cur.moveToFirst();
