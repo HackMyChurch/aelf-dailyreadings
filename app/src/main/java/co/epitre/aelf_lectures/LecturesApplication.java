@@ -123,15 +123,23 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
 class AelfRavenFactory extends AndroidRavenFactory {
     private Context ctx;
     private String piwikUserId;
+    SharedPreferences settings;
 
     public AelfRavenFactory(Context ctx, String piwikUserId) {
         super(ctx);
         this.piwikUserId = piwikUserId;
         this.ctx = ctx;
+        this.settings = PreferenceManager.getDefaultSharedPreferences(ctx);
     }
 
     @Override
     public com.getsentry.raven.Raven createRavenInstance(Dsn dsn) {
+        // If the user has opted-out, send events to /dev/null. This is hack to bypass
+        // the protocol validation stage in the Android client
+        if (!settings.getBoolean(KEY_PREF_PARTICIPATE_STATISTICS, true)) {
+            Log.i("RAVEN_FACTORY",  "User has opted out, using noop DSN");
+            dsn = new Dsn();
+        }
         com.getsentry.raven.Raven ravenInstance = super.createRavenInstance(dsn);
         ravenInstance.addBuilderHelper(new AelfEventBuilderHelper(ctx, piwikUserId));
         return ravenInstance;
@@ -168,7 +176,8 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
         if(key.equals(KEY_PREF_PARTICIPATE_STATISTICS)) {
             Tracker tracker = getTracker();
             tracker.setOptOut(!settings.getBoolean(KEY_PREF_PARTICIPATE_STATISTICS, true));
-            Log.i(TAG, "Piwik OptOut status changed to: "+tracker.isOptOut());
+            this.initSentry();
+            Log.i(TAG, "Piwik/Sentry OptOut status changed to: "+tracker.isOptOut());
         }
     }
 
@@ -195,6 +204,7 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
     // see https://sentry.app.epitre.co/sentry/aelf-application/getting-started/java-android/
     private void initSentry() {
         Context ctx = this.getApplicationContext();
+        Raven.clearStoredRaven();
         Raven.init(ctx, Credentials.SENTRY_DSN, new AelfRavenFactory(ctx, getTracker().getUserId()));
     }
 }
