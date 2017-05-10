@@ -24,7 +24,7 @@ public class AboutDialogFragment extends DialogFragment {
         Context context = getActivity();
         String versionName = "";
         try {
-            versionName = "v"+context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+            versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
         } catch (NameNotFoundException e) {
             // Only drawback here is no version displayed in about. Minor anoyance
         }
