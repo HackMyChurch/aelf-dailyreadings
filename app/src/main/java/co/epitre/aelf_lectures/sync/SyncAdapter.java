@@ -235,7 +235,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             if (syncResult.stats.numIoExceptions > 0) {
                 errorName = "io";
             }
-            TrackHelper.track().event("Office", "sync."+errorName).name(pLectures+"."+pDuree).value(1f).with(tracker);
+
+            //  Disable reporting success, this is too noisy
+            if (!errorName.equals("success")) {
+                TrackHelper.track().event("Office", "sync." + errorName).name(pLectures + "." + pDuree).value(1f).with(tracker);
+            }
 
             // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
             SharedPreferences.Editor editor = syncStat.edit();

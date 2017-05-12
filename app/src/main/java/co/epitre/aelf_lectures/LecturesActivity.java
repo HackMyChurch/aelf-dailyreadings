@@ -482,9 +482,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting "+reason+" sync ").build());
 
         if (mAccount == null) {
-            // TODO: patch the alg to work without ?
             Log.w(TAG, "Failed to run manual sync: we have no account...");
-            TrackHelper.track().event("OfficeActivity", "sync."+reason+".error.no-account").name("start").value(1f).with(tracker);
+            TrackHelper.track().event("OfficeActivity", "sync."+reason).name("no-account").value(1f).with(tracker);
             return false;
         }
 
@@ -495,7 +494,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // start sync
         ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        TrackHelper.track().event("OfficeActivity", "sync."+reason+".success").name("start").value(1f).with(tracker);
+        TrackHelper.track().event("OfficeActivity", "sync."+reason).name("start").value(1f).with(tracker);
 
         // done
         return true;
@@ -847,7 +846,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         @Override
         public boolean onSingleTapConfirmed(MotionEvent event) {
             if (!isInLongPress) {
-                TrackHelper.track().event("OfficeActivity", "fullscreen.toggle").name("tap").value(1f).with(tracker);
+                // Disabled: noisy, low value
+                // TrackHelper.track().event("OfficeActivity", "fullscreen.toggle").name("tap").value(1f).with(tracker);
                 toggleFullscreen();
             }
             isInLongPress = false;

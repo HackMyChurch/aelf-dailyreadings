@@ -202,7 +202,10 @@ public final class LecturesController {
             float deltaTime = (System.nanoTime() - startTime) / 1000;
             long dayDelta = when.dayBetween(new GregorianCalendar());
 
-            TrackHelper.track().event("Office", "download."+errorName).name(what.urlName()+"."+dayDelta).value(deltaTime).with(tracker);
+            // Disable success reporting, this is too noisy
+            if (!errorName.equals("success")) {
+                TrackHelper.track().event("Office", "download." + errorName).name(what.urlName() + "." + dayDelta).value(deltaTime).with(tracker);
+            }
         }
 
         lectures = PostProcessLectures(lectures);
