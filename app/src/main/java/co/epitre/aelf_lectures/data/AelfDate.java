@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures.data;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
  * This class centralizes all helpers around dates like
@@ -71,6 +72,10 @@ public class AelfDate extends GregorianCalendar {
 
     public String toIsoString() {
         return new SimpleDateFormat("yyyy-MM-dd").format(getTimeInMillis());
+    }
+
+    public String dayName() {
+        return new SimpleDateFormat("EEEE", Locale.FRANCE).format(getTimeInMillis());
     }
 
     //

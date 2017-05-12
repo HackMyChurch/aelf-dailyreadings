@@ -154,6 +154,7 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
     public static final int STATS_DIM_SOURCE = 1;
     public static final int STATS_DIM_STATUS = 2;
     public static final int STATS_DIM_DAY_DELTA = 3;
+    public static final int STATS_DIM_DAY_NAME = 4;
 
     @Override
     public void onCreate() {

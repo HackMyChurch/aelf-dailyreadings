@@ -1003,11 +1003,12 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             long dayDelta = statWhatWhen.when.dayBetween(new GregorianCalendar());
 
             TrackHelper.track()
-                    .screen("/office/"+whatwhen.what.urlName())
-                    .title("/office/"+whatwhen.what.urlName())
+                    .screen("/office/"+whatwhen.toUrlName())
+                    .title("/office/"+whatwhen.toUrlName())
                     .dimension(LecturesApplication.STATS_DIM_SOURCE, statIsFromCache ? "cache" : "network")
                     .dimension(LecturesApplication.STATS_DIM_STATUS, status)
                     .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int)dayDelta))
+                    .dimension(LecturesApplication.STATS_DIM_DAY_NAME, whatwhen.when.dayName())
                     .with(tracker);
         }
 
