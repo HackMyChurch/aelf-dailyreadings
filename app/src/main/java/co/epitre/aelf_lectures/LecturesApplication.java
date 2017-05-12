@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -7,6 +8,7 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.os.Process;
 
@@ -30,9 +32,11 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import co.epitre.aelf_lectures.data.Credentials;
+import co.epitre.aelf_lectures.data.Validator;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 import static android.content.Context.CONNECTIVITY_SERVICE;
+import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER;
 import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_STATISTICS;
 
 /**
@@ -150,19 +154,29 @@ class AelfRavenFactory extends AndroidRavenFactory {
 // http://stackoverflow.com/questions/40069273/unable-to-get-provider-rarely-crash-on-kitkat
 public class LecturesApplication extends PiwikApplication implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "LecturesApplication";
-
+    private SharedPreferences settings;
     public static final int STATS_DIM_SOURCE = 1;
+
     public static final int STATS_DIM_STATUS = 2;
     public static final int STATS_DIM_DAY_DELTA = 3;
     public static final int STATS_DIM_DAY_NAME = 4;
+
+    public static final int NOTIFICATION_SYNC_PROGRESS = 1;
+    public static final int NOTIFICATION_START_ERROR = 2;
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "app start...");
         checkAppReplacingState();
+
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings.registerOnSharedPreferenceChangeListener(this);
+
+        // Boot application
         initPiwik();
         initSentry();
+        isValidServer();
     }
 
     private void checkAppReplacingState() {
@@ -189,10 +203,6 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
 
     // see https://github.com/piwik/piwik-sdk-android/blob/master/exampleapp/src/main/java/com/piwik/demo/DemoApp.java
     private void initPiwik() {
-        // Load application preferences
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        settings.registerOnSharedPreferenceChangeListener(this);
-
         // Track this app install, this will only trigger once per app version.
         Tracker tracker = getTracker();
         TrackHelper.track().download().identifier(new DownloadTracker.Extra.ApkChecksum(this)).with(tracker);
@@ -207,5 +217,33 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
         Context ctx = this.getApplicationContext();
         Raven.clearStoredRaven();
         Raven.init(ctx, Credentials.SENTRY_DSN, new AelfRavenFactory(ctx, getTracker().getUserId()));
+    }
+
+    private void isValidServer() {
+        // It is possible that the server URL stored in the preference is invalid, especially after
+        // upgrading. And we know, we have at least one user putting an email address in this field
+        // which obviously breaks the sync...
+
+        // Get current value
+        String server = settings.getString(KEY_PREF_PARTICIPATE_SERVER, "");
+
+        // Validate it
+        if (server.isEmpty() || Validator.isValidUrl(server)) {
+            return;
+        }
+
+        // Force it back to default
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(KEY_PREF_PARTICIPATE_SERVER, "");
+        editor.commit();
+
+        // Notify user
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext())
+                .setContentTitle("Adresse du serveur corrigée")
+                .setContentText("Vous devriez à nouveau bénéficier des lectures !")
+                .setSmallIcon(android.R.drawable.ic_dialog_info);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFICATION_START_ERROR, mBuilder.build());
     }
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import co.epitre.aelf_lectures.LecturesApplication;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import co.epitre.aelf_lectures.data.AelfDate;
@@ -39,7 +40,6 @@ import org.piwik.sdk.extra.TrackHelper;
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
-    private static final int SYNC_NOT_ID = 1;
 
     private Context mContext;
     private NotificationManager mNotificationManager;
@@ -95,11 +95,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     // http://stackoverflow.com/questions/5061760/how-does-one-animate-the-android-sync-status-icon
     private void updateNotification() {
         mNotificationBuilder.setProgress(mTodo, mDone, false);
-        mNotificationManager.notify(SYNC_NOT_ID, mNotificationBuilder.build());
+        mNotificationManager.notify(LecturesApplication.NOTIFICATION_SYNC_PROGRESS, mNotificationBuilder.build());
     }
 
     private void cancelNotification() {
-        mNotificationManager.cancel(SYNC_NOT_ID);
+        mNotificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
     }
 
     private boolean isInCache(LecturesController.WHAT what, AelfDate when) {

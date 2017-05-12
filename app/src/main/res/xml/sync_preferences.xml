@@ -72,6 +72,7 @@
             android:key="pref_participate_nocache" android:defaultValue="false"/>
         <EditTextPreference
             android:title="Adresse du serveur"
+            android:inputType="textUri"
             android:key="pref_participate_server" android:defaultValue=""/>
     </PreferenceScreen>
     <Preference

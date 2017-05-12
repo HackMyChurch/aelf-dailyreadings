@@ -14,7 +14,9 @@ import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
-public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+import co.epitre.aelf_lectures.data.Validator;
+
+public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener, Preference.OnPreferenceChangeListener {
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
@@ -50,6 +52,9 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             preferenceScreen.removePreference(fullscreenPreference);
         }
 
+        // Register validator for server to prevent users from using a mail address...
+        getPreferenceScreen().findPreference(KEY_PREF_PARTICIPATE_SERVER).setOnPreferenceChangeListener(this);
+
         // hacky hack, but does the job --> init summaries
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_DUREE);
@@ -71,6 +76,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    // Called AFTER a change
     @SuppressWarnings("deprecation")
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
@@ -115,4 +121,16 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         }
     }
 
+    // Called BEFORE a change, return false to block the change
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object newValue) {
+        switch (preference.getKey()) {
+            case KEY_PREF_PARTICIPATE_SERVER:
+                String candidate = newValue.toString();
+                return candidate.isEmpty() || Validator.isValidUrl(candidate);
+        }
+
+        // Consider as valid by default
+        return true;
+    }
 }
