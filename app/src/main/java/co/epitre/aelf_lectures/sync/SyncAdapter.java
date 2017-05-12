@@ -247,7 +247,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             if (errorName.equals("success")) {
                 editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
             }
-            editor.apply();
+            editor.commit();
         }
 
         // ** CLEANUP **
@@ -278,14 +278,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         if (lastSync < 0) {
             return -1;
         }
-        return (currentTimeMillis - lastSync) / 1000 / 3600;
+        long lastSyncAge = (currentTimeMillis - lastSync) / 1000 / 3600;
+        Log.d(TAG, "Last sync timestamp: "+lastSync+" age: "+lastSyncAge);
+        return lastSyncAge;
     }
 
-    public static long getLastSyncAttemptAgeMillis(Context ctx) {
+    public static long getLastSyncAttemptAgeHours(Context ctx) {
         return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT);
     }
 
-    public static long getLastSyncSuccessAgeMillis(Context ctx) {
+    public static long getLastSyncSuccessAgeHours(Context ctx) {
         return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS);
     }
 }

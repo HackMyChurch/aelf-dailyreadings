@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -56,7 +55,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -300,7 +298,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
 
             // If the account has not been synced in the last 48h OR never be synced at all, force sync
-            long hours = SyncAdapter.getLastSyncSuccessAgeMillis(this);
+            long hours = SyncAdapter.getLastSyncSuccessAgeHours(this);
             if (hours >= 48 || hours < 0) {
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
                 do_manual_sync("outdated");

@@ -91,8 +91,8 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         appMap.put("user", piwikUserId);
 
         // Sync
-        syncMap.put("last_attempt", SyncAdapter.getLastSyncAttemptAgeMillis(ctx));
-        syncMap.put("last_success", SyncAdapter.getLastSyncSuccessAgeMillis(ctx));
+        syncMap.put("last_attempt", SyncAdapter.getLastSyncAttemptAgeHours(ctx));
+        syncMap.put("last_success", SyncAdapter.getLastSyncSuccessAgeHours(ctx));
         syncMap.put("cache_bypass", settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false));
         syncMap.put("beta",         settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA, false));
         syncMap.put("server",       settings.getString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "default"));
