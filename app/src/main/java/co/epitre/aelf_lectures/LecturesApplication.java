@@ -215,8 +215,9 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
     // see https://sentry.app.epitre.co/sentry/aelf-application/getting-started/java-android/
     private void initSentry() {
         Context ctx = this.getApplicationContext();
+        String server = "https://"+Credentials.SENTRY_DSN_PUBLIC_KEY+":"+Credentials.SENTRY_DSN_SECRET_KEY+"@sentry.app.epitre.co/2";
         Raven.clearStoredRaven();
-        Raven.init(ctx, Credentials.SENTRY_DSN, new AelfRavenFactory(ctx, getTracker().getUserId()));
+        Raven.init(ctx, server, new AelfRavenFactory(ctx, getTracker().getUserId()));
     }
 
     private void isValidServer() {
