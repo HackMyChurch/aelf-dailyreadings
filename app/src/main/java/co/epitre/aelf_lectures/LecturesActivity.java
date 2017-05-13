@@ -814,7 +814,15 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
-        return super.dispatchTouchEvent(event);
+        try {
+            return super.dispatchTouchEvent(event);
+        } catch (IndexOutOfBoundsException e) {
+            // Ignore: most likely caused because the app is loading and the pager view is not yet ready
+            // but still forward to sentry as I'd rather be sure. Good news is: we need to overload this
+            // function anyway :)
+            Raven.capture(e);
+        }
+        return false; // Fallback: consider event as not consumed
     }
 
     @Override
