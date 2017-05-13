@@ -14,6 +14,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GestureDetectorCompat;
@@ -920,7 +921,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
      */
     final ExecutorService executor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
     private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
-        LecturePagerAdapter mLecturesPager;
         Future<List<LectureItem>> future;
         WhatWhen statWhatWhen = null;
         boolean statIsFromCache = false; // True is the data came from the cache
@@ -1095,7 +1095,8 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 }
 
                 // 1 slide fragment <==> 1 lecture
-                mLecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
+                LecturePagerAdapter lecturesPager;
+                lecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
 
                 // If we have an anchor, attempt to find corresponding position
                 if (whatwhen.anchor != null && lectures != null) {
@@ -1111,10 +1112,12 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
                 // Set up the ViewPager with the sections adapter.
                 try {
+                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                     mViewPager = (ViewPager) findViewById(R.id.pager);
-                    mViewPager.setAdapter(mLecturesPager);
+                    mViewPager.setAdapter(lecturesPager);
                     mViewPager.setCurrentItem(whatwhen.position);
                     LecturesActivity.this.lectures = lectures;
+                    transaction.commit();
                     setLoading(false);
                 } catch (IllegalStateException e) {
                     // Fragment manager has gone away, will reload anyway so silently give up
