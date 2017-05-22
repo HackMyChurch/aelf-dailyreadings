@@ -1085,7 +1085,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         @Override
         protected void onPostExecute(final List<LectureItem> lectures) {
-            List<LectureItem> pager_data;
+            final List<LectureItem> pager_data;
 
             preventCancel.lock();
             try {
@@ -1102,10 +1102,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                     pager_data = lectures;
                 }
 
-                // 1 slide fragment <==> 1 lecture
-                LecturePagerAdapter lecturesPager;
-                lecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
-
                 // If we have an anchor, attempt to find corresponding position
                 if (whatwhen.anchor != null && lectures != null) {
                     int position = -1;
@@ -1119,23 +1115,31 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                 }
 
                 // Set up the ViewPager with the sections adapter.
-                try {
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    mViewPager = (ViewPager) findViewById(R.id.pager);
-                    mViewPager.setAdapter(lecturesPager);
-                    mViewPager.setCurrentItem(whatwhen.position);
-                    LecturesActivity.this.lectures = lectures;
-                    transaction.commit();
-                    setLoading(false);
-                } catch (IllegalStateException e) {
-                    // Fragment manager has gone away, will reload anyway so silently give up
-                }
+                LecturesActivity.this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        try {
+                            // 1 slide fragment <==> 1 lecture
+                            LecturePagerAdapter lecturesPager;
+                            lecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
+
+                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                            mViewPager = (ViewPager) findViewById(R.id.pager);
+                            mViewPager.setAdapter(lecturesPager);
+                            mViewPager.setCurrentItem(whatwhen.position);
+                            LecturesActivity.this.lectures = lectures;
+                            transaction.commit();
+                            setLoading(false);
+                        } catch (IllegalStateException e) {
+                            // Fragment manager has gone away, will reload anyway so silently give up
+                        } finally {
+                            currentRefresh = null;
+                            preventCancel.unlock();
+                        }
+                    }
+                });
             } catch (Exception e) {
                 Raven.capture(e);
                 throw e;
-            } finally {
-                currentRefresh = null;
-                preventCancel.unlock();
             }
         }
     }
