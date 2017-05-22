@@ -45,4 +45,11 @@ class LecturePagerAdapter extends FragmentStatePagerAdapter {
         }
         return null;
     }
+
+    public LectureItem getLecture(int position) {
+        if(position < this.getCount()) {
+            return mlectures.get(position);
+        }
+        return null;
+    }
 }

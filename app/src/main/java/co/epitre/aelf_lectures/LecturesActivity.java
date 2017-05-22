@@ -10,7 +10,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -43,28 +42,15 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.android.event.helper.AndroidEventBuilderHelper;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
-import com.getsentry.raven.event.EventBuilder;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.GregorianCalendar;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -76,7 +62,7 @@ import co.epitre.aelf_lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
-        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener {
+        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener, LectureLoadProgressListener {
 
     public static final String TAG = "AELFLecturesActivity";
     public static final long DATE_TODAY = 0;
@@ -92,8 +78,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     private boolean isLoading = false;
     DownloadXmlTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
-    LecturesController lecturesCtrl = null;
-    List<LectureItem> lectures = null;
     WhatWhen whatwhen;
     WhatWhen whatwhen_previous = null;
     Menu mMenu;
@@ -128,20 +112,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     protected ActionBar actionBar;
 
     /**
-     * Error messages
-     */
-    // Error handler
-    private static final String networkErrorMessage = ""+
-         "<h3>Oups... Une erreur s'est glissée lors du chargement des lectures</h3>" +
-         "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-         "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">cathogeek@epitre.co</a>.<p>";
-    private static final String emptyOfficeErrorMessage = "" +
-         "<h3>Oups... Cet office ne contient pas de lectures</h3>" +
-         "<p>Cet office ne semble pas contenir de lecture. Si vous pensez qu'il s'agit d'un erreur, vous pouver essayer de \"Rafraîchir\" cet office.</p>" +
-         "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-         "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:cathogeek@epitre.co?subject=Report:%20Empty%20%##OFFICE##20Office%20(version:%20##VERSION##)&body=##REPORT##\">cathogeek@epitre.co</a>.<p>";
-
-    /**
      * Statistics
      */
     Tracker tracker;
@@ -150,6 +120,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    LecturePagerAdapter lecturesPagerAdapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -217,9 +188,6 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             Raven.capture(e);
             mAccount = null;
         }
-
-        // init the lecture controller
-        lecturesCtrl = LecturesController.getInstance(this);
 
         // Select where to go from here
         whatwhen = new WhatWhen();
@@ -533,7 +501,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         updateCalendarButtonLabel();
 
         // Start Loading
-        DownloadXmlTask loader = new DownloadXmlTask();
+        DownloadXmlTask loader = new DownloadXmlTask(this, this);
         loader.execute(whatwhen.copy());
         whatwhen.useCache = true; // cache override are one-shot
         currentRefresh = loader;
@@ -657,13 +625,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     public boolean onShare() {
         // Make sure we DO have something to share
         // FIXME: racy, the loader will update it and it's in a thread
-        if (lectures == null || mViewPager == null) {
+        if (lecturesPagerAdapter == null || mViewPager == null) {
             return false;
         }
 
         // Get current position
         int position = mViewPager.getCurrentItem();
-        LectureItem lecture = lectures.get(position);
+        LectureItem lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
         String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.urlName();
@@ -916,193 +884,30 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         });
     }
 
-    /* Async loader
-     *
-     * Cancel are unreliable using URLConnection class in the controller. What we do instead to manage
-     * cancels is:
-     * - track current load task in a "future", in a thread pool
-     * - set a flag
-     * - cancel current load future
-     * - on flag change, remove loading screen if any
-     * - if the flag is true, ignore any result
-     * Timeouts *should* limit the impact of threads / connections stacking. Should...
-     */
-    final ExecutorService executor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
-    private class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
-        Future<List<LectureItem>> future;
-        WhatWhen statWhatWhen = null;
-        boolean statIsFromCache = false; // True is the data came from the cache
+    //
+    // Async load callbacks. Guaranted to be called on main UI thread
+    //
 
-        @Override
-        protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
-            final WhatWhen ww = whatwhen[0];
-            statWhatWhen = ww;
-
-            try {
-                List<LectureItem> lectures = null;
-                if(ww.useCache) {
-                    // attempt to load from cache: skip loading indicator (avoids flickering)
-                    // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
-                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, false);
-                    if(lectures != null) {
-                        statIsFromCache = true;
-                        return lectures;
-                    }
-                }
-
-                // attempts to load from network, with loading indicator
+    public void onLectureLoadProgress(LectureLoadProgress progress) {
+        switch (progress) {
+            case LOAD_START:
                 setLoading(true);
-                future = executor.submit(new Callable<List<LectureItem>>() {
-                    @Override
-                    public List<LectureItem> call() {
-                        try {
-                            return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
-                        } catch (IOException e) {
-                            // Do nothing: the error has already been reported, if it makes sense
-                            return null;
-                        }
-                    }
-                });
-
-                // When cancel is called, we first mark as cancelled then check for future
-                // but future may be created in the mean time, so recheck here to avoid race
-                if (isCancelled()) {
-                    future.cancel(true);
-                }
-
-                // attempt to read the result
-                try {
-                    lectures = future.get();
-                } catch (InterruptedException e) {
-                    // Do not report: this is requested by the user
-                } catch (ExecutionException e) {
-                    Raven.capture(e);
-                }
-
-                // If cancel has been called while loading, we'll only catch it here
-                if (isCancelled()) {
-                    return null;
-                }
-
-                if (lectures == null) {
-                    // Failed to load lectures from network AND we were asked to refresh so attempt
-                    // a fallback on the cache to avoid the big error message but still display a notification
-                    // If the cache considers the lecture as outdated, still return it. We are in error recovery now
-                    lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, true);
-                    statIsFromCache = true;
-                    LecturesActivity.this.runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(LecturesActivity.this, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-                return lectures;
-            } catch (IOException e) {
-                // Error alredy propagated to Sentry. Do not propagate twice !
-                Log.e(TAG, "I/O error while loading. AELF servers down ?");
+                break;
+            case LOAD_FAIL:
                 setLoading(false);
-                return null;
-            }
+                Toast.makeText(this, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
+                break;
+            case LOAD_DONE:
+                setLoading(false);
+                break;
         }
+    }
 
-        private void trackView(String status) {
-            long dayDelta = statWhatWhen.when.dayBetween(new GregorianCalendar());
-
-            TrackHelper.track()
-                    .screen("/office/"+whatwhen.what.urlName())
-                    .title("/office/"+whatwhen.what.urlName())
-                    .dimension(LecturesApplication.STATS_DIM_SOURCE, statIsFromCache ? "cache" : "network")
-                    .dimension(LecturesApplication.STATS_DIM_STATUS, status)
-                    .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int)dayDelta))
-                    .dimension(LecturesApplication.STATS_DIM_DAY_NAME, whatwhen.when.dayName())
-                    .with(tracker);
-        }
-
-        @Override
-        protected void onCancelled(List<LectureItem> lectureItems) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                super.onCancelled(lectureItems);
-            }
-            trackView("cancelled");
-        }
-
-        private List<LectureItem> buildErrorMessage(String message) {
-            List<LectureItem> error = new ArrayList<>(1);
-
-            // Get version name
-            String versionName = "";
-            try {
-                versionName = "v"+getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-            } catch (NameNotFoundException e) {
-                // Only drawback here is no version displayed in about. Minor anoyance
-            }
-            message = message.replace("##VERSION##", versionName);
-
-            // Get office name / date
-            message = message.replace("##OFFICE##", whatwhen.toUrlName());
-
-            // Build detailed report, using data from AelfEventBuilderHelper
-            EventBuilder eventBuilder = new EventBuilder();
-            new AndroidEventBuilderHelper(LecturesActivity.this).helpBuildingEvent(eventBuilder);
-            new AelfEventBuilderHelper(LecturesActivity.this, tracker.getUserId()).helpBuildingEvent(eventBuilder);
-            Map<String, Map<String, Object>> contexts = eventBuilder.getEvent().getContexts();
-
-            String report = "";
-            report += "Bonjour !\n\n" +
-                    "Merci d'avoir pris le temps d'envoyer un message pour signaler une erreur !\n\n" +
-                    "Ce message a été pré-rempli avec les informations dont j'ai habituellement besoin pour diagnostiquer les erreurs. " +
-                    "Si vous le souhaitez, vous pouvez prendre le temps de les relire ou même les supprimer. Mais cela m'aidera beaucoup si vous les conservez.\n\n" +
-                    "VOUS POUVEZ AJOUTER UN MESSAGE ICI\n\n";
-            report += "Debug informations:\n";
-            report += "===================\n";
-
-            for (Map.Entry<String, Map<String, Object>> context : contexts.entrySet()) {
-                String key = context.getKey();
-                report += "\n"+key+"\n"+new String(new char[key.length()]).replace("\0", "-")+"\n";
-
-                for (Map.Entry<String, Object> entry : context.getValue().entrySet()) {
-                    Object value = entry.getValue();
-                    if (value != null) {
-                        report += entry.getKey()+"="+value.toString()+"\n";
-                    } else {
-                        report += entry.getKey()+"=null\n";
-                    }
-                }
-            }
-
-            try {
-                message = message.replace("##REPORT##", URLEncoder.encode(report, "utf-8").replace("+", "%20"));
-            } catch (UnsupportedEncodingException e) {
-                // That's exactly the same informations as we would have sent, except that the user has no chance to give us extra info
-                Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Building error report for "+whatwhen.toUrlName()).build());
-                Raven.capture(e);
-            }
-
-            // Build and return error
-            error.add(new LectureItem("error", "Oups...", message, null));
-            return error;
-        }
-
-        @Override
-        protected void onPostExecute(final List<LectureItem> lectures) {
-            final List<LectureItem> pager_data;
-
-            preventCancel.lock();
-            try {
-
-                // Failed to load
-                if (lectures == null) {
-                    trackView("error");
-                    pager_data = buildErrorMessage(networkErrorMessage);
-                } else if (lectures.isEmpty()) {
-                    trackView("empty");
-                    pager_data = buildErrorMessage(emptyOfficeErrorMessage);;
-                } else {
-                    trackView("success");
-                    pager_data = lectures;
-                }
-
-                // If we have an anchor, attempt to find corresponding position
+    public void onLectureLoaded(List<LectureItem> lectures, boolean isSuccess) {
+        preventCancel.lock();
+        try {
+            // If we have an anchor, attempt to find corresponding position
+            if (isSuccess) {
                 if (whatwhen.anchor != null && lectures != null) {
                     int position = -1;
                     for (LectureItem lecture : lectures) {
@@ -1113,34 +918,31 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
                         }
                     }
                 }
-
-                // Set up the ViewPager with the sections adapter.
-                LecturesActivity.this.runOnUiThread(new Runnable() {
-                    public void run() {
-                        try {
-                            // 1 slide fragment <==> 1 lecture
-                            LecturePagerAdapter lecturesPager;
-                            lecturesPager = new LecturePagerAdapter(getSupportFragmentManager(), pager_data);
-
-                            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                            mViewPager = (ViewPager) findViewById(R.id.pager);
-                            mViewPager.setAdapter(lecturesPager);
-                            mViewPager.setCurrentItem(whatwhen.position);
-                            LecturesActivity.this.lectures = lectures;
-                            transaction.commit();
-                            setLoading(false);
-                        } catch (IllegalStateException e) {
-                            // Fragment manager has gone away, will reload anyway so silently give up
-                        } finally {
-                            currentRefresh = null;
-                            preventCancel.unlock();
-                        }
-                    }
-                });
-            } catch (Exception e) {
-                Raven.capture(e);
-                throw e;
+            } else {
+                whatwhen.position = 0;
             }
+
+            // Set up the ViewPager with the sections adapter.
+            try {
+                // 1 slide fragment <==> 1 lecture
+                lecturesPagerAdapter = new LecturePagerAdapter(getSupportFragmentManager(), lectures);
+
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                mViewPager = (ViewPager) findViewById(R.id.pager);
+                mViewPager.setAdapter(lecturesPagerAdapter);
+                mViewPager.setCurrentItem(whatwhen.position);
+
+                transaction.commit();
+                setLoading(false);
+            } catch (IllegalStateException e) {
+                // Fragment manager has gone away, will reload anyway so silently give up
+            } finally {
+                currentRefresh = null;
+                preventCancel.unlock();
+            }
+        } catch (Exception e) {
+            Raven.capture(e);
+            throw e;
         }
     }
 
