@@ -3,16 +3,13 @@ package co.epitre.aelf_lectures.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.TimeUnit;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
@@ -30,11 +27,22 @@ import android.util.Xml;
 
 import com.getsentry.raven.android.Raven;
 
+import okhttp3.Call;
+import okhttp3.Dns;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 /**
  * Public data controller --> load either from cache, either from network
  */
 
 public final class LecturesController {
+    /**
+     * HTTP Client
+     */
+    private final OkHttpClient client;
+
     /**
      * Statistics
      */
@@ -124,6 +132,13 @@ public final class LecturesController {
         tracker = ((PiwikApplication) c.getApplicationContext()).getTracker();
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
+
+        client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
+                .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
+                .readTimeout   (60, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .build();
 
     }
     public static LecturesController getInstance(Context c) {
@@ -255,16 +270,6 @@ public final class LecturesController {
         Oraison,
         Benediction,
         NeedFlush, // Force flush when item is known to be last of sequence
-    }
-
-    private int count_match(String input, String search) {
-        int matches = 0;
-        Pattern pattern = Pattern.compile(search);
-        Matcher matcher = pattern.matcher(input);
-
-        while (matcher.find()) matches++;
-
-        return matches;
     }
 
     private List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
@@ -564,39 +569,36 @@ public final class LecturesController {
     }
 
     // Attempts to load from network
-    // throws IOException to allow for auto retry. Aelf servers are not that stable...
+    // throws IOException to allow for auto retry.
     private List<LectureItem> loadFromNetwork(WHAT what, AelfDate when) throws IOException, DownloadException {
-        HttpURLConnection urlConnection = null;
-        InputStream in = null;
-        URL feedUrl;
-
         List<LectureItem> lectures = new ArrayList<>();
 
         // Build feed URL
         int version = preference.getInt("version", -1);
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
 
-        try {
-            String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
-            Log.d(TAG, "Getting "+url);
-            feedUrl = new URL(url);
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "Failed to parse URL", e);
-            Raven.capture(e);
-            throw new DownloadException("url");
+        String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
+        Log.d(TAG, "Getting "+url);
+
+        // Build request + headers
+        Request.Builder requestBuilder = new Request.Builder();
+        requestBuilder.url(url);
+        if (pref_nocache) {
+            requestBuilder.addHeader("x-aelf-nocache", "1");
         }
+        Request request = requestBuilder.build();
 
-        // Attempts to load and parse the feed
+        // Grab response
+        InputStream in = null;
+        Call call = null;
+        Response response = null;
         try {
-            urlConnection = (HttpURLConnection) feedUrl.openConnection();
-            urlConnection.setConnectTimeout(60*1000); // 60 seconds
-            urlConnection.setReadTimeout(600*1000);   // 10 minutes
+            // Grab response
+            call = client.newCall(request);
+            response = call.execute();
+            in = response.body().byteStream();
 
-            if (pref_nocache) {
-                urlConnection.setRequestProperty("x-aelf-nocache", "1");
-            }
-
-            in = urlConnection.getInputStream();
+            // Parse response
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             parser.setInput(in, null);
@@ -608,13 +610,11 @@ public final class LecturesController {
             throw new DownloadException("parse");
         } finally {
             try {
-                if(urlConnection != null) urlConnection.disconnect();
-                if(in != null)            in.close();
+                if(call     != null) call.cancel();
+                if(response != null) response.close();
+                if(in       != null) in.close();
             } catch (IOException e) {
                 Log.e(TAG, "Failed to close API connection", e);
-                if (isNetworkAvailable()) {
-                    Raven.capture(e);
-                }
             }
         }
 

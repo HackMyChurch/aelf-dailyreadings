@@ -25,6 +25,11 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
+
+    // Error + Usage reporting
     compile 'org.piwik.sdk:piwik-sdk:2.0.0'
     compile 'com.getsentry.raven:raven-android:8.0.2'
+
+    // HTTP layer
+    compile 'com.squareup.okhttp3:okhttp:3.8.0'
 }
