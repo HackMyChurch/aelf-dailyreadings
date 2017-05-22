@@ -3,12 +3,16 @@ package co.epitre.aelf_lectures.sync;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.LinkedList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import co.epitre.aelf_lectures.LecturesApplication;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import co.epitre.aelf_lectures.data.AelfDate;
+import co.epitre.aelf_lectures.data.LectureFuture;
 import co.epitre.aelf_lectures.data.LecturesController;
 
 import android.accounts.Account;
@@ -48,8 +52,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private NotificationCompat.Builder mNotificationBuilder;
 
+    private LinkedList<LectureFuture> pendingDownloads = new LinkedList<>();
     private int mTodo;
     private int mDone;
+
+    private static final long MAX_RUN_TIME = TimeUnit.MINUTES.toMillis(30);
 
     /**
      * Statistics
@@ -116,17 +123,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Load from network, if not in cache and not outdated
         if(!isInCache(what, when)) {
             try {
-                mController.getLecturesFromNetwork(what, when).get();
-            } catch (IOException | ExecutionException e) {
+                pendingDownloads.add(mController.getLecturesFromNetwork(what, when));
+            } catch (IOException e) {
                 // Error already propagated to Sentry. Do not propagate twice !
                 Log.e(TAG, "I/O error while syncing. AELF servers down ?");
                 syncResult.stats.numIoExceptions++;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
-        mDone++;
-        updateNotification();
     }
 
     // Sync all readings for the day
@@ -218,11 +221,39 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 when.add(Calendar.DATE, +1);
             } while(when.before(whenMax));
 
-            // finally, do we need to explicitly grab next Sunday ?
+            // Load next sunday
             if(pDuree.equals("auj-dim")) {
                 when = new AelfDate();
                 do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax, syncResult);
+            }
+
+            // Wait for the downloads
+            // TODO: re-queue up to 3 times ?
+            while (!pendingDownloads.isEmpty()) {
+                // Compute remaining time budget, set min to 1 to give a chance to already completed tasks
+                // to be collected
+                long timeBudget = currentTimeMillis + MAX_RUN_TIME - System.currentTimeMillis();
+                timeBudget = Math.max(timeBudget, 1);
+
+                LectureFuture future = pendingDownloads.pop();
+                try {
+                    future.get(timeBudget, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (TimeoutException e) {
+                    Log.e(TAG, "Sync time budget exceeded, cancelling");
+                    future.cancel(true);
+                    Raven.capture(e);
+                    syncResult.stats.numIoExceptions++;
+                } catch (ExecutionException e) {
+                    // This is actually just a wrapped IOException
+                    Log.e(TAG, "I/O error while syncing");
+                    syncResult.stats.numIoExceptions++;
+                }
+
+                mDone++;
+                updateNotification();
             }
         } catch (Exception e) {
             Raven.capture(e);
