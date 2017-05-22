@@ -45,10 +45,14 @@ interface LectureFutureProgressListener {
 public class LectureFuture implements Future<List<LectureItem>> {
     private static final String TAG = "LectureFuture";
 
+    /**
+     * Internal state
+     */
+    private long retryBudget = 3;
     private Context ctx;
     private SharedPreferences preference = null;
-    LecturesController.WHAT what;
-    AelfDate when;
+    public LecturesController.WHAT what;
+    public AelfDate when;
 
     /**
      * Statistics
@@ -71,7 +75,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
     private List<LectureItem> pendingLectures = null;
     private LectureFutureProgressListener listener;
 
-    public LectureFuture(Context ctx, LecturesController.WHAT what, AelfDate when, LectureFutureProgressListener listener) {
+    public LectureFuture(Context ctx, LecturesController.WHAT what, AelfDate when, LectureFutureProgressListener listener) throws IOException {
         this.listener = listener;
         this.what = what;
         this.when = when;
@@ -107,7 +111,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         try {
             Work.acquire();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new IOException(e);
         }
 
         // Build and enqueue the call
@@ -122,6 +126,29 @@ public class LectureFuture implements Future<List<LectureItem>> {
                 onHttpResponse(call, response);
             }
         });
+    }
+
+    public LectureFuture createRetry() {
+        if (!isDone()) {
+            throw new RuntimeException("Can not retry a pending task");
+        }
+
+        if (retryBudget <= 0) {
+            throw new RuntimeException("Too many retries");
+        }
+
+        if (!isNetworkAvailable()) {
+            throw new RuntimeException("Network is not available. Retry is pointless !");
+        }
+
+        LectureFuture future;
+        try {
+            future = new LectureFuture(ctx, what, when, listener);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        future.retryBudget = retryBudget--;
+        return future;
     }
 
     //

@@ -115,12 +115,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Load from network, if not in cache and not outdated
         if(!mController.isLecturesInCache(what, when, false)) {
             try {
+                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" QUEUED");
                 pendingDownloads.add(mController.getLecturesFromNetwork(what, when));
             } catch (IOException e) {
                 // Error already propagated to Sentry. Do not propagate twice !
                 Log.e(TAG, "I/O error while syncing. AELF servers down ?");
                 syncResult.stats.numIoExceptions++;
             }
+        } else {
+            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
         }
     }
 
@@ -221,7 +224,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             // Wait for the downloads
-            // TODO: re-queue up to 3 times ?
             while (!pendingDownloads.isEmpty()) {
                 // Compute remaining time budget, set min to 1 to give a chance to already completed tasks
                 // to be collected
@@ -231,20 +233,35 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 LectureFuture future = pendingDownloads.pop();
                 try {
                     future.get(timeBudget, TimeUnit.MILLISECONDS);
+                    Log.i(TAG, future.what.urlName()+" for "+future.when.toIsoString()+" SUCCESS !!");
+                    mDone++;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                    mDone++;
                 } catch (TimeoutException e) {
                     Log.e(TAG, "Sync time budget exceeded, cancelling");
                     future.cancel(true);
                     Raven.capture(e);
                     syncResult.stats.numIoExceptions++;
+                    mDone++;
                 } catch (ExecutionException e) {
                     // This is actually just a wrapped IOException
                     Log.e(TAG, "I/O error while syncing");
                     syncResult.stats.numIoExceptions++;
+
+                    // Attempt to retry it (up to 3) or capture error for investigation
+                    try {
+                        future = future.createRetry();
+                        if(future != null) {
+                            Log.i(TAG, "Pushed retry");
+                            pendingDownloads.push(future);
+                        }
+                    } catch (RuntimeException err) {
+                        Log.e(TAG, "Can not retry task", err);
+                        Raven.capture(e);
+                    }
                 }
 
-                mDone++;
                 updateNotification();
             }
         } catch (Exception e) {
