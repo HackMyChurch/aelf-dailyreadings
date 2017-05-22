@@ -74,6 +74,10 @@ public class AelfDate extends GregorianCalendar {
         return new SimpleDateFormat("yyyy-MM-dd").format(getTimeInMillis());
     }
 
+    public String toUrlString() {
+        return new SimpleDateFormat("dd/MM/yyyy", Locale.US).format(getTimeInMillis());
+    }
+
     public String dayName() {
         return new SimpleDateFormat("EEEE", Locale.FRANCE).format(getTimeInMillis());
     }

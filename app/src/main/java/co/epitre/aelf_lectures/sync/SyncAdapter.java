@@ -3,6 +3,7 @@ package co.epitre.aelf_lectures.sync;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.concurrent.ExecutionException;
 
 import co.epitre.aelf_lectures.LecturesApplication;
 import co.epitre.aelf_lectures.R;
@@ -115,11 +116,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Load from network, if not in cache and not outdated
         if(!isInCache(what, when)) {
             try {
-                mController.getLecturesFromNetwork(what, when);
-            } catch (IOException e) {
-                // Error alredy propagated to Sentry. Do not propagate twice !
+                mController.getLecturesFromNetwork(what, when).get();
+            } catch (IOException | ExecutionException e) {
+                // Error already propagated to Sentry. Do not propagate twice !
                 Log.e(TAG, "I/O error while syncing. AELF servers down ?");
                 syncResult.stats.numIoExceptions++;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
         mDone++;

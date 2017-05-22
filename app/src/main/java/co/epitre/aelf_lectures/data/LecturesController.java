@@ -1,57 +1,29 @@
 package co.epitre.aelf_lectures.data;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.getsentry.raven.android.Raven;
-
-import okhttp3.Call;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * Public data controller --> load either from cache, either from network
  */
 
 public final class LecturesController {
-    /**
-     * HTTP Client
-     */
-    private final OkHttpClient client;
 
     /**
      * Statistics
      */
     Tracker tracker;
-
-    /**
-     * Simple exception class to propagate error names to statistics handler
-     */
-    class DownloadException extends Exception {
-        public String name;
-        DownloadException(String name) {
-            super();
-            this.name = name;
-        }
-    }
 
     /**
      * "What to sync" constants
@@ -126,14 +98,6 @@ public final class LecturesController {
         tracker = ((PiwikApplication) c.getApplicationContext()).getTracker();
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
-
-        client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
-                .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
-                .readTimeout   (60, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .build();
-
     }
     public static LecturesController getInstance(Context c) {
         if (LecturesController.instance == null) {
@@ -171,58 +135,18 @@ public final class LecturesController {
         return null;
     }
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
-    }
-
-    public List<LectureItem> getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
-        List<LectureItem> lectures;
-
-        // fallback to network load
-        long startTime = System.nanoTime();
-        String errorName = "success";
-        try {
-            lectures = loadFromNetwork(what, when);
-            if (lectures == null) {
-                errorName = "error.generic";
-                Log.w(TAG, "Failed to load lectures from network");
-                return null;
+    public LectureFuture getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
+        LectureFuture future = new LectureFuture(ctx, what, when, new LectureFutureProgressListener() {
+            @Override
+            public void onLectureLoaded(WHAT what, AelfDate when, List<LectureItem> lectures) {
+                // does it look like an error message ? Only simple stupid heuristic for now.
+                if(!looksLikeError(lectures)) {
+                    cache.store(what, when, lectures);
+                }
             }
-        } catch (DownloadException e) {
-            errorName = "error."+e.name;
-            Log.w(TAG, "Failed to load lectures from network");
-            // No capture here, already done in callee
-            return null;
-        } catch (IOException e) {
-            errorName = "error.io";
-            Log.w(TAG, "Failed to load lectures from network");
-            if (isNetworkAvailable()) {
-                Raven.capture(e);
-            }
-            throw e;
-        } catch (Exception e) {
-            errorName = "error."+e.getClass().getName();
-            Raven.capture(e);
-            throw e;
-        } finally {
-            // Push event
-            float deltaTime = (System.nanoTime() - startTime) / 1000;
-            long dayDelta = when.dayBetween(new GregorianCalendar());
+        });
 
-            // Disable success reporting, this is too noisy
-            if (!errorName.equals("success")) {
-                TrackHelper.track().event("Office", "download." + errorName).name(what.urlName() + "." + dayDelta).value(deltaTime).with(tracker);
-            }
-        }
-
-        // does it look like an error message ? Only simple stupid heuristic for now.
-        if(!looksLikeError(lectures)) {
-            cache.store(what, when, lectures);
-        }
-
-        return lectures;
+        return future;
     }
 
     // re-export cleanup helper
@@ -235,9 +159,9 @@ public final class LecturesController {
     }
 
     /**
-     * Real Work
+     * Helpers
      */
-    
+
     private boolean looksLikeError(List<LectureItem> lectures) {
         // does it look like an error message ? Only simple stupid heuristic for now.
         if(lectures.size() > 1) {
@@ -249,83 +173,6 @@ public final class LecturesController {
         }
 
         return true;
-    }
-
-    // real work internal var
-    private static final SimpleDateFormat formater = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
-
-    // Get Server URL. Supports developer mode where you want to run a server locally
-    private String getBasedUrl() {
-        boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
-        String baseUrl = preference.getString("pref_participate_server", "");
-
-        // Manual overload: stop here
-        if (!baseUrl.equals("")) {
-            return baseUrl;
-        }
-
-        // Load default URL
-        baseUrl = Credentials.API_ENDPOINT;
-
-        // If applicable, switch to beta
-        if (pref_beta) {
-            baseUrl = baseUrl.replaceAll("^(https?://)", "$1beta.");
-        }
-        return baseUrl;
-    }
-
-    // Build final URL for an office
-    private String getUrl(WHAT what) {
-        return getBasedUrl()+what.getRelativeUrl();
-    }
-
-    // Attempts to load from network
-    // throws IOException to allow for auto retry.
-    private List<LectureItem> loadFromNetwork(WHAT what, AelfDate when) throws IOException, DownloadException {
-        List<LectureItem> lectures = null;
-
-        // Build feed URL
-        int version = preference.getInt("version", -1);
-        boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
-
-        String url = String.format(Locale.US, getUrl(what)+"?version=%d", formater.format(when.getTime()), version);
-        Log.d(TAG, "Getting "+url);
-
-        // Build request + headers
-        Request.Builder requestBuilder = new Request.Builder();
-        requestBuilder.url(url);
-        if (pref_nocache) {
-            requestBuilder.addHeader("x-aelf-nocache", "1");
-        }
-        Request request = requestBuilder.build();
-
-        // Grab response
-        InputStream in = null;
-        Call call = null;
-        Response response = null;
-        try {
-            // Grab response
-            call = client.newCall(request);
-            response = call.execute();
-            in = response.body().byteStream();
-
-            // Parse response
-            lectures = AelfRssParser.parse(in);
-        } catch (XmlPullParserException e) {
-            Log.e(TAG, "Failed to parse API result", e);
-            Raven.capture(e);
-            throw new DownloadException("parse");
-        } finally {
-            try {
-                if(call     != null) call.cancel();
-                if(response != null) response.close();
-                if(in       != null) in.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to close API connection", e);
-            }
-        }
-
-        return lectures;
     }
 
 }

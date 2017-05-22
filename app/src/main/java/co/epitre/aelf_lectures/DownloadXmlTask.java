@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import co.epitre.aelf_lectures.data.LectureFuture;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.WhatWhen;
@@ -65,9 +66,8 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
     private Context ctx;
     private LectureLoadProgressListener lectureLoadProgressListener;
     private LecturesController lecturesCtrl = null;
-    private static final ExecutorService executor = Executors.newCachedThreadPool(Executors.defaultThreadFactory());
 
-    Future<List<LectureItem>> future;
+    LectureFuture future;
     private WhatWhen statWhatWhen = null;
     boolean statIsFromCache = false; // True is the data came from the cache
 
@@ -133,17 +133,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
             // attempts to load from network, with loading indicator
             onLectureLoadProgress(LectureLoadProgress.LOAD_START);
-            future = executor.submit(new Callable<List<LectureItem>>() {
-                @Override
-                public List<LectureItem> call() {
-                    try {
-                        return lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
-                    } catch (IOException e) {
-                        // Do nothing: the error has already been reported, if it makes sense
-                        return null;
-                    }
-                }
-            });
+            future = lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
 
             // When cancel is called, we first mark as cancelled then check for future
             // but future may be created in the mean time, so recheck here to avoid race
@@ -151,7 +141,6 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
                 future.cancel(true);
             }
 
-            // attempt to read the result
             try {
                 lectures = future.get();
             } catch (InterruptedException e) {
