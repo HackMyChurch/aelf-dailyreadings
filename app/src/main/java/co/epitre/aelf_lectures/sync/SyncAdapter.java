@@ -110,18 +110,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mNotificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
     }
 
-    private boolean isInCache(LecturesController.WHAT what, AelfDate when) {
-        try {
-            return mController.getLecturesFromCache(what, when, false) != null;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
     // Sync one reading for the day
     private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) {
         // Load from network, if not in cache and not outdated
-        if(!isInCache(what, when)) {
+        if(!mController.isLecturesInCache(what, when, false)) {
             try {
                 pendingDownloads.add(mController.getLecturesFromNetwork(what, when));
             } catch (IOException e) {

@@ -217,6 +217,30 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         }
     }
 
+    boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
+        String key  = computeKey(when);
+        String min_create_date = computeKey(minLoadDate);
+        String min_create_version = String.valueOf(minLoadVersion);
+
+        // load from db
+        Log.i(TAG, "Checking if lecture is in cache with create_date>="+min_create_date+" create_version>="+min_create_version);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur;
+        try {
+            cur = db.query(
+                    what.toString(),                                           // FROM
+                    new String[]{"date"},                                      // SELECT
+                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
+                    new String[]{key, min_create_date, min_create_version},    // params
+                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
+            );
+        } catch (SQLiteException e) {
+            return false;
+        }
+
+        return cur != null && cur.getCount() > 0;
+    }
+
     /**
      * Internal logic
      */

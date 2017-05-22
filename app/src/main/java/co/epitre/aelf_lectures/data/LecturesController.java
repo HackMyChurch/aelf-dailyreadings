@@ -110,7 +110,20 @@ public final class LecturesController {
         return LecturesController.instance;
     }
 
-    public List<LectureItem> getLecturesFromCache(WHAT what, GregorianCalendar when, boolean allowColdCache) throws IOException {
+    public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
+        GregorianCalendar minLoadDate = null;
+        long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
+
+        try {
+            return cache.has(what, when, minLoadDate, minLoadVersion);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to check if lecture is in cache", e);
+            Raven.capture(e);
+            return false;
+        }
+    }
+
+    public List<LectureItem> getLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
         List<LectureItem> lectures;
         GregorianCalendar minLoadDate = null;
         long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
