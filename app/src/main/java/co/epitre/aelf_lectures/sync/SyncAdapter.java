@@ -246,18 +246,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     // This is actually just a wrapped IOException
                     Log.e(TAG, "I/O error while syncing");
                     syncResult.stats.numIoExceptions++;
-
-                    // Attempt to retry it (up to 3) or capture error for investigation
-                    try {
-                        future = future.createRetry();
-                        if(future != null) {
-                            Log.i(TAG, "Pushed retry");
-                            pendingDownloads.push(future);
-                        }
-                    } catch (RuntimeException err) {
-                        Log.e(TAG, "Can not retry task", err);
-                        Raven.capture(e);
-                    }
                 }
 
                 updateNotification();

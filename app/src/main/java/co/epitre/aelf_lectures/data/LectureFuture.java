@@ -144,10 +144,27 @@ public class LectureFuture implements Future<List<LectureItem>> {
         preference = PreferenceManager.getDefaultSharedPreferences(ctx);
         tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
 
+        // Mark work start
+        startTime = System.nanoTime();
+        try {
+            Work.acquire();
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
+
+        // Build and start request
+        startRequest();
+    }
+
+    private void startRequest()  {
+        // Re-Init state
+        this.pendingLectures = null;
+        this.pendingIoException = null;
+
         // Build feed URL
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
         String Url = buildUrl(what, when);
-        Log.d(TAG, "Getting "+Url);
+        Log.d(TAG, "Getting "+Url+" remaining attempts: "+retryBudget);
 
         // Build request + headers
         Request.Builder requestBuilder = new Request.Builder();
@@ -157,53 +174,61 @@ public class LectureFuture implements Future<List<LectureItem>> {
         }
         Request request = requestBuilder.build();
 
-        // Mark work start
-        startTime = System.nanoTime();
-        try {
-            Work.acquire();
-        } catch (InterruptedException e) {
-            throw new IOException(e);
-        }
-
         // Build and enqueue the call
         call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
                 pendingIoException = e;
-                Work.release();
+                completeOrRetry();
             }
 
             @Override public void onResponse(Call call, Response response) throws IOException {
+                IOException err = null;
                 try {
                     onHttpResponse(call, response);
+                } catch (IOException e) {
+                    // Ignore this exception IF we are going to retry
+                    err = e;
                 } finally {
-                    Work.release();
+                    completeOrRetry(err);
                 }
             }
         });
     }
 
-    public LectureFuture createRetry() {
-        if (!isDone()) {
-            throw new RuntimeException("Can not retry a pending task");
+    //
+    // Retry engine
+    //
+
+    private boolean canRetry() {
+        if (pendingLectures != null) return false;
+        if (cancelled)               return false;
+        if (retryBudget <= 0)        return false;
+        if (!isNetworkAvailable())   return false;
+        return true;
+    }
+
+    private void completeOrRetry(IOException e) throws IOException {
+        // If we can't retry, complete
+        if(!canRetry()) {
+            Work.release();
+            if (e != null) {
+                throw e;
+            }
+            return;
         }
 
-        if (retryBudget <= 0) {
-            throw new RuntimeException("Too many retries");
-        }
+        // Start retry
+        retryBudget--;
+        startRequest();
+    }
 
-        if (!isNetworkAvailable()) {
-            throw new RuntimeException("Network is not available. Retry is pointless !");
-        }
-
-        LectureFuture future;
+    private void completeOrRetry() {
         try {
-            future = new LectureFuture(ctx, what, when, listener);
+            completeOrRetry(null);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            // Can not fail as it only forwards the argument
         }
-        future.retryBudget = retryBudget--;
-        return future;
     }
 
     //
@@ -294,18 +319,16 @@ public class LectureFuture implements Future<List<LectureItem>> {
         } catch (XmlPullParserException e) {
             Log.e(TAG, "Failed to parse API result", e);
             errorName = "error.parse";
-            Raven.capture(e);
+            trackException(e);
             pendingIoException = new IOException(e);
         } catch (IOException e) {
             errorName = "error.io";
             Log.w(TAG, "Failed to load lectures from network");
-            if (isNetworkAvailable()) {
-                Raven.capture(e);
-            }
+            trackException(e);
             pendingIoException = e;
         } catch (Exception e) {
             errorName = "error."+e.getClass().getName();
-            Raven.capture(e);
+            trackException(e);
             pendingIoException = new IOException(e);
         } finally {
             if(in != null) {
@@ -363,6 +386,20 @@ public class LectureFuture implements Future<List<LectureItem>> {
         if (!errorName.equals("success")) {
             TrackHelper.track().event("Office", "download." + errorName).name(what.urlName() + "." + dayDelta).value(deltaTime).with(tracker);
         }
+    }
+
+    private void trackException(Exception e) {
+        // Do not track errors that will be retries anyway
+        if (canRetry()) {
+            return;
+        }
+
+        // Do not track IOException when the network is down
+        if (e instanceof IOException && !isNetworkAvailable()) {
+            return;
+        }
+
+        Raven.capture(e);
     }
 
     private boolean isNetworkAvailable() {
