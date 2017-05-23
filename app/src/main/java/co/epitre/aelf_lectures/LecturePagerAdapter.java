@@ -8,11 +8,14 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
+import android.view.ViewGroup;
 
 /**
  * Adapter, return a fragment for each lecture / slide.
  */
 class LecturePagerAdapter extends FragmentStatePagerAdapter {
+    public static final String TAG = "LecturePagerAdapter";
 
     private List<LectureItem> mlectures;
 
@@ -51,5 +54,15 @@ class LecturePagerAdapter extends FragmentStatePagerAdapter {
             return mlectures.get(position);
         }
         return null;
+    }
+
+    @Override
+    public void finishUpdate(ViewGroup container) {
+        // https://stackoverflow.com/questions/41650721/attempt-to-invoke-virtual-method-android-os-handler-android-support-v4-app-frag
+        try{
+            super.finishUpdate(container);
+        } catch (NullPointerException nullPointerException){
+            Log.w(TAG, "Catch the NullPointerException in FragmentPagerAdapter.finishUpdate");
+        }
     }
 }
