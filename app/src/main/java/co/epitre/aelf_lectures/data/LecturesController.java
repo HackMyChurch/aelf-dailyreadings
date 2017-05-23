@@ -18,7 +18,7 @@ import com.getsentry.raven.android.Raven;
  * Public data controller --> load either from cache, either from network
  */
 
-public final class LecturesController {
+public final class LecturesController implements LectureFutureProgressListener {
 
     /**
      * Statistics
@@ -149,17 +149,16 @@ public final class LecturesController {
     }
 
     public LectureFuture getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
-        LectureFuture future = new LectureFuture(ctx, what, when, new LectureFutureProgressListener() {
-            @Override
-            public void onLectureLoaded(WHAT what, AelfDate when, List<LectureItem> lectures) {
-                // does it look like an error message ? Only simple stupid heuristic for now.
-                if(!looksLikeError(lectures)) {
-                    cache.store(what, when, lectures);
-                }
-            }
-        });
+        // Load a lecture. When the lecture is ready, call this.onLectureLoaded to cache it
+        return new LectureFuture(ctx, what, when, this);
+    }
 
-        return future;
+    @Override
+    public void onLectureLoaded(WHAT what, AelfDate when, List<LectureItem> lectures) {
+        // does it look like an error message ? Only simple stupid heuristic for now.
+        if(!looksLikeError(lectures)) {
+            cache.store(what, when, lectures);
+        }
     }
 
     // re-export cleanup helper

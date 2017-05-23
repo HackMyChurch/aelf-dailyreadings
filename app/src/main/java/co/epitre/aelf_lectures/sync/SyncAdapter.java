@@ -178,24 +178,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int daysToSync = 0;
         // FIXME: -1 because 8 is Meta, which is always synced
         int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
-        GregorianCalendar whenMax = new GregorianCalendar();
         long currentTimeMillis = System.currentTimeMillis();
 
         switch (pDuree) {
             case "auj":
                 // take tomorrow for free as well or we might be quite late if running at 23h50..
-                whenMax.add(Calendar.DATE, 1);
                 daysToSync += 1;
                 break;
             case "auj-dim":
                 daysToSync += 2;
                 break;
             case "semaine":
-                whenMax.add(Calendar.DATE, 7);
                 daysToSync += 7;
                 break;
             case "mois":
-                whenMax.add(Calendar.DATE, 31);
                 daysToSync += 31;
                 break;
         }
@@ -209,16 +205,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // ** SYNC **
         String errorName = "success";
         try {
-            // loop until when > dayMax
-            AelfDate when = new AelfDate();
-            do {
+            // Pre-Load 'daysToSync'. It is important to create a new date instance. Otherwise, all
+            // future would be sharing the same date instance and save more or less on the same day
+            // which is not quite good...
+            for (int i = 0; i < daysToSync; i++) {
+                AelfDate when = new AelfDate();
+                when.add(Calendar.DATE, i);
                 syncDay(when, whatMax, syncResult);
-                when.add(Calendar.DATE, +1);
-            } while(when.before(whenMax));
+            }
 
             // Load next sunday
             if(pDuree.equals("auj-dim")) {
-                when = new AelfDate();
+                AelfDate when = new AelfDate();
                 do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax, syncResult);
             }
