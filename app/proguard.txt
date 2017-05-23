@@ -21,7 +21,9 @@
 -keepattributes **
 -keep class !android.support.v7.view.menu.**,!android.support.design.internal.NavigationMenu,!android.support.design.internal.NavigationMenuPresenter,!android.support.design.internal.NavigationSubMenu,** {*;}
 
-# Fix Sentry support https://github.com/getsentry/raven-java/issues/373
+# Fix Sentry support https://github.com/getsentry/raven-java/issues/373 // https://github.com/square/okio
+-dontwarn okio.**
+-dontwarn javax.annotation.**
 -dontwarn javax.naming.**
 -dontwarn javax.servlet.**
 -dontwarn org.slf4j.**
