@@ -63,8 +63,13 @@ public class LectureFuture implements Future<List<LectureItem>> {
      * HTTP Client
      */
     private long startTime;
-    private final OkHttpClient client;
     private Call call = null;
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
+            .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
+            .readTimeout   (60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build();
 
     /**
      * Pending result
@@ -84,14 +89,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
         // Grab preferences
         preference = PreferenceManager.getDefaultSharedPreferences(ctx);
         tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
-
-        // Create client
-        client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
-                .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
-                .readTimeout   (60, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(true)
-                .build();
 
         // Build feed URL
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
