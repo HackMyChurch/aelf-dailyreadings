@@ -17,6 +17,9 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.Dns;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,6 +43,55 @@ import okhttp3.Response;
 
 interface LectureFutureProgressListener {
     void onLectureLoaded(LecturesController.WHAT what, AelfDate when, List<LectureItem> lectures);
+}
+
+// Custom caching resolver
+class AelfDns implements Dns {
+    private static final String TAG = "AelfDns";
+    private static final InetAddress[] fallbackAelfAddresses;
+
+    static {
+        InetAddress[] fallbackAelfAddressesCandidate;
+        try {
+            fallbackAelfAddressesCandidate = new InetAddress[]{
+                    InetAddress.getByAddress(new byte[]{(byte) 149, (byte) 202, (byte) 174, (byte) 110}), // vps-aelf.epitre.co
+                    InetAddress.getByAddress(new byte[]{(byte) 164, (byte) 132, (byte) 231, (byte) 241}), // sbg-01.prod.epitre.co
+                    InetAddress.getByAddress(new byte[]{(byte) 51,  (byte) 255, (byte) 39,  (byte) 30})   // gra-01.prod.epitre.co
+            };
+        } catch (UnknownHostException e) {
+            fallbackAelfAddressesCandidate = new InetAddress[]{};
+        }
+        fallbackAelfAddresses = fallbackAelfAddressesCandidate;
+    }
+
+    @Override
+    public List<InetAddress> lookup(String hostname) throws UnknownHostException {
+        if (hostname == null) {
+            throw new UnknownHostException("hostname == null");
+        }
+
+        // Attempt system based resolution
+        try {
+            // TODO: cache + fallback
+            return Arrays.asList(InetAddress.getAllByName(hostname));
+        } catch (UnknownHostException e) {
+            // Nothing to do
+        }
+
+        // If all DNS are down / look broken / ... return a static / hard-coded list of IPs
+        Log.e(TAG, "Failed to resolve '"+hostname+"' attempting fallback to static IP list");
+        return lookupDefault(hostname);
+    }
+
+    private static List<InetAddress> lookupDefault(String hostname) throws UnknownHostException {
+        switch (hostname) {
+            case "api.app.epitre.co":
+            case "beta.api.app.epitre.co":
+                return Arrays.asList(fallbackAelfAddresses);
+            default:
+                throw new UnknownHostException(hostname);
+        }
+    }
 }
 
 // Load lecture from network. Bring cancel and timeout support
@@ -69,6 +122,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
             .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
             .readTimeout   (60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
+            .dns(new AelfDns())
             .build();
 
     /**
