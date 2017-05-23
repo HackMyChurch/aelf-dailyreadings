@@ -87,26 +87,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         close();
         ctx.deleteDatabase(DB_NAME);
     }
-    
-    private boolean _execute_stmt(SQLiteStatement stmt, int max_retries) {
-        // Attempt to run this statement up to max_retries times
-        do {
-            try {
-                stmt.execute();
-                return true;
-            } catch(SQLiteException e) {
-                Log.w(TAG, "Failed to save item in cache (SQLiteException): "+e.toString());
-                Raven.capture(e);
-            } catch(IllegalStateException e) {
-                Log.w(TAG, "Failed to save item in cache (IllegalStateException): "+e.toString());
-                Raven.capture(e);
-            }
-
-        } while (--max_retries > 0);
-
-        // All attempts failed
-        return false;
-    }
 
     void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
         String key  = computeKey(when);
@@ -131,33 +111,45 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         // insert into the database
         String sql = String.format(DB_TABLE_SET, what);
         SQLiteStatement stmt;
-        try {
-            stmt = getWritableDatabase().compileStatement(sql);
-        } catch (SQLiteException e) {
-            // Drop DB and retry
-            onSqliteError(e);
-            stmt = getWritableDatabase().compileStatement(sql);
+        long maxAttempts = 2;
+        while (maxAttempts-- > 0) {
+            try {
+                stmt = getWritableDatabase().compileStatement(sql);
+                stmt.bindString(1, key);
+                stmt.bindBlob(2, blob);
+                stmt.bindString(3, create_date);
+                stmt.bindLong(4, create_version);
+
+                stmt.execute();
+
+                break;
+            } catch (SQLiteException e) {
+                if (maxAttempts > 0) {
+                    // Drop DB and retry
+                    onSqliteError(e);
+                } else {
+                    Raven.capture(e);
+                }
+            }
         }
-
-        stmt.bindString(1, key);
-        stmt.bindBlob(2, blob);
-        stmt.bindString(3, create_date);
-        stmt.bindLong(4, create_version);
-
-        // Multiple attempts. On failure ignore. This is cache --> best effort
-        _execute_stmt(stmt, 3);
     }
 
     // cleaner helper method
     void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
         String key = computeKey(when);
         SQLiteDatabase db = getWritableDatabase();
-        try {
-            db.delete(what.toString(), "`date` < ?", new String[] {key});
-        } catch (SQLiteException e) {
-            // Drop DB and retry
-            onSqliteError(e);
-            db.delete(what.toString(), "`date` < ?", new String[] {key});
+        long maxAttempts = 2;
+        while (maxAttempts-- > 0) {
+            try {
+                db.delete(what.toString(), "`date` < ?", new String[] {key});
+                break;
+            } catch (SQLiteException e) {
+                if (maxAttempts > 0) {
+                    onSqliteError(e);
+                } else {
+                    Raven.capture(e);
+                }
+            }
         }
     }
 
@@ -171,26 +163,26 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cur;
-        try {
-            cur = db.query(
-                    what.toString(),                                           // FROM
-                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
-                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
-                    new String[]{key, min_create_date, min_create_version},    // params
-                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
-            );
-        } catch (SQLiteException e) {
-            // Drop DB and retry
-            onSqliteError(e);
-            cur = db.query(
-                    what.toString(),                                           // FROM
-                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
-                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
-                    new String[]{key, min_create_date, min_create_version},    // params
-                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
-            );
+        Cursor cur = null;
+        long maxAttempts = 2;
+        while (maxAttempts-- > 0) {
+            try {
+                SQLiteDatabase db = getReadableDatabase();
+                cur = db.query(
+                        what.toString(),                                           // FROM
+                        new String[]{"lectures", "create_date", "create_version"}, // SELECT
+                        "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
+                        new String[]{key, min_create_date, min_create_version},    // params
+                        null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
+                );
+                break;
+            } catch (SQLiteException e) {
+                if (maxAttempts > 0) {
+                    onSqliteError(e);
+                } else {
+                    Raven.capture(e);
+                }
+            }
         }
 
         if(cur != null && cur.getCount() > 0) {
