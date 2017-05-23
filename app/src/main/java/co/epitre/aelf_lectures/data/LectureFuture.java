@@ -123,7 +123,11 @@ public class LectureFuture implements Future<List<LectureItem>> {
             }
 
             @Override public void onResponse(Call call, Response response) throws IOException {
-                onHttpResponse(call, response);
+                try {
+                    onHttpResponse(call, response);
+                } finally {
+                    Work.release();
+                }
             }
         });
     }
@@ -256,7 +260,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
             if(in != null) {
                 in.close();
             }
-            Work.release();
             trackDownloadEvent(errorName);
         }
 
