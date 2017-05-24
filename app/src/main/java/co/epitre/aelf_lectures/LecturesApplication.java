@@ -1,6 +1,7 @@
 package co.epitre.aelf_lectures;
 
 import android.app.NotificationManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -91,6 +92,7 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         appMap.put("user", piwikUserId);
 
         // Sync
+        syncMap.put("enabled",      ContentResolver.getMasterSyncAutomatically());
         syncMap.put("last_attempt", SyncAdapter.getLastSyncAttemptAgeHours(ctx));
         syncMap.put("last_success", SyncAdapter.getLastSyncSuccessAgeHours(ctx));
         syncMap.put("cache_bypass", settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false));
