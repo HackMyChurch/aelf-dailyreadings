@@ -62,7 +62,7 @@ import co.epitre.aelf_lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
-        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener, LectureLoadProgressListener {
+        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener, LectureLoadProgressListener, SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = "AELFLecturesActivity";
     public static final long DATE_TODAY = 0;
@@ -144,6 +144,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // load saved version, if any
         settings = PreferenceManager.getDefaultSharedPreferences(this);
+        settings.registerOnSharedPreferenceChangeListener(this);
         savedVersion = settings.getInt("version", -1);
 
 
@@ -154,6 +155,18 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             editor.putInt("version", currentVersion);
             editor.putInt("previous_version", savedVersion);
             editor.putInt("min_cache_version", 33); // Invalidate all readings loaded before this version
+        }
+
+        // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
+        // want to break existing users so that they should default to 'false', wherehas we default new
+        // users to 'true' aka 'wifi only' to save some expensive network usage, especially in Africa.
+        // as a side effect, it is expected to reduce error rates as WiFi is generally more reliable.
+        if(savedVersion > 0) {
+            // This is an *upgrade*
+            if (!settings.contains(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
+                // Do not override setting...
+                editor.putBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
+            }
         }
 
         // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
@@ -806,6 +819,28 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // All good
         return true;
+    }
+
+    // Detect important / global option change
+    // FIXME: this should probably be in the application. Should also move the account managment there
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
+            // If the preference changed, cancel any running sync so that we either stop waiting for
+            // the wifi, either stop either the network
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+                // This API is not available on Android < 11, keep it best effort
+                return;
+            }
+
+            if (ContentResolver.getCurrentSyncs().isEmpty()) {
+                // There is no sync in progress
+                return;
+            }
+
+            // Cancel sync
+            ContentResolver.cancelSync(mAccount, AUTHORITY);
+        }
     }
 
     /**

@@ -34,7 +34,11 @@
         android:dialogTitle="Conserver les textes pendant"
         android:entryValues="@array/pref_conserv_values"
         android:entries="@array/pref_conserv_title"
-        android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>*
+        android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="pref_sync_wifi_only"
+        android:title="WiFi uniquement" />
 
     <PreferenceCategory android:title="Contribuer" />
     <CheckBoxPreference
