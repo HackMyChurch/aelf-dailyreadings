@@ -20,12 +20,17 @@ import android.annotation.TargetApi;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
+import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.content.res.Resources;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -40,7 +45,29 @@ import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+
 // FIXME: this class is a *mess*. We need to rewrite it !
+
+// Monitor network state change. In particular wait for the wifi to be connected
+class NetworkReceiver extends BroadcastReceiver {
+    private static final String TAG = "NetworkReceiver";
+    public final Object whenNetworkOk = new Object();
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = conn.getActiveNetworkInfo();
+
+        // Was the WiFi enabled ?
+        if (networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+            Log.i(TAG, "System tells us that WiFi was just connected");
+            synchronized (whenNetworkOk) {
+                whenNetworkOk.notifyAll();
+            }
+        }
+    }
+}
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -153,6 +180,51 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.i(TAG, "Beginning network synchronization");
         Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting scheduled background sync").build());
 
+        // Load preferences, but not yet there value
+        SharedPreferences syncPref = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences syncStat = mContext.getSharedPreferences("sync-stats", Context.MODE_PRIVATE);
+
+        // If this is not a manual sync and we are supposed to wait for a wifi network, wait for it
+        boolean isManualSync = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
+        boolean wifiOnly = syncPref.getBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, true);
+        if (wifiOnly && !isManualSync) {
+            // Wait for wifi
+            Log.i(TAG, "This is a scheduled sync and users requested WiFi, checking network status");
+
+            // Set up a network state change listener
+            NetworkReceiver networkReceiver = new NetworkReceiver();
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(CONNECTIVITY_ACTION);
+            // intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+            mContext.registerReceiver(networkReceiver, intentFilter);
+
+            // check if we are already connected to a wifi OR wait for wifi
+            try {
+                ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                while (activeNetwork.getType() != ConnectivityManager.TYPE_WIFI) {
+                    Log.w(TAG, "WiFi is not connected, waiting for it");
+                    synchronized (networkReceiver.whenNetworkOk) {
+                        networkReceiver.whenNetworkOk.wait();
+                    }
+
+                    // Refresh network status
+                    activeNetwork = cm.getActiveNetworkInfo();
+                }
+            } catch (InterruptedException e) {
+                Log.w(TAG, "Interrupted while waiting for WiFi, schedule retry");
+
+                // Reschedule and exit
+                syncResult.stats.numIoExceptions++;
+                return;
+            } finally {
+                // unregister listener
+                mContext.unregisterReceiver(networkReceiver);
+            }
+
+            Log.w(TAG, "WiFi is OK, let's sync");
+        }
+
         // ** PREFS **
 
         // defaults
@@ -162,8 +234,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String pConserv  = res.getString(R.string.pref_conserv_def);
 
         // read preferences
-        SharedPreferences syncPref = PreferenceManager.getDefaultSharedPreferences(mContext);
-        SharedPreferences syncStat = mContext.getSharedPreferences("sync-stats", Context.MODE_PRIVATE);
         pLectures = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, pLectures);
         pDuree    = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE,    pDuree);
         pConserv  = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_CONSERV,  pConserv);
