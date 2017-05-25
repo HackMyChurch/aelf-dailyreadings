@@ -112,7 +112,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
     @Override
     protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
-        final WhatWhen ww = whatwhen[0];
+        final WhatWhen ww = whatwhen[0].copy();
         statWhatWhen = ww;
 
         try {
