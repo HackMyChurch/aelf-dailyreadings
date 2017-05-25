@@ -3,6 +3,7 @@ package co.epitre.aelf_lectures.data;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
@@ -157,7 +158,12 @@ public final class LecturesController implements LectureFutureProgressListener {
     public void onLectureLoaded(WHAT what, AelfDate when, List<LectureItem> lectures) {
         // does it look like an error message ? Only simple stupid heuristic for now.
         if(!looksLikeError(lectures)) {
-            cache.store(what, when, lectures);
+            try {
+                cache.store(what, when, lectures);
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to store lecture in cache", e);
+                Raven.capture(e);
+            }
         }
     }
 
@@ -165,8 +171,13 @@ public final class LecturesController implements LectureFutureProgressListener {
     public void truncateBefore(GregorianCalendar when) {
         WHAT[] whatValues = WHAT.values();
 
-        for (WHAT whatValue : whatValues) {
-            cache.truncateBefore(whatValue, when);
+        try {
+            for (WHAT whatValue : whatValues) {
+                cache.truncateBefore(whatValue, when);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to truncate lecture from cache", e);
+            Raven.capture(e);
         }
     }
 

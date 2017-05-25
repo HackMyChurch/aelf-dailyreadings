@@ -8,14 +8,21 @@ import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteBindOrColumnIndexOutOfRangeException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteDatabaseLockedException;
+import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteStatement;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -77,26 +84,56 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     private void onSqliteError(SQLiteException e) {
-        // If a migration did not go well, the best we can do is drop the database and re-create
-        // it from scratch. This is hackish but should allow more or less graceful recoveries.
-        Log.e(TAG, "Critical database error. Droping + Re-creating", e);
-        Raven.capture(e);
-        TrackHelper.track().event("Office", "cache.db.error").name("critical").value(1f).with(tracker);
-
-        // Close and drop the database. It will be re-opened automatically
-        close();
-        ctx.deleteDatabase(DB_NAME);
+        if (
+            e instanceof SQLiteBindOrColumnIndexOutOfRangeException ||
+            e instanceof SQLiteConstraintException ||
+            e instanceof SQLiteDatabaseCorruptException ||
+            e instanceof SQLiteDatatypeMismatchException
+        ) {
+            // If a migration did not go well, the best we can do is drop the database and re-create
+            // it from scratch. This is hackish but should allow more or less graceful recoveries.
+            TrackHelper.track().event("Office", "cache.db.error").name("critical").value(1f).with(tracker);
+            Log.e(TAG, "Critical database error. Droping + Re-creating", e);
+            close();
+            ctx.deleteDatabase(DB_NAME);
+        } else {
+            // Generic error. Close + re-open
+            Log.e(TAG, "Datable "+e.getClass().getName()+". Closing + re-opening", e);
+            TrackHelper.track().event("Office", "cache.db.error").name(e.getClass().getName()).value(1f).with(tracker);
+            close();
+        }
     }
 
-    void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) {
-        String key  = computeKey(when);
-        String create_date = computeKey(new GregorianCalendar());
+    // Retry code statement 3 times, recover from sqlite exceptions. Even if everything went well, close
+    // the db in hope to mitigate concurrent access issues.
+    private Object retry(Callable code) throws IOException {
+        long maxAttempts = 3;
+        while (maxAttempts-- > 0) {
+            try {
+                return code.call();
+            } catch (SQLiteException e) {
+                if (maxAttempts > 0) {
+                    onSqliteError(e);
+                } else {
+                    Raven.capture(e);
+                }
+            } catch (Exception e) {
+                throw new IOException(e);
+            } finally {
+                close();
+            }
+        }
 
-        // Build version number
-        long create_version = preference.getInt("version", -1);
+        return null;
+    }
+
+    void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) throws IOException {
+        final String key  = computeKey(when);
+        final String create_date = computeKey(new GregorianCalendar());
+        final long create_version = preference.getInt("version", -1);
 
         // build blob
-        byte[] blob;
+        final byte[] blob;
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
@@ -109,11 +146,11 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         }
 
         // insert into the database
-        String sql = String.format(DB_TABLE_SET, what);
-        SQLiteStatement stmt;
-        long maxAttempts = 2;
-        while (maxAttempts-- > 0) {
-            try {
+        final String sql = String.format(DB_TABLE_SET, what);
+        retry(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                SQLiteStatement stmt;
                 stmt = getWritableDatabase().compileStatement(sql);
                 stmt.bindString(1, key);
                 stmt.bindBlob(2, blob);
@@ -122,91 +159,71 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
                 stmt.execute();
 
-                break;
-            } catch (SQLiteException e) {
-                if (maxAttempts > 0) {
-                    // Drop DB and retry
-                    onSqliteError(e);
-                } else {
-                    Raven.capture(e);
-                }
+                return null;
             }
-        }
+        });
     }
 
     // cleaner helper method
-    void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) {
-        String key = computeKey(when);
-        SQLiteDatabase db = getWritableDatabase();
-        long maxAttempts = 2;
-        while (maxAttempts-- > 0) {
-            try {
-                db.delete(what.toString(), "`date` < ?", new String[] {key});
-                break;
-            } catch (SQLiteException e) {
-                if (maxAttempts > 0) {
-                    onSqliteError(e);
-                } else {
-                    Raven.capture(e);
-                }
+    void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
+        final String key = computeKey(when);
+        final String table_name = what.toString();
+
+        retry(new Callable() {
+            @Override
+            public Object call() throws Exception {
+                SQLiteDatabase db = getWritableDatabase();
+                db.delete(table_name, "`date` < ?", new String[] {key});
+                return null;
             }
-        }
+        });
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
-        String key  = computeKey(when);
-        String min_create_date = computeKey(minLoadDate);
-        String min_create_version = String.valueOf(minLoadVersion);
-        byte[] blob;
+    List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
+        final String key  = computeKey(when);
+        final String table_name = what.toString();
+        final String min_create_date = computeKey(minLoadDate);
+        final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
-        Cursor cur = null;
-        long maxAttempts = 2;
-        while (maxAttempts-- > 0) {
-            try {
+        return (List<LectureItem>)retry(new Callable() {
+            @Override
+            public Object call() throws Exception {
                 SQLiteDatabase db = getReadableDatabase();
-                cur = db.query(
-                        what.toString(),                                           // FROM
+                Cursor cur = db.query(
+                        table_name,                                                // FROM
                         new String[]{"lectures", "create_date", "create_version"}, // SELECT
                         "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
                         new String[]{key, min_create_date, min_create_version},    // params
                         null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
                 );
-                break;
-            } catch (SQLiteException e) {
-                if (maxAttempts > 0) {
-                    onSqliteError(e);
-                } else {
+
+                // If there is no result --> exit
+                if(cur == null || cur.getCount() == 0) {
+                    return null;
+                }
+
+                cur.moveToFirst();
+                byte[] blob = cur.getBlob(0);
+
+                Log.i(TAG, "Loaded lecture from cache create_date="+cur.getString(1)+" create_version="+cur.getLong(2));
+
+                try {
+                    ByteArrayInputStream bis = new ByteArrayInputStream(blob);
+                    ObjectInputStream ois = new ObjectInputStream(bis);
+
+                    return ois.readObject();
+                } catch (ClassNotFoundException | IOException e) {
                     Raven.capture(e);
+                    throw e;
+                } finally {
+                    cur.close();
                 }
             }
-        }
-
-        if(cur != null && cur.getCount() > 0) {
-            // any records ? load it
-            cur.moveToFirst();
-            blob = cur.getBlob(0);
-
-            Log.i(TAG, "Loaded lecture from cache create_date="+cur.getString(1)+" create_version="+cur.getLong(2));
-
-            try {
-                ByteArrayInputStream bis = new ByteArrayInputStream(blob);
-                ObjectInputStream ois = new ObjectInputStream(bis);
-
-                return (List<LectureItem>)ois.readObject();
-            } catch (ClassNotFoundException | IOException e) {
-                Raven.capture(e);
-                throw new RuntimeException(e);
-            } finally {
-                cur.close();
-            }
-
-        } else {
-            return null;
-        }
+        });
     }
 
     boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
@@ -228,6 +245,8 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
             );
         } catch (SQLiteException e) {
             return false;
+        } finally {
+            close();
         }
 
         return cur != null && cur.getCount() > 0;
