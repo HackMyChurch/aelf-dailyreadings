@@ -98,6 +98,7 @@ class AelfEventBuilderHelper extends AndroidEventBuilderHelper {
         syncMap.put("cache_bypass", settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false));
         syncMap.put("beta",         settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA, false));
         syncMap.put("server",       settings.getString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "default"));
+        syncMap.put("wifi_only",    settings.getBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, true));
         syncMap.put("what",         settings.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)));
         syncMap.put("duration",     settings.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE,    res.getString(R.string.pref_duree_def)));
         syncMap.put("conservation", settings.getString(SyncPrefActivity.KEY_PREF_SYNC_CONSERV,  res.getString(R.string.pref_conserv_def)));
