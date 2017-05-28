@@ -27,9 +27,11 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_PARTICIPATE_NOCACHE = "pref_participate_nocache";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
     public static final String KEY_PREF_PARTICIPATE_STATISTICS = "pref_participate_statistics";
-    public static final String KEY_APP_PREVIOUS_VERSION = "app_previous_version";
+    public static final String KEY_APP_PREVIOUS_VERSION = "previous_version";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
     public static final String KEY_APP_SYNC_LAST_SUCCESS= "app_sync_last_success";
+    public static final String KEY_APP_CACHE_MIN_VERSION= "min_cache_version";
+    public static final String KEY_APP_VERSION = "version";
 
     /**
      * Statistics

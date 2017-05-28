@@ -145,16 +145,16 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // load saved version, if any
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(this);
-        savedVersion = settings.getInt("version", -1);
+        savedVersion = settings.getInt(SyncPrefActivity.KEY_APP_VERSION, -1);
 
 
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
             // update saved version
-            editor.putInt("version", currentVersion);
-            editor.putInt("previous_version", savedVersion);
-            editor.putInt("min_cache_version", 33); // Invalidate all readings loaded before this version
+            editor.putInt(SyncPrefActivity.KEY_APP_VERSION, currentVersion);
+            editor.putInt(SyncPrefActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
+            editor.putInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, 33); // Invalidate all readings loaded before this version
         }
 
         // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
