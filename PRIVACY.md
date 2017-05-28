@@ -8,4 +8,4 @@ De plus, lorsque l'application rencontre une erreur sérieuse, un rapport d'erre
 
 Ces deux remontés automatiques (statistiques et erreurs) peuvent être désactivées ou réactivées à tout moment via le menu "Paramètre > Contribuer > Remonter des statistiques anonymes" de l'application. Aucune information ne sera transmise à des tiers en dehors des contributeurs principaux de l'application et uniquement à des fin de diagnostique et amélioration. En particulier, ces informations sont gérées sur des serveurs privés gérés par l'équipe de l'application et non des tiers.
 
-Pour toute question: cathogeek@epitre.co
+Pour toute question: support@epitre.co

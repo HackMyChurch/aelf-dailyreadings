@@ -15,13 +15,13 @@
     <string name="dialog_about_title">À propos</string>
     <string name="dialog_about_content">
         L\'application \"AELF Lectures du jour\" version #VERSION# est développée bénévolement par
-        cathogeek@epitre.co avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale pour la
+        "Epitre &amp; co" avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale pour la
         Liturgie Francophone.
 
         \n\nTextes liturgiques, logo et nom reproduits avec l\'aimable autorisation d\'AELF. Tous droits
         réservés. AELF n\'est pas responsable de cette application.
 
-        \n\nPour plus d\'informations sur cette application, contactez cathogeek@epitre.co.
+        \n\nPour plus d\'informations sur cette application, contactez support@epitre.co.
     </string>
 	
 	<!-- Buttons -->

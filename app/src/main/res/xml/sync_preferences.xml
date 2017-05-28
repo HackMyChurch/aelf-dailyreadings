@@ -90,7 +90,7 @@
         android:title="Envoyer un e-mail au développeur" >
         <intent
             android:action="android.intent.action.VIEW"
-            android:data="mailto:cathogeek@epitre.co?subject=Application AELF" />
+            android:data="mailto:support@epitre.co?subject=Application AELF" />
     </Preference>
     <Preference
         android:title="Suivre @AELF_officiel sur Twitter" >
