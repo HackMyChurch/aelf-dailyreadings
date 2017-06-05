@@ -2,6 +2,8 @@ package co.epitre.aelf_lectures;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -826,21 +828,43 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
-            // If the preference changed, cancel any running sync so that we either stop waiting for
-            // the wifi, either stop either the network
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-                // This API is not available on Android < 11, keep it best effort
-                return;
-            }
-
-            if (ContentResolver.getCurrentSyncs().isEmpty()) {
-                // There is no sync in progress
-                return;
-            }
-
-            // Cancel sync
-            ContentResolver.cancelSync(mAccount, AUTHORITY);
+            killPendingSyncs();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER)) {
+            killPendingSyncs();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA)) {
+            killPendingSyncs();
         }
+    }
+
+    // If there is any sync in progress, terminate it. This allows the sync engine to pick up any
+    // important preference changes
+    // TODO: use some sort of signaling instead...
+    private void killPendingSyncs() {
+        // If the preference changed, cancel any running sync so that we either stop waiting for
+        // the wifi, either stop either the network
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+            // This API is not available on Android < 11, keep it best effort
+            return;
+        }
+
+        if (ContentResolver.getCurrentSyncs().isEmpty()) {
+            // There is no sync in progress
+            return;
+        }
+
+        // Cancel sync
+        ContentResolver.cancelSync(mAccount, AUTHORITY);
+
+        // Kill any background processes
+        ActivityManager am = (ActivityManager)getApplicationContext().getSystemService(ACTIVITY_SERVICE);
+        String packageName = getPackageName();
+        if (packageName != null && am != null) {
+            am.killBackgroundProcesses(packageName);
+        }
+
+        // Cleanup any notification
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
     }
 
     /**

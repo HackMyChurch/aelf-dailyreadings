@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
     <!-- Required because we're manually creating a new account. -->
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <!-- Required because we're killing the background sync to pick up changes -->
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES"/>
 
     <application
         android:name="co.epitre.aelf_lectures.LecturesApplication"

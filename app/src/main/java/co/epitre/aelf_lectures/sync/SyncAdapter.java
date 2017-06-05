@@ -138,15 +138,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync one reading for the day
-    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) {
+    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) throws InterruptedException {
         // Load from network, if not in cache and not outdated
         if(!mController.isLecturesInCache(what, when, false)) {
             try {
                 Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" QUEUED");
                 pendingDownloads.add(mController.getLecturesFromNetwork(what, when));
             } catch (IOException e) {
+                if (e.getCause() instanceof InterruptedException) {
+                    throw (InterruptedException) e.getCause();
+                }
                 // Error already propagated to Sentry. Do not propagate twice !
-                Log.e(TAG, "I/O error while syncing. AELF servers down ?");
+                Log.e(TAG, "I/O error while syncing");
                 syncResult.stats.numIoExceptions++;
             }
         } else {
@@ -155,7 +158,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync all readings for the day
-    private void syncDay(AelfDate when, int max, SyncResult syncResult) {
+    private void syncDay(AelfDate when, int max, SyncResult syncResult) throws InterruptedException {
         syncReading(LecturesController.WHAT.METAS, when, syncResult);
         while(max-- > 0) {
             LecturesController.WHAT what = LecturesController.WHAT.values()[max];
@@ -285,9 +288,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
 
             // Load next sunday
-            if(pDuree.equals("auj-dim")) {
+            if (pDuree.equals("auj-dim")) {
                 AelfDate when = new AelfDate();
-                do when.add(Calendar.DATE, +1); while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
+                do when.add(Calendar.DATE, +1);
+                while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax, syncResult);
             }
 
@@ -301,11 +305,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 LectureFuture future = pendingDownloads.pop();
                 try {
                     future.get(timeBudget, TimeUnit.MILLISECONDS);
-                    Log.i(TAG, future.what.urlName()+" for "+future.when.toIsoString()+" SUCCESS !!");
+                    Log.i(TAG, future.what.urlName() + " for " + future.when.toIsoString() + " SUCCESS !!");
                     mDone++;
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    mDone++;
+                    throw e;
                 } catch (TimeoutException e) {
                     Log.e(TAG, "Sync time budget exceeded, cancelling");
                     future.cancel(true);
@@ -320,6 +323,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 updateNotification();
             }
+        } catch (InterruptedException e) {
+            Log.i(TAG, "Sync was interrupted, scheduling retry");
+            syncResult.stats.numIoExceptions++;
         } catch (Exception e) {
             Raven.capture(e);
             errorName = "error."+e.getClass().getName();
