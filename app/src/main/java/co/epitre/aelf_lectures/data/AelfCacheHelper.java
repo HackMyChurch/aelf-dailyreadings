@@ -243,13 +243,12 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                     new String[]{key, min_create_date, min_create_version},    // params
                     null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
             );
+            return cur != null && cur.getCount() > 0;
         } catch (SQLiteException e) {
             return false;
         } finally {
             close();
         }
-
-        return cur != null && cur.getCount() > 0;
     }
 
     /**
