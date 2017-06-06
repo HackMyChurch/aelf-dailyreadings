@@ -41,10 +41,6 @@ import com.getsentry.raven.android.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
 
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
-
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
@@ -86,18 +82,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final long MAX_RUN_TIME = TimeUnit.MINUTES.toMillis(30);
 
     /**
-     * Statistics
-     */
-    Tracker tracker;
-
-    /**
      * Constructor. Obtains handle to content resolver for later use.
      */
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
         Object service = context.getSystemService(Context.NOTIFICATION_SERVICE);
-        this.tracker = ((PiwikApplication) context.getApplicationContext()).getTracker();
         this.mNotificationManager = (NotificationManager) service;
         this.mContext = context;
         this.mController = LecturesController.getInstance(this.getContext());
@@ -339,11 +329,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.d(TAG, "Sync result: "+syncResult.toDebugString());
             if (syncResult.stats.numIoExceptions > 0) {
                 errorName = "io";
-            }
-
-            //  Disable reporting success, this is too noisy
-            if (!errorName.equals("success")) {
-                TrackHelper.track().event("Office", "sync." + errorName).name(pLectures + "." + pDuree).value(1f).with(tracker);
             }
 
             // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
