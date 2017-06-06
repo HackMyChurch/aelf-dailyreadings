@@ -3,7 +3,7 @@
     package="co.epitre.aelf_lectures"
     android:installLocation="auto"
     android:versionCode="38"
-    android:versionName="v1.8.8" >
+    android:versionName="@string/app_version" >
 
     <!-- Required for fetching feed data. -->
     <uses-permission android:name="android.permission.INTERNET"/>
