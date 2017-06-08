@@ -42,6 +42,27 @@
     </string-array>
     <string name="pref_conserv_def">semaine</string>
 
+    <!-- Region liturgique -->
+    <string-array name="pref_region_title">
+        <item>France</item>
+        <item>Belgique</item>
+        <item>Luxembourg</item>
+        <item>Suisse</item>
+        <item>Canada</item>
+        <item>Afrique</item>
+        <item>Autre (Calendrier romain)</item>
+    </string-array>
+    <string-array name="pref_region_values">
+        <item>france</item>
+        <item>belgique</item>
+        <item>luxembourg</item>
+        <item>suisse</item>
+        <item>canada</item>
+        <item>afrique</item>
+        <item>romain</item>
+    </string-array>
+    <string name="pref_region_def">romain</string>
+
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>
     <string name="pref_contribute_statistics_on">Participation bien enregistrée. Merci ! Vous pouvez désactiver cette option à tout moment.</string>

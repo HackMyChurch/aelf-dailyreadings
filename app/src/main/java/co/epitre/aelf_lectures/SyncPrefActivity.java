@@ -17,6 +17,7 @@ import org.piwik.sdk.extra.TrackHelper;
 import co.epitre.aelf_lectures.data.Validator;
 
 public class SyncPrefActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener, Preference.OnPreferenceChangeListener {
+    public static final String KEY_PREF_REGION = "pref_region";
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
@@ -31,6 +32,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
     public static final String KEY_APP_SYNC_LAST_SUCCESS= "app_sync_last_success";
     public static final String KEY_APP_CACHE_MIN_VERSION= "min_cache_version";
+    public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
 
     /**
@@ -59,6 +61,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         getPreferenceScreen().findPreference(KEY_PREF_PARTICIPATE_SERVER).setOnPreferenceChangeListener(this);
 
         // hacky hack, but does the job --> init summaries
+        onSharedPreferenceChanged(null, KEY_PREF_REGION);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_LECTURES);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_DUREE);
         onSharedPreferenceChanged(null, KEY_PREF_SYNC_CONSERV);
@@ -85,6 +88,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // set summary
         if (key.equals(KEY_PREF_SYNC_LECTURES) ||
+            key.equals(KEY_PREF_REGION) ||
             key.equals(KEY_PREF_SYNC_DUREE) ||
             key.equals(KEY_PREF_SYNC_CONSERV)) {
             ListPreference pref = (ListPreference)findPreference(key);
@@ -97,6 +101,11 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             } else {
                 pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
             }
+        }
+
+        // Stop here is called with null preference pointer from the constructor
+        if (sharedPreferences == null) {
+            return;
         }
 
         // Statistics
@@ -114,14 +123,15 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
                 enabled = sharedPreferences.getBoolean(KEY_PREF_PARTICIPATE_NOCACHE, false);
                 TrackHelper.track().event("OfficePreferences", "participate.cache").name(enabled?"disable":"enable").value(1f).with(tracker);
                 break;
+            case KEY_PREF_REGION:
+                String region = sharedPreferences.getString(KEY_PREF_REGION, "romain");
+                TrackHelper.track().event("OfficePreferences", "lectures.region").name(region).value(1f).with(tracker);
+                break;
         }
         
-        // called with null from the constructor
-        if(sharedPreferences != null) {
-            // Apply changes so that sync engines takes them into account
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.commit(); // commit to file so that sync service is able to load it from disk
-        }
+        // Apply changes so that sync engines takes them into account
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.commit(); // commit to file so that sync service is able to load it from disk
     }
 
     // Called BEFORE a change, return false to block the change

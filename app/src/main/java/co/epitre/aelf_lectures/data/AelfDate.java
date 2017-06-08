@@ -25,6 +25,12 @@ public class AelfDate extends GregorianCalendar {
         super(year, month, day);
     }
 
+    // Timestamp constructor in milisec
+    public AelfDate(long timestamp) {
+        super();
+        setTimeInMillis(timestamp);
+    }
+
     //
     // String formatting
     //

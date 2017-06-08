@@ -171,6 +171,29 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             }
         }
 
+        // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
+        if (settings.getString(SyncPrefActivity.KEY_PREF_REGION, "").equals("")) {
+            // Get locale
+            String locale = getResources().getConfiguration().locale.getCountry();
+            String region = "romain";
+
+            // Make a reasonable region guess
+            switch (locale) {
+                case "FR": region = "france";     break;
+                case "BE": region = "belgique";   break;
+                case "LU": region = "luxembourg"; break;
+                case "CA": region = "canada";     break;
+                case "CH": region = "suisse";     break;
+                default:
+                    if ("DZ AO AC BJ BW BF BI CM CV CF TD KM CG CD CI DG DJ EG GQ ER ET FK GA GH GI GN GW KE LS LR LY MG MW ML MR MU YT MA MZ NA NE NG RE RW SH ST SN SC SL SO ZA SD SZ TZ GM TG TA TN UG EH ZM ZW".contains(locale)) {
+                        region = "afrique";
+                    } else {
+                        region = "romain";
+                    }
+            }
+            editor.putString(SyncPrefActivity.KEY_PREF_REGION, region);
+        }
+
         // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
         try {
             String fontSize = settings.getString(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, "normal");
@@ -833,6 +856,11 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
             killPendingSyncs();
         } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA)) {
             killPendingSyncs();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_REGION)) {
+            // Invalidate cache
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
+            editor.apply();
         }
     }
 

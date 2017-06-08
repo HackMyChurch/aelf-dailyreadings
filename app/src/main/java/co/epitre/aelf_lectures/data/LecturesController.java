@@ -15,6 +15,8 @@ import android.util.Log;
 
 import com.getsentry.raven.android.Raven;
 
+import co.epitre.aelf_lectures.SyncPrefActivity;
+
 /**
  * Public data controller --> load either from cache, either from network
  */
@@ -126,8 +128,13 @@ public final class LecturesController implements LectureFutureProgressListener {
 
     public List<LectureItem> getLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
         List<LectureItem> lectures;
-        GregorianCalendar minLoadDate = null;
-        long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
+        AelfDate minLoadDate = null;
+        long minLoadVersion = -1;
+
+        if (!allowColdCache) {
+            minLoadVersion = preference.getInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, -1);
+            minLoadDate = new AelfDate(preference.getLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, 0));
+        }
 
         try {
             lectures = cache.load(what, when, minLoadDate, minLoadVersion);

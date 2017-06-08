@@ -4,12 +4,13 @@
     android:title="Paramètres"
     android:key="pref_sync"
     tools:context=".SyncPrefActivity">
-    <PreferenceCategory android:title="Affichage" />
-    <Preference
-        android:title="Taille des textes"
-        android:selectable="false"
-        android:summary="Bonne nouvelle : vous pouvez à présent agrandir les textes autant que vous le souhaitez avec vos doigts !"
-        android:key="pref_static_field_key" />
+    <PreferenceCategory android:title="Lectures" />
+    <ListPreference
+        android:title="Région"
+        android:dialogTitle="Région"
+        android:entryValues="@array/pref_region_values"
+        android:entries="@array/pref_region_title"
+        android:key="pref_region" android:defaultValue="@string/pref_region_def"/>
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="pref_disp_fullscreen"

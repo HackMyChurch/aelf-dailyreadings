@@ -30,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import co.epitre.aelf_lectures.SyncPrefActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Dns;
@@ -367,12 +368,13 @@ public class LectureFuture implements Future<List<LectureItem>> {
         // Append path + date placeholder
         Url += what.getRelativeUrl();
 
-        // Append version placeholder
-        Url += "?version=%d";
+        // Append region and version placeholder
+        Url += "?region=%s&version=%d";
 
         // Fill placeholders
+        String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
         int version = preference.getInt("version", -1);
-        Url = String.format(Locale.US, Url, when.toUrlString(), version);
+        Url = String.format(Locale.US, Url, when.toUrlString(), region, version);
 
         return Url;
     }
