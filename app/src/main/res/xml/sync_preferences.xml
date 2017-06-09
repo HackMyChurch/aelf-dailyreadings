@@ -11,6 +11,7 @@
         android:entryValues="@array/pref_region_values"
         android:entries="@array/pref_region_title"
         android:key="pref_region" android:defaultValue="@string/pref_region_def"/>
+    <PreferenceCategory android:title="Affichage" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="pref_disp_fullscreen"
@@ -60,7 +61,7 @@
         android:title="Testeurs"
         tools:context=".SyncPrefActivity">
         <Preference
-            android:title="Devenir testeur de l'application" >
+            android:title="Devenir testeur de l\'application" >
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="https://play.google.com/apps/testing/co.epitre.aelf_lectures" />
