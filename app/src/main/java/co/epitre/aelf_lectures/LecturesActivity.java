@@ -860,11 +860,25 @@ public class LecturesActivity extends AppCompatActivity implements
         // This comes from a tap event --> revert
         toggleFullscreen();
 
-        // Go to the reading
-        parseIntentUri(whatwhen, link);
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link "+whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
-        loadLecture(whatwhen);
+        // Handle special URLs
+        String scheme = link.getScheme();
+        String host = link.getHost();
+        String path = link.getPath();
+
+        if (scheme.equals("aelf")) {
+            if (host.equals("app.epitre.co")) {
+                // Handle action URL
+                if (path.equals("/action/refresh")) {
+                    onRefresh("lectureLink");
+                }
+            }
+        } else {
+            // Go to the reading
+            parseIntentUri(whatwhen, link);
+            Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link " + whatwhen.toUrlName()).build());
+            TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
+            loadLecture(whatwhen);
+        }
 
         // All good
         return true;

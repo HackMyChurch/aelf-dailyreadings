@@ -307,6 +307,8 @@ public class LectureFragment extends Fragment implements
                     url = "https:"+url.substring("https%C2%A0:%20".length());
                 } else if (url.startsWith("mailto%C2%A0:%20")) {
                     url = "mailto:"+url.substring("mailto%C2%A0:%20".length());
+                } else if (url.startsWith("aelf%C2%A0:%20")) {
+                    url = "aelf:"+url.substring("aelf%C2%A0:%20".length());
                 }
 
                 // Parse URL
@@ -316,7 +318,7 @@ public class LectureFragment extends Fragment implements
                 }
                 String host = uri.getHost();
 
-                if (host != null && host.equals("www.aelf.org")) {
+                if (host != null && host.equals("www.aelf.org") || url.startsWith("aelf:")) {
                     // If this is a request to AELF website, forward it to the main activity
                     LectureLinkListener listener = null;
                     try {
