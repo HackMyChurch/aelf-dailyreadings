@@ -63,8 +63,13 @@ import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
-public class LecturesActivity extends AppCompatActivity implements DatePickerFragment.CalendarDialogListener,
-        ActionBar.OnNavigationListener, LectureFragment.LectureLinkListener, LectureLoadProgressListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class LecturesActivity extends AppCompatActivity implements
+        DatePickerFragment.CalendarDialogListener,
+        ActionBar.OnNavigationListener,
+        LectureFragment.LectureLinkListener,
+        LectureLoadProgressListener,
+        SharedPreferences.OnSharedPreferenceChangeListener,
+        NetworkStatusMonitor.NetworkStatusChangedListener {
 
     public static final String TAG = "AELFLecturesActivity";
     public static final long DATE_TODAY = 0;
@@ -93,8 +98,13 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
     private boolean isMultiWindow = false;
     private boolean isInLongPress = false;
     private View statusBarBackgroundView = null;
-    SharedPreferences settings = null;
     private GestureDetectorCompat mGestureDetector;
+
+    /**
+     * Global managers / resources
+     */
+    NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
+    SharedPreferences settings = null;
 
     /**
      * Sync account related vars
@@ -319,6 +329,18 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             isMultiWindow = isInMultiWindowMode();
         }
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        networkStatusMonitor.registerNetworkStatusChangeListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
     }
 
     private void parseIntentUri(WhatWhen whatwhen, Uri uri) {
@@ -795,6 +817,7 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
 
         // Update to date button with "this.date"
         updateCalendarButtonLabel();
+        updateMenuNetworkVisibility();
         return true;
     }
 
@@ -893,6 +916,26 @@ public class LecturesActivity extends AppCompatActivity implements DatePickerFra
         // Cleanup any notification
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
+    }
+
+    @Override
+    public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
+        switch (networkStatusEvent) {
+            case NETWORK_ON:
+            case NETWORK_OFF:
+                updateMenuNetworkVisibility();
+                break;
+        }
+    }
+
+    private void updateMenuNetworkVisibility() {
+        if(mMenu == null) {
+            return;
+        }
+
+        boolean visible = networkStatusMonitor.isNetworkAvailable();
+        mMenu.findItem(R.id.action_refresh).setVisible(visible);
+        mMenu.findItem(R.id.action_sync_do).setVisible(visible);
     }
 
     /**
