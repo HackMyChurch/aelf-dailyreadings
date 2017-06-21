@@ -31,7 +31,9 @@ import org.piwik.sdk.extra.TrackHelper;
 /**
  * "Lecture" renderer
  */
-public class LectureFragment extends Fragment implements OnSharedPreferenceChangeListener {
+public class LectureFragment extends Fragment implements
+        NetworkStatusMonitor.NetworkStatusChangedListener,
+        OnSharedPreferenceChangeListener {
     /**
      * The fragment arguments
      */
@@ -42,6 +44,19 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
     private SwipeRefreshLayout swipeLayout;
 
     SharedPreferences preferences;
+    NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
+
+    @Override
+    public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
+        switch (networkStatusEvent) {
+            case NETWORK_OFF:
+                swipeLayout.setEnabled(false);
+                break;
+            case NETWORK_ON:
+                swipeLayout.setEnabled(true);
+                break;
+        }
+    }
 
     interface LectureLinkListener {
         boolean onLectureLink(Uri link);
@@ -444,5 +459,17 @@ public class LectureFragment extends Fragment implements OnSharedPreferenceChang
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        networkStatusMonitor.registerNetworkStatusChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
     }
 }
