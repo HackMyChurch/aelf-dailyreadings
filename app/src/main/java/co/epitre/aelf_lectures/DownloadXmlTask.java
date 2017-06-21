@@ -77,7 +77,11 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
     /**
      * Error messages
      */
-    private static final String networkErrorMessage = ""+
+    private static final String noNetworkErrorMessage = ""+
+            "<h3>Aucune connexion Internet n’est disponible</h3>" +
+            "<p>L’office que vous ne demandez n’est pas disponible en mode hors-connexion. Pour le consulter, assurez-vous de disposer d’une connexion Internet de bonne qualité, de préférence en WiFi, puis ré-essayez.</p>" +
+            "<p><strong>Astuce&nbsp;:</strong> Une fois chargé avec succès, cet office sera automatiquement disponible en mode hors-connexion&nbsp;!</p>";
+    private static final String connectionErrorMessage = ""+
             "<h3>Une erreur s'est glissée lors du chargement des lectures</h3>" +
             "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
             "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:support@epitre.co?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">support@epitre.co</a>.<p>";
@@ -115,10 +119,15 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
         try {
             List<LectureItem> lectures = null;
-            if (ww.useCache) {
+            boolean isNetworkAvailable = NetworkStatusMonitor.getInstance().isNetworkAvailable();
+
+            // When the network is not available, always try to load from cache, even if outdated.
+            if (ww.useCache || !isNetworkAvailable) {
+                boolean allowColdCache = !isNetworkAvailable;
+
                 // attempt to load from cache: skip loading indicator (avoids flickering)
                 // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
-                lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, false);
+                lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, allowColdCache);
                 if (lectures != null) {
                     statIsFromCache = true;
                     return lectures;
@@ -250,8 +259,13 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
         // Failed to load
         if (lectures == null) {
-            trackView("error");
-            pager_data = buildErrorMessage(networkErrorMessage);
+            if (NetworkStatusMonitor.getInstance().isNetworkAvailable()) {
+                trackView("error");
+                pager_data = buildErrorMessage(connectionErrorMessage);
+            } else {
+                trackView("noNetwork");
+                pager_data = buildErrorMessage(noNetworkErrorMessage);
+            }
         } else if (lectures.isEmpty()) {
             trackView("empty");
             pager_data = buildErrorMessage(emptyOfficeErrorMessage);

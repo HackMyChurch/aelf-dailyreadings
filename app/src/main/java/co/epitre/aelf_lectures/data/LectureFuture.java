@@ -30,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -105,6 +106,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
     private long retryBudget = 3;
     private Context ctx;
     private SharedPreferences preference = null;
+    private NetworkStatusMonitor networkStatusMonitor;
     public LecturesController.WHAT what;
     public AelfDate when;
 
@@ -144,6 +146,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         // Grab preferences
         preference = PreferenceManager.getDefaultSharedPreferences(ctx);
         tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
+        networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
         // Mark work start
         startTime = System.nanoTime();
@@ -205,7 +208,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         if (pendingLectures != null) return false;
         if (cancelled)               return false;
         if (retryBudget <= 0)        return false;
-        if (!isNetworkAvailable())   return false;
+        if (!networkStatusMonitor.isNetworkAvailable()) return false;
         return true;
     }
 
@@ -397,16 +400,10 @@ public class LectureFuture implements Future<List<LectureItem>> {
         }
 
         // Do not track IOException when the network is down
-        if (e instanceof IOException && !isNetworkAvailable()) {
+        if (e instanceof IOException && !networkStatusMonitor.isNetworkAvailable()) {
             return;
         }
 
         Raven.capture(e);
-    }
-
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

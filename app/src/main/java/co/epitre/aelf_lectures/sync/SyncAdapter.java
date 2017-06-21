@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import co.epitre.aelf_lectures.LecturesApplication;
+import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import co.epitre.aelf_lectures.data.AelfDate;
@@ -20,7 +21,6 @@ import android.annotation.TargetApi;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
-import android.content.BroadcastReceiver;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -44,26 +44,6 @@ import com.getsentry.raven.event.Breadcrumbs;
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
-
-// Monitor network state change. In particular wait for the wifi to be connected
-class NetworkReceiver extends BroadcastReceiver {
-    private static final String TAG = "NetworkReceiver";
-    public final Object whenNetworkOk = new Object();
-
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        ConnectivityManager conn = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = conn.getActiveNetworkInfo();
-
-        // Was the WiFi enabled ?
-        if (networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-            Log.i(TAG, "System tells us that WiFi was just connected");
-            synchronized (whenNetworkOk) {
-                whenNetworkOk.notifyAll();
-            }
-        }
-    }
-}
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
@@ -185,34 +165,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.i(TAG, "This is a scheduled sync and users requested WiFi, checking network status");
 
             // Set up a network state change listener
-            NetworkReceiver networkReceiver = new NetworkReceiver();
-            IntentFilter intentFilter = new IntentFilter();
-            intentFilter.addAction(CONNECTIVITY_ACTION);
-            // intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
-            mContext.registerReceiver(networkReceiver, intentFilter);
+            NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
             // check if we are already connected to a wifi OR wait for wifi
             try {
-                ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                while (activeNetwork.getType() != ConnectivityManager.TYPE_WIFI) {
-                    Log.w(TAG, "WiFi is not connected, waiting for it");
-                    synchronized (networkReceiver.whenNetworkOk) {
-                        networkReceiver.whenNetworkOk.wait();
-                    }
-
-                    // Refresh network status
-                    activeNetwork = cm.getActiveNetworkInfo();
-                }
+                networkStatusMonitor.waitForWifi();
             } catch (InterruptedException e) {
-                Log.w(TAG, "Interrupted while waiting for WiFi, schedule retry");
-
                 // Reschedule and exit
+                Log.w(TAG, "Interrupted while waiting for WiFi, schedule retry");
                 syncResult.stats.numIoExceptions++;
                 return;
-            } finally {
-                // unregister listener
-                mContext.unregisterReceiver(networkReceiver);
             }
 
             Log.w(TAG, "WiFi is OK, let's sync");

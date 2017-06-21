@@ -177,6 +177,7 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
         settings.registerOnSharedPreferenceChangeListener(this);
 
         // Boot application
+        initNetworkStatusMonitor();
         initPiwik();
         initSentry();
         isValidServer();
@@ -202,6 +203,10 @@ public class LecturesApplication extends PiwikApplication implements SharedPrefe
     @Override
     public TrackerConfig onCreateTrackerConfig() {
         return TrackerConfig.createDefault(Credentials.PIWIK_URI, Credentials.PIWIK_APP);
+    }
+
+    private void initNetworkStatusMonitor() {
+        NetworkStatusMonitor.getInstance().register(this.getApplicationContext());
     }
 
     // see https://github.com/piwik/piwik-sdk-android/blob/master/exampleapp/src/main/java/com/piwik/demo/DemoApp.java
