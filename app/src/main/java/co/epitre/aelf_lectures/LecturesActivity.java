@@ -83,6 +83,7 @@ public class LecturesActivity extends AppCompatActivity implements
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private boolean isLoading = false;
+    private boolean isSuccess = false;
     DownloadXmlTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
     WhatWhen whatwhen;
@@ -922,6 +923,13 @@ public class LecturesActivity extends AppCompatActivity implements
     public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
         switch (networkStatusEvent) {
             case NETWORK_ON:
+                updateMenuNetworkVisibility();
+
+                // Attempt to reload current slide, If there was an error.
+                if (!this.isSuccess) {
+                    onRefresh("networkUp");
+                }
+                break;
             case NETWORK_OFF:
                 updateMenuNetworkVisibility();
                 break;
@@ -1035,6 +1043,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
     public void onLectureLoaded(List<LectureItem> lectures, boolean isSuccess) {
         preventCancel.lock();
+        this.isSuccess = isSuccess;
         try {
             // If we have an anchor, attempt to find corresponding position
             if (isSuccess) {
