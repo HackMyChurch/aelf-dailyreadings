@@ -84,7 +84,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
     private static final String connectionErrorMessage = ""+
             "<h3>Une erreur s'est glissée lors du chargement des lectures</h3>" +
             "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-            "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:support@epitre.co?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">support@epitre.co</a>.<p>" +
+            "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:##EMAIL##?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">support@epitre.co</a>.<p>" +
             "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/refresh\">Ré-essayer</a></div>";
     private static final String emptyOfficeErrorMessage = "" +
             "<h3>Il n'y a pas encore de lectures pour cet office</h3>" +
@@ -210,6 +210,9 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
         // Get office name / date
         message = message.replace("##OFFICE##", statWhatWhen.toUrlName());
+
+        // Get support email
+        message = message.replace("##EMAIL##", ctx.getResources().getString(R.string.app_support));
 
         // Build detailed report, using data from AelfEventBuilderHelper
         EventBuilder eventBuilder = new EventBuilder();

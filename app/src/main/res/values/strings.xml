@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
-    <!ENTITY app_name    "Aelf - Lectures du jour">
+    <!ENTITY app_name    "Lectures du jour - AELF">
     <!ENTITY app_version "1.8.8">
+    <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
 
     <string name="app_name">&app_name;</string>
     <string name="app_version">&app_version;</string>
+    <string name="app_support">&app_support;;</string>
 
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
@@ -19,14 +21,14 @@
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
     <string name="dialog_about_content">
-        L\'application \"AELF Lectures du jour\" version &app_version; est développée bénévolement par
+        L\'application \"&app_name;\" version &app_version; est développée bénévolement par
         "Epitre &amp; co" avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale pour la
         Liturgie Francophone.
 
         \n\nTextes liturgiques, logo et nom reproduits avec l\'aimable autorisation d\'AELF. Tous droits
         réservés. AELF n\'est pas responsable de cette application.
 
-        \n\nPour plus d\'informations sur cette application, contactez support@epitre.co.
+        \n\nPour plus d\'informations sur cette application, contactez &app_support;.
     </string>
 	
 	<!-- Buttons -->
@@ -35,6 +37,6 @@
     <string name="button_today">Auj.</string>
 
     <!-- Preferences -->
-    <string name="mailto_dev">mailto:support@epitre.co?subject=Application AELF (version: &app_version;)</string>
+    <string name="mailto_dev">mailto:&app_support;?subject=Application &app_name; (version: &app_version;)</string>
 
 </resources>

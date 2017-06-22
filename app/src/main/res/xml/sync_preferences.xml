@@ -79,7 +79,7 @@
         <EditTextPreference
             android:title="Adresse du serveur"
             android:inputType="textUri"
-            android:key="pref_participate_server" android:defaultValue=""/>
+            android:key="pref_participate_server"/>
     </PreferenceScreen>
     <Preference
         android:title="Contribuer au code" >
