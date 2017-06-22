@@ -96,7 +96,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
         } else if (key.equals(KEY_PREF_PARTICIPATE_SERVER)) {
             EditTextPreference pref = (EditTextPreference)findPreference(key);
             String server = pref.getText();
-            if (server.isEmpty()) {
+            if (server == null || server.isEmpty()) {
                 pref.setSummary("Serveur par défaut (recommandé)");
             } else {
                 pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
