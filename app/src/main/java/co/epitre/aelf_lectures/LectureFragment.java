@@ -46,16 +46,27 @@ public class LectureFragment extends Fragment implements
     SharedPreferences preferences;
     NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
+    /**
+     * Swipe refresh / zoom status
+     */
+    private boolean isZooming = false;
+    private boolean hasNetwork = false;
+
     @Override
     public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
         switch (networkStatusEvent) {
             case NETWORK_OFF:
-                swipeLayout.setEnabled(false);
+                hasNetwork = false;
                 break;
             case NETWORK_ON:
-                swipeLayout.setEnabled(true);
+                hasNetwork = true;
                 break;
         }
+        refreshSwipeToRefreshEnabled();
+    }
+
+    private synchronized void refreshSwipeToRefreshEnabled() {
+        swipeLayout.setEnabled(!isZooming && hasNetwork);
     }
 
     interface LectureLinkListener {
@@ -424,12 +435,21 @@ public class LectureFragment extends Fragment implements
             @Override
             public boolean onScaleBegin(ScaleGestureDetector detector) {
                 initialScale = getCurrentZoom();
+
+                // Disable "Swipe to refresh" to prevent accidental refresh while zooming
+                isZooming = true;
+                refreshSwipeToRefreshEnabled();
+
                 return super.onScaleBegin(detector);
             }
 
             @Override
             public void onScaleEnd(ScaleGestureDetector detector) {
                 super.onScaleEnd(detector);
+
+                // Re-enable "Swipe to refresh"
+                isZooming = false;
+                refreshSwipeToRefreshEnabled();
 
                 // Save new scale preference
                 Context context = getActivity();
