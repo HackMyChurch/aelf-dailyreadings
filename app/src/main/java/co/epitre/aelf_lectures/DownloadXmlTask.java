@@ -150,7 +150,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
             } catch (InterruptedException e) {
                 // Do not report: this is requested by the user
             } catch (ExecutionException e) {
-                Raven.capture(e);
+                // Do not report: already done
             }
 
             // If cancel has been called while loading, we'll only catch it here
