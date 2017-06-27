@@ -127,7 +127,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         return null;
     }
 
-    void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) throws IOException {
+    synchronized void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) throws IOException {
         final String key  = computeKey(when);
         final String create_date = computeKey(new GregorianCalendar());
         final long create_version = preference.getInt("version", -1);
@@ -165,7 +165,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     // cleaner helper method
-    void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
+    synchronized void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
         final String key = computeKey(when);
         final String table_name = what.toString();
 
@@ -181,7 +181,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
+    synchronized List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
         final String key  = computeKey(when);
         final String table_name = what.toString();
         final String min_create_date = computeKey(minLoadDate);
@@ -226,7 +226,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         });
     }
 
-    boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
+    synchronized boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
         String key  = computeKey(when);
         String min_create_date = computeKey(minLoadDate);
         String min_create_version = String.valueOf(minLoadVersion);
@@ -234,7 +234,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         // load from db
         Log.i(TAG, "Checking if lecture is in cache with create_date>="+min_create_date+" create_version>="+min_create_version);
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cur;
+        Cursor cur = null;
         try {
             cur = db.query(
                     what.toString(),                                           // FROM
@@ -246,7 +246,11 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
             return cur != null && cur.getCount() > 0;
         } catch (SQLiteException e) {
             return false;
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Illegal state", e);
+            return false;
         } finally {
+            if (cur != null) cur.close();
             close();
         }
     }
