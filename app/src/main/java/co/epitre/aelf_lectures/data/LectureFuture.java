@@ -189,10 +189,13 @@ public class LectureFuture implements Future<List<LectureItem>> {
             @Override public void onResponse(Call call, Response response) throws IOException {
                 IOException err = null;
                 try {
-                    onHttpResponse(call, response);
+                    onHttpResponse(response);
                 } catch (IOException e) {
                     // Ignore this exception IF we are going to retry
                     err = e;
+                } catch (XmlPullParserException e) {
+                    // Parser exceptions tends to occur on connection error while parsing
+                    err = new IOException(e);
                 } finally {
                     completeOrRetry(err);
                 }
@@ -307,7 +310,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
     // HTTP Request callbacks
     //
 
-    private void onHttpResponse(Call call, Response response) throws IOException {
+    private void onHttpResponse(Response response) throws IOException, XmlPullParserException {
         // Grab response
         InputStream in = null;
         String errorName = "unknown";
