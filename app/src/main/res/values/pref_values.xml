@@ -14,14 +14,10 @@
 
     <!-- Durée de synchronisation: def = 1 Mois -->
     <string-array name="pref_duree_title">
-        <item>Aujourd\'hui</item>
-        <item>Dimanche prochain</item>
         <item>1 semaine</item>
         <item>1 mois</item>
     </string-array>
     <string-array name="pref_duree_values">
-        <item>auj</item>
-        <item>auj-dim</item>
         <item>semaine</item>
         <item>mois</item>
     </string-array>

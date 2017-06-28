@@ -228,13 +228,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         long currentTimeMillis = System.currentTimeMillis();
 
         switch (pDuree) {
+            // "auj" and "auj-dim" are legacy, consider them as "semaine"
             case "auj":
-                // take tomorrow for free as well or we might be quite late if running at 23h50..
-                daysToSync += 1;
-                break;
             case "auj-dim":
-                daysToSync += 2;
-                break;
             case "semaine":
                 daysToSync += 7;
                 break;
@@ -258,14 +254,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             for (int i = 0; i < daysToSync; i++) {
                 AelfDate when = new AelfDate();
                 when.add(Calendar.DATE, i);
-                syncDay(when, whatMax, syncResult);
-            }
-
-            // Load next sunday
-            if (pDuree.equals("auj-dim")) {
-                AelfDate when = new AelfDate();
-                do when.add(Calendar.DATE, +1);
-                while (when.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY); // next Sunday
                 syncDay(when, whatMax, syncResult);
             }
 

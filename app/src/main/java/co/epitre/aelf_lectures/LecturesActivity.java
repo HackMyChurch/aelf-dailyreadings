@@ -225,6 +225,12 @@ public class LecturesActivity extends AppCompatActivity implements
             // Ignore: already migrated :)
         }
 
+        // migrate SyncPrefActivity.KEY_PREF_SYNC_DUREE
+        String syncDuree = settings.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "mois");
+        if (syncDuree.equals("auj") || syncDuree.equals("auj-dim")) {
+            editor.putString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "semaine");
+        }
+
         editor.apply();
         // ---- end upgrade
 
