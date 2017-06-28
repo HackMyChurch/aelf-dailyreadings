@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:title="Paramètres"
+    android:title="@string/pref_section_global_title"
     android:key="pref_sync"
     tools:context=".SyncPrefActivity">
-    <PreferenceCategory android:title="Lectures" />
+    <PreferenceCategory android:title="@string/pref_section_reading_title" />
     <ListPreference
-        android:title="Région"
-        android:dialogTitle="Région"
+        android:title="@string/pref_region_title"
+        android:dialogTitle="@string/pref_region_title"
         android:entryValues="@array/pref_region_values"
         android:entries="@array/pref_region_title"
         android:key="pref_region" android:defaultValue="@string/pref_region_def"/>
-    <PreferenceCategory android:title="Affichage" />
+    <PreferenceCategory android:title="@string/pref_section_disp_title" />
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="pref_disp_fullscreen"
         android:summaryOff="@string/pref_disp_fullscreen_off"
         android:summaryOn="@string/pref_disp_fullscreen_on"
-        android:title="Plein écran" />
-    <PreferenceCategory android:title="Mode hors connexion" />
+        android:title="@string/pref_disp_fullscreen_title" />
+    <PreferenceCategory android:title="@string/pref_section_sync_title" />
     <ListPreference 
-        android:title="Lectures à synchroniser"
-        android:dialogTitle="Lectures à synchroniser"
+        android:title="@string/pref_lectures_title"
+        android:dialogTitle="@string/pref_lectures_title"
         android:entryValues="@array/pref_lectures_values"
-        android:entries="@array/pref_lectures_title"
+        android:entries="@array/pref_lectures_names"
         android:key="pref_sync_lectures" android:defaultValue="@string/pref_lectures_def"/>
     <ListPreference 
-        android:title="Télécharger à l'avance"
-        android:dialogTitle="Télécharger à l'avance"
+        android:title="@string/pref_duree_title"
+        android:dialogTitle="@string/pref_duree_title"
         android:entryValues="@array/pref_duree_values"
-        android:entries="@array/pref_duree_title"
+        android:entries="@array/pref_duree_names"
         android:key="pref_sync_duree" android:defaultValue="@string/pref_duree_def"/>
     <ListPreference 
-        android:title="Conserver les textes pendant"
+        android:title="@string/pref_conserv_title"
         android:dialogTitle="Conserver les textes pendant"
         android:entryValues="@array/pref_conserv_values"
-        android:entries="@array/pref_conserv_title"
+        android:entries="@array/pref_conserv_names"
         android:key="pref_sync_conserv" android:defaultValue="@string/pref_conserv_def"/>
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="pref_sync_wifi_only"
-        android:title="WiFi uniquement" />
+        android:title="@string/pref_sync_wifi_only_title" />
 
-    <PreferenceCategory android:title="Contribuer" />
+    <PreferenceCategory android:title="@string/pref_section_participate_title" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="pref_participate_statistics"
         android:summaryOff="@string/pref_contribute_statistics_off"
         android:summaryOn="@string/pref_contribute_statistics_on"
-        android:title="Remonter des statistiques anonymes" />
+        android:title="@string/pref_participate_statistics_title" />
     <Preference
-        android:title="Noter cette application" >
+        android:title="@string/pref_participate_rate_title" >
         <intent
             android:action="android.intent.action.VIEW"
             android:data="market://details?id=co.epitre.aelf_lectures" />
@@ -58,44 +58,44 @@
 
     <PreferenceScreen
         android:key="tester_preferencescreen"
-        android:title="Testeurs"
+        android:title="@string/pref_section_global_participate_title"
         tools:context=".SyncPrefActivity">
         <Preference
-            android:title="Devenir testeur de l\'application" >
+            android:title="@string/pref_participate_tester_title" >
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="https://play.google.com/apps/testing/co.epitre.aelf_lectures" />
         </Preference>
         <CheckBoxPreference
-            android:title="Devenir testeur des lectures"
+            android:title="@string/pref_participate_beta_title"
             android:summaryOn="@string/pref_contribute_beta_on"
             android:summaryOff="@string/pref_contribute_beta_off"
             android:key="pref_participate_beta" android:defaultValue="false"/>
         <CheckBoxPreference
-            android:title="Désactiver le cache"
+            android:title="@string/pref_participate_nocache_title"
             android:summaryOn="@string/pref_contribute_disable_cache_on"
             android:summaryOff="@string/pref_contribute_disable_cache_off"
             android:key="pref_participate_nocache" android:defaultValue="false"/>
         <EditTextPreference
-            android:title="Adresse du serveur"
+            android:title="@string/pref_participate_server_title"
             android:inputType="textUri"
             android:key="pref_participate_server"/>
     </PreferenceScreen>
     <Preference
-        android:title="Contribuer au code" >
+        android:title="@string/pref_participate_code_title" >
         <intent
             android:action="android.intent.action.VIEW"
             android:data="https://github.com/HackMyChurch/aelf-dailyreadings" />
     </Preference>
-    <PreferenceCategory android:title="Garder le contact" />
+    <PreferenceCategory android:title="@string/pref_section_contact_title" />
     <Preference
-        android:title="Envoyer un e-mail au développeur" >
+        android:title="@string/pref_contact_mail_title" >
         <intent
             android:action="android.intent.action.VIEW"
             android:data="@string/mailto_dev" />
     </Preference>
     <Preference
-        android:title="Suivre @AELF_officiel sur Twitter" >
+        android:title="@string/pref_contact_twitter_title" >
         <intent
             android:action="android.intent.action.VIEW"
             android:data="https://twitter.com/AELF_officiel" />

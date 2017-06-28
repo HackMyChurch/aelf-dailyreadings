@@ -2,7 +2,7 @@
 <resources>
     
     <!-- Lectures à synchroniser: def = Messe -->
-    <string-array name="pref_lectures_title">
+    <string-array name="pref_lectures_names">
         <item>Messe</item>
         <item>Messe + Offices</item>
     </string-array>
@@ -13,7 +13,7 @@
     <string name="pref_lectures_def">messe-offices</string>
 
     <!-- Durée de synchronisation: def = 1 Mois -->
-    <string-array name="pref_duree_title">
+    <string-array name="pref_duree_names">
         <item>1 semaine</item>
         <item>1 mois</item>
     </string-array>
@@ -24,7 +24,7 @@
     <string name="pref_duree_def">mois</string>
     
     <!-- Durée de conservation: def = 1 semaine -->
-    <string-array name="pref_conserv_title">
+    <string-array name="pref_conserv_names">
         <item>1 journée</item>
         <item>1 semaine</item>
         <item>1 mois</item>
@@ -58,6 +58,35 @@
         <item>romain</item>
     </string-array>
     <string name="pref_region_def">romain</string>
+
+    <string name="pref_section_global_title">Preférences</string>
+
+    <string name="pref_section_reading_title">Lectures</string>
+    <string name="pref_region_title">Région</string>
+
+    <string name="pref_section_disp_title">Affichage</string>
+    <string name="pref_disp_fullscreen_title">Plein écran</string>
+
+    <string name="pref_section_sync_title">Mode hors connexion</string>
+    <string name="pref_lectures_title">Lecture à synchroniser</string>
+    <string name="pref_duree_title">Télécharger à l\'avance</string>
+    <string name="pref_conserv_title">Conserver les textes pendant</string>
+    <string name="pref_sync_wifi_only_title">WiFi uniquement</string>
+
+    <string name="pref_section_participate_title">Contribuer</string>
+    <string name="pref_participate_statistics_title">Remonter des statistiques anonymes</string>
+    <string name="pref_participate_rate_title">Noter cette application</string>
+
+    <string name="pref_section_global_participate_title">Testeurs</string>
+    <string name="pref_participate_tester_title">Devenir testeur de l\'application</string>
+    <string name="pref_participate_beta_title">Devenir testeur des lectures</string>
+    <string name="pref_participate_nocache_title">Désactiver le cache</string>
+    <string name="pref_participate_server_title">Adresse du serveur</string>
+    <string name="pref_participate_code_title">Contribuer au code</string>
+
+    <string name="pref_section_contact_title">Garder le contact</string>
+    <string name="pref_contact_mail_title">Envoyer un e-mail au développeur</string>
+    <string name="pref_contact_twitter_title">Suivre @AELF_officiel sur Twitter</string>
 
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>
