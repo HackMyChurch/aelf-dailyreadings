@@ -54,6 +54,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private LecturesController mController;
 
     private NotificationCompat.Builder mNotificationBuilder;
+    NetworkStatusMonitor networkStatusMonitor;
 
     private LinkedList<LectureFuture> pendingDownloads = new LinkedList<>();
     private int mTodo;
@@ -87,6 +88,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             .setSmallIcon(android.R.drawable.ic_popup_sync)
             .setWhen(System.currentTimeMillis())
             .setOngoing(true);
+
+        // Network state change listener
+        networkStatusMonitor = NetworkStatusMonitor.getInstance();
     }
 
     /**
@@ -136,6 +140,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    private boolean revalidateConnection(boolean isManualSync, boolean wifiOnly) {
+        // Has WiFi ? Always OK
+        if (networkStatusMonitor.isWifiAvailable()) {
+            return true;
+        }
+
+        // Requested only wifi and not manual ? Too bad...
+        if (wifiOnly && !isManualSync) {
+            return false;
+        }
+
+        // No hard constraint ? Good to go
+        if (networkStatusMonitor.isNetworkAvailable()) {
+            return true;
+        }
+
+        // Sorry. At least, that's better to know.
+        return false;
+    }
+
     /**
      * Pre-load readings for
      *  - yesterday
@@ -160,12 +184,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // If this is not a manual sync and we are supposed to wait for a wifi network, wait for it
         boolean isManualSync = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
         boolean wifiOnly = syncPref.getBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, true);
+
         if (wifiOnly && !isManualSync) {
             // Wait for wifi
             Log.i(TAG, "This is a scheduled sync and users requested WiFi, checking network status");
-
-            // Set up a network state change listener
-            NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
             // check if we are already connected to a wifi OR wait for wifi
             try {
@@ -249,10 +271,20 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // Wait for the downloads
             while (!pendingDownloads.isEmpty()) {
-                // Compute remaining time budget, set min to 1 to give a chance to already completed tasks
-                // to be collected
+                // Compute remaining time budget
                 long timeBudget = currentTimeMillis + MAX_RUN_TIME - System.currentTimeMillis();
-                timeBudget = Math.max(timeBudget, 1);
+
+                // Check error conditions
+                if (syncResult.stats.numIoExceptions < 10) {
+                    Log.w(TAG, "Too many errors, cancelling sync");
+                    break;
+                } else if (!revalidateConnection(isManualSync, wifiOnly)) {
+                    Log.w(TAG, "Network went down, cancelling sync");
+                    break;
+                } else if (timeBudget < 0) {
+                    Log.w(TAG, "Time budget exceeded, cancelling sync");
+                    break;
+                }
 
                 LectureFuture future = pendingDownloads.pop();
                 try {
