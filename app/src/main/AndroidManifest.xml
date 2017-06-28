@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="co.epitre.aelf_lectures"
     android:installLocation="auto"
-    android:versionCode="40"
+    android:versionCode="41"
     android:versionName="@string/app_version" >
 
     <!-- Required for fetching feed data. -->
