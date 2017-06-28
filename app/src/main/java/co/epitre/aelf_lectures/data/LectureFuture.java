@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CancellationException;
@@ -51,6 +52,7 @@ interface LectureFutureProgressListener {
 class AelfDns implements Dns {
     private static final String TAG = "AelfDns";
     private static final InetAddress[] fallbackAelfAddresses;
+    private static LinkedHashMap<String, InetAddress[]> addressCache = new LinkedHashMap<>();
 
     static {
         InetAddress[] fallbackAelfAddressesCandidate;
@@ -72,10 +74,22 @@ class AelfDns implements Dns {
             throw new UnknownHostException("hostname == null");
         }
 
+        // Attempt cache based resolution
+        synchronized (addressCache) {
+            if (addressCache.containsKey(hostname)) {
+                Log.d(TAG, "Resolved "+hostname+" from cache");
+                return Arrays.asList(addressCache.get(hostname));
+            }
+        }
+
         // Attempt system based resolution
         try {
-            // TODO: cache + fallback
-            return Arrays.asList(InetAddress.getAllByName(hostname));
+            InetAddress[] candidates = InetAddress.getAllByName(hostname);
+            synchronized (addressCache) {
+                Log.d(TAG, "Caching "+hostname);
+                addressCache.put(hostname, candidates);
+            }
+            return Arrays.asList(candidates);
         } catch (UnknownHostException e) {
             // Nothing to do
         }
