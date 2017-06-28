@@ -65,7 +65,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
     LectureFuture future;
     private WhatWhen statWhatWhen = null;
-    boolean statIsFromCache = false; // True is the data came from the cache
+    String statLectureSource = "unknown";
 
     public static final String TAG = "DownloadXmlTask";
 
@@ -130,7 +130,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
                 // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
                 lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, allowColdCache);
                 if (lectures != null) {
-                    statIsFromCache = true;
+                    statLectureSource = "cache";
                     return lectures;
                 }
             }
@@ -147,6 +147,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
 
             try {
                 lectures = future.get();
+                statLectureSource = "network";
             } catch (InterruptedException e) {
                 // Do not report: this is requested by the user
             } catch (ExecutionException e) {
@@ -158,17 +159,25 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
                 return null;
             }
 
+            // Fallback: cold cache
             if (lectures == null) {
                 // Failed to load lectures from network AND we were asked to refresh so attempt
                 // a fallback on the cache to avoid the big error message but still display a notification
                 // If the cache considers the lecture as outdated, still return it. We are in error recovery now
                 lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, true);
-                statIsFromCache = true;
+                statLectureSource = "cache";
                 onLectureLoadProgress(LectureLoadProgress.LOAD_FAIL);
             }
+
+            // Fallback: static asset
+            if (lectures == null) {
+                lectures = lecturesCtrl.loadLecturesFromAssets(ww.what, ww.when);
+                statLectureSource = "asset";
+            }
+
             return lectures;
         } catch (IOException e) {
-            // Error alredy propagated to Sentry. Do not propagate twice !
+            // Error already propagated to Sentry. Do not propagate twice !
             Log.e(TAG, "I/O error while loading. AELF servers down ?");
             onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
             return null;
@@ -181,7 +190,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
         TrackHelper.track()
                 .screen("/office/" + statWhatWhen.what.urlName())
                 .title("/office/" + statWhatWhen.what.urlName())
-                .dimension(LecturesApplication.STATS_DIM_SOURCE, statIsFromCache ? "cache" : "network")
+                .dimension(LecturesApplication.STATS_DIM_SOURCE, statLectureSource)
                 .dimension(LecturesApplication.STATS_DIM_STATUS, status)
                 .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int) dayDelta))
                 .dimension(LecturesApplication.STATS_DIM_DAY_NAME, statWhatWhen.when.dayName())

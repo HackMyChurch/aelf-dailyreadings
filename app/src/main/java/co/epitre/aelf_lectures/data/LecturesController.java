@@ -1,12 +1,15 @@
 package co.epitre.aelf_lectures.data;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
+import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -58,6 +61,9 @@ public final class LecturesController implements LectureFutureProgressListener {
         }
 
         public String urlName() {
+            if(this.position == 0) {
+                return "messes";
+            }
             return this.name.split("_")[1];
         }
 
@@ -153,6 +159,31 @@ public final class LecturesController implements LectureFutureProgressListener {
             return lectures;
         }
         
+        return null;
+    }
+
+    // Last resort: attempt to load the lecture from the static / built-in asset folder
+    public List<LectureItem> loadLecturesFromAssets(WHAT what, AelfDate when) {
+        String filename = "preloaded-reading/"+what.urlName()+"_"+when.toIsoString()+".rss";
+        InputStream in = null;
+
+        try {
+            in = ctx.getAssets().open(filename);
+            return AelfRssParser.parse(in);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         return null;
     }
 

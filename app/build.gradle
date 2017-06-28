@@ -33,3 +33,10 @@ dependencies {
     // HTTP layer
     compile 'com.squareup.okhttp3:okhttp:3.8.0'
 }
+
+task preLoadReadings << {
+    exec {
+        executable '../scripts/preload-readings.sh'
+    }
+}
+preBuild.dependsOn preLoadReadings
