@@ -87,6 +87,7 @@
     <string name="pref_section_contact_title">Garder le contact</string>
     <string name="pref_contact_mail_title">Envoyer un e-mail au développeur</string>
     <string name="pref_contact_twitter_title">Suivre @AELF_officiel sur Twitter</string>
+    <string name="pref_contact_mailing_title">S\'abonner au lectures par e-mail</string>
 
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>

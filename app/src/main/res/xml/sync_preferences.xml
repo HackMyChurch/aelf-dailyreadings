@@ -100,5 +100,11 @@
             android:action="android.intent.action.VIEW"
             android:data="https://twitter.com/AELF_officiel" />
     </Preference>
+    <Preference
+        android:title="@string/pref_contact_mailing_title" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="http://www.aelf.org/mailing/create" />
+    </Preference>
 
 </PreferenceScreen>
