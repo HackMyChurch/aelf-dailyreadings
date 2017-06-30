@@ -58,13 +58,13 @@ interface LectureLoadProgressListener {
  * - if the flag is true, ignore any result
  * Timeouts *should* limit the impact of threads / connections stacking. Should...
  */
-class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
+class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     private Context ctx;
     private LectureLoadProgressListener lectureLoadProgressListener;
     private LecturesController lecturesCtrl = null;
 
     LectureFuture future;
-    private WhatWhen statWhatWhen = null;
+    private WhatWhen ww = null;
     String statLectureSource = "unknown";
 
     public static final String TAG = "DownloadXmlTask";
@@ -91,11 +91,12 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
             "<p>Le saviez-vous ? <a href=\"http://aelf.org/\">AELF</a> ajoute les nouveaux offices quotidiennement, jusqu'à un mois à l'avance&nbsp;! Celui-ci devrait bientôt arriver.</p>";
 
 
-    public DownloadXmlTask(Context ctx, LectureLoadProgressListener lectureLoadProgressListener) {
+    public DownloadXmlTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
         this.ctx = ctx;
         this.tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
         this.lecturesCtrl = LecturesController.getInstance(ctx);
         this.lectureLoadProgressListener = lectureLoadProgressListener;
+        this.ww = whatwhen.copy();
     }
 
     private void runOnUIThread(Runnable code) {
@@ -114,9 +115,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
     }
 
     @Override
-    protected List<LectureItem> doInBackground(WhatWhen... whatwhen) {
-        final WhatWhen ww = whatwhen[0].copy();
-        statWhatWhen = ww;
+    protected List<LectureItem> doInBackground(Void... voids) {
 
         try {
             List<LectureItem> lectures = null;
@@ -185,15 +184,15 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
     }
 
     private void trackView(String status) {
-        long dayDelta = statWhatWhen.when.dayBetween(new GregorianCalendar());
+        long dayDelta = ww.when.dayBetween(new GregorianCalendar());
 
         TrackHelper.track()
-                .screen("/office/" + statWhatWhen.what.urlName())
-                .title("/office/" + statWhatWhen.what.urlName())
+                .screen("/office/" + ww.what.urlName())
+                .title("/office/" + ww.what.urlName())
                 .dimension(LecturesApplication.STATS_DIM_SOURCE, statLectureSource)
                 .dimension(LecturesApplication.STATS_DIM_STATUS, status)
                 .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int) dayDelta))
-                .dimension(LecturesApplication.STATS_DIM_DAY_NAME, statWhatWhen.when.dayName())
+                .dimension(LecturesApplication.STATS_DIM_DAY_NAME, ww.when.dayName())
                 .with(tracker);
     }
 
@@ -218,7 +217,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
         message = message.replace("##VERSION##", versionName);
 
         // Get office name / date
-        message = message.replace("##OFFICE##", statWhatWhen.toUrlName());
+        message = message.replace("##OFFICE##", ww.toUrlName());
 
         // Get support email
         message = message.replace("##EMAIL##", ctx.getResources().getString(R.string.app_support));
@@ -256,7 +255,7 @@ class DownloadXmlTask extends AsyncTask<WhatWhen, Void, List<LectureItem>> {
             message = message.replace("##REPORT##", URLEncoder.encode(report, "utf-8").replace("+", "%20"));
         } catch (UnsupportedEncodingException e) {
             // That's exactly the same informations as we would have sent, except that the user has no chance to give us extra info
-            Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Building error report for " + statWhatWhen.toUrlName()).build());
+            Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Building error report for " + ww.toUrlName()).build());
             Raven.capture(e);
         }
 

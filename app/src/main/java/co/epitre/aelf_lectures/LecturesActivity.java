@@ -568,10 +568,15 @@ public class LecturesActivity extends AppCompatActivity implements
         updateCalendarButtonLabel();
 
         // Start Loading
-        DownloadXmlTask loader = new DownloadXmlTask(this, this);
-        loader.execute(whatwhen.copy());
-        whatwhen.useCache = true; // cache override are one-shot
-        currentRefresh = loader;
+        preventCancel.lock();
+        try {
+            DownloadXmlTask loader = new DownloadXmlTask(this.getApplicationContext(), whatwhen, this);
+            loader.execute();
+            whatwhen.useCache = true; // cache override are one-shot
+            currentRefresh = loader;
+        } finally {
+            preventCancel.unlock();
+        }
     }
 
     public void cancelLectureLoad(boolean restore) {
