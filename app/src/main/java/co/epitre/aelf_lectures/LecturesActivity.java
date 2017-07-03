@@ -83,7 +83,7 @@ public class LecturesActivity extends AppCompatActivity implements
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private boolean isLoading = false;
-    private boolean isSuccess = false;
+    private boolean isSuccess = true;
     DownloadXmlTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
     WhatWhen whatwhen;
@@ -259,7 +259,6 @@ public class LecturesActivity extends AppCompatActivity implements
             whatwhen.position = savedInstanceState.getInt("position");
 
             long timestamp = savedInstanceState.getLong("when");
-            whatwhen.when = new AelfDate();
             if (timestamp == DATE_TODAY) {
                 whatwhen.when = new AelfDate();
                 whatwhen.today = true;
@@ -299,9 +298,6 @@ public class LecturesActivity extends AppCompatActivity implements
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         actionBar.setListNavigationCallbacks(list, this);
 
-        // restore active navigation item
-        actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
-
         // On older phones >= 44 < 6.0, we can set status bar to translucent but not its color.
         // the trick is to place a view under the status bar to emulate it.
         // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
@@ -315,7 +311,7 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
 
-        // finally, turn on periodic lectures caching
+        // Turn on periodic lectures caching
         if (mAccount != null) {
             ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
@@ -336,6 +332,9 @@ public class LecturesActivity extends AppCompatActivity implements
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             isMultiWindow = isInMultiWindowMode();
         }
+
+        // Finally, refresh UI
+        loadLecture(whatwhen);
     }
 
     @Override
@@ -800,12 +799,15 @@ public class LecturesActivity extends AppCompatActivity implements
     @Override
     public boolean onNavigationItemSelected(int position, long itemId) {
         // Are we actually *changing* ? --> maybe not if coming from state reload
-        if (whatwhen.what != LecturesController.WHAT.values()[position]) {
-            whatwhen.what = LecturesController.WHAT.values()[position];
-            whatwhen.position = 0; // on what change, move to 1st
-            whatwhen.anchor = null;
+        if (whatwhen.what.getPosition() == position) {
+            return true;
         }
-        this.whatwhen_previous = whatwhen.copy();
+
+        // Load new state
+        whatwhen.what = LecturesController.WHAT.values()[position];
+        whatwhen.position = 0; // on what change, move to 1st
+        whatwhen.anchor = null;
+        whatwhen_previous = whatwhen.copy();
 
         // Track
         Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set office "+whatwhen.toUrlName()).build());
