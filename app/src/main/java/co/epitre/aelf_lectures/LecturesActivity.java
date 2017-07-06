@@ -263,7 +263,7 @@ public class LecturesActivity extends AppCompatActivity implements
                 whatwhen.when = new AelfDate();
                 whatwhen.today = true;
             } else {
-                whatwhen.when.setTimeInMillis(timestamp);
+                whatwhen.when = new AelfDate(timestamp);
                 whatwhen.today = false;
             }
 
