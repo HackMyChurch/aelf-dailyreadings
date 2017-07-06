@@ -416,6 +416,11 @@ public class LectureFuture implements Future<List<LectureItem>> {
             return;
         }
 
+        // Skip errors when loading was cancelled, can't do much about them
+        if (isCancelled()) {
+            return;
+        }
+
         // Do not track IOException when the network is down
         if (e instanceof IOException && !networkStatusMonitor.isNetworkAvailable()) {
             return;
