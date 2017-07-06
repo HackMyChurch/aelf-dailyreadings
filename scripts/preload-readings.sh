@@ -42,6 +42,7 @@ do
     if [[ "${TODAY}" > "$READING_DATE" ]]
     then
         echo "Prunning outdated $BASE_DEST/$READING"
+        rm -f "$BASE_DEST/$READING"
     elif grep -q '<source>error</source>' "$BASE_DEST/$READING"
     then
         echo "Prunning errored $BASE_DEST/$READING"
