@@ -8,7 +8,7 @@
 
     <string name="app_name">&app_name;</string>
     <string name="app_version">&app_version;</string>
-    <string name="app_support">&app_support;;</string>
+    <string name="app_support">&app_support;</string>
 
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
