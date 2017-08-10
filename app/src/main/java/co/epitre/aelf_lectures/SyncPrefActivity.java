@@ -20,6 +20,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_REGION = "pref_region";
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
+    public static final String KEY_PREF_DISP_PULL_TO_REFRESH = "pref_disp_pull_to_refresh";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";

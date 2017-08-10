@@ -66,7 +66,8 @@ public class LectureFragment extends Fragment implements
     }
 
     private synchronized void refreshSwipeToRefreshEnabled() {
-        swipeLayout.setEnabled(!isZooming && hasNetwork);
+        boolean prefPullToRefreshEnabled = preferences.getBoolean(SyncPrefActivity.KEY_PREF_DISP_PULL_TO_REFRESH, false);
+        swipeLayout.setEnabled(!isZooming && hasNetwork && prefPullToRefreshEnabled);
     }
 
     interface LectureLinkListener {
@@ -80,6 +81,8 @@ public class LectureFragment extends Fragment implements
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE)) {
             this.refresh();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_PULL_TO_REFRESH)) {
+            this.refreshSwipeToRefreshEnabled();
         }
     }
     

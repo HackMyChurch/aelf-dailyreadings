@@ -18,6 +18,12 @@
         android:summaryOff="@string/pref_disp_fullscreen_off"
         android:summaryOn="@string/pref_disp_fullscreen_on"
         android:title="@string/pref_disp_fullscreen_title" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="pref_disp_pull_to_refresh"
+        android:summaryOff="@string/pref_disp_pull_to_refresh_off"
+        android:summaryOn="@string/pref_disp_pull_to_refresh_on"
+        android:title="@string/pref_disp_pull_to_refresh_title" />
     <PreferenceCategory android:title="@string/pref_section_sync_title" />
     <ListPreference 
         android:title="@string/pref_lectures_title"
