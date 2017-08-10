@@ -665,6 +665,33 @@ public class LecturesActivity extends AppCompatActivity implements
         return do_manual_sync("manual");
     }
 
+    public boolean onApplyOptimalSyncSettings() {
+        SharedPreferences.Editor editor = settings.edit();
+
+        // Reset sync settings
+        editor.putString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "mois");
+        editor.putString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, "messe-offices");
+        editor.putBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
+
+        // Reset test settings
+        editor.putString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "");
+        editor.putBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA, false);
+        editor.putBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false);
+
+        // Make sure sync is enabled on device
+        ContentResolver.setMasterSyncAutomatically(true);
+        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
+
+        editor.apply();
+
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Apply optimal sync settings").build());
+        TrackHelper.track().event("OfficeActivity", "action.apply-optimal-sync-settings").name("error").value(1f).with(tracker);
+
+        onRefresh("applied-settings");
+
+        return true;
+    }
+
     public boolean onRefresh(String reason) {
         whatwhen.useCache = false;
         whatwhen.anchor = null;
@@ -884,6 +911,8 @@ public class LecturesActivity extends AppCompatActivity implements
                 // Handle action URL
                 if (path.equals("/action/refresh")) {
                     onRefresh("lectureLink");
+                } else if (path.equals("/action/apply-optimal-sync-settings")) {
+                    onApplyOptimalSyncSettings();
                 }
             }
         } else {

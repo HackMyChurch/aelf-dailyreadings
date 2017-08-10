@@ -1,11 +1,15 @@
 package co.epitre.aelf_lectures;
 
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.getsentry.raven.android.Raven;
@@ -27,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LectureFuture;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
@@ -89,6 +94,11 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     private static final String emptyOfficeErrorMessage = "" +
             "<h3>Il n'y a pas encore de lectures pour cet office</h3>" +
             "<p>Le saviez-vous ? <a href=\"http://aelf.org/\">AELF</a> ajoute les nouveaux offices quotidiennement, jusqu'à un mois à l'avance&nbsp;! Celui-ci devrait bientôt arriver.</p>";
+    private static final String subOptimalSettingsErrorMessage = ""+
+            "<h3>Erreur de synchronisation</h3>" +
+            "<p>Cette lecture devrait être disponible hors connexion. Malheureusement, nous ne l'avons pas trouvée.</p>" +
+            "<p>Pour fonctionner de manière optimale, la synchronisation doit être activée sur votre téléphone et l'application devrait être configurée pour pré-charger les lectures du mois dès qu'une connexion est disponible.</p>" +
+            "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/apply-optimal-sync-settings\">Appliquer ces paramètres</a></div>";
 
 
     public DownloadXmlTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
@@ -264,6 +274,44 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
         return error;
     }
 
+    private boolean detectSubOptimalSettings() {
+        // Never consider sub optimal settings as the cause of the problems if the reading is more than 20 days ahead
+        if(ww.when.dayBetween(new AelfDate()) > 20) {
+            return false;
+        }
+
+        // Always consider as sub-optimal is global sync is disabled
+        if(!ContentResolver.getMasterSyncAutomatically()) {
+            return true;
+        }
+
+        // Starting from there, we'll need settings
+        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(ctx);
+        Resources res = ctx.getResources();
+
+        // Is there a custom server ? Beta and no cache are non critical
+        if(!preference.getString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "").equals("")) {
+            return true;
+        }
+
+        // Are we syncing for a month ?
+        if(!preference.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, res.getString(R.string.pref_duree_def)).equals("mois")) {
+            return true;
+        }
+
+        // Are we trying to load an office but only pre-load mass ?
+        if(
+                ww.what != LecturesController.WHAT.MESSE && ww.what != LecturesController.WHAT.METAS &&
+                !preference.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
+        ) {
+            return true;
+        }
+
+        // Other settings could influence, but not as much
+
+        return false;
+    }
+
     @Override
     protected void onPostExecute(final List<LectureItem> lectures) {
         final List<LectureItem> pager_data;
@@ -271,7 +319,10 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
 
         // Failed to load
         if (lectures == null) {
-            if (NetworkStatusMonitor.getInstance().isNetworkAvailable()) {
+            if(detectSubOptimalSettings()) {
+                trackView("subOptimalSettings");
+                pager_data = buildErrorMessage(subOptimalSettingsErrorMessage);
+            } else if (NetworkStatusMonitor.getInstance().isNetworkAvailable()) {
                 trackView("error");
                 pager_data = buildErrorMessage(connectionErrorMessage);
             } else {
@@ -281,7 +332,6 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
         } else if (lectures.isEmpty()) {
             trackView("empty");
             pager_data = buildErrorMessage(emptyOfficeErrorMessage);
-            ;
         } else {
             trackView("success");
             isSuccess = true;
