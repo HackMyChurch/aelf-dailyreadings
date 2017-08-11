@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -51,6 +52,8 @@ import org.piwik.sdk.Tracker;
 import org.piwik.sdk.extra.PiwikApplication;
 import org.piwik.sdk.extra.TrackHelper;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.List;
@@ -156,6 +159,7 @@ public class LecturesActivity extends AppCompatActivity implements
         currentVersion = packageInfo.versionCode;
 
         // load saved version, if any
+        Resources res = getResources();
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(this);
         savedVersion = settings.getInt(SyncPrefActivity.KEY_APP_VERSION, -1);
@@ -185,7 +189,7 @@ public class LecturesActivity extends AppCompatActivity implements
         // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
         if (settings.getString(SyncPrefActivity.KEY_PREF_REGION, "").equals("")) {
             // Get locale
-            String locale = getResources().getConfiguration().locale.getCountry();
+            String locale = res.getConfiguration().locale.getCountry();
             String region = "romain";
 
             // Make a reasonable region guess
@@ -252,7 +256,7 @@ public class LecturesActivity extends AppCompatActivity implements
         if (uri != null) {
             openSource = "intent";
             parseIntentUri(whatwhen, uri);
-        } else if (savedInstanceState != null) {
+        } else if (canRestoreState(savedInstanceState)) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
             openSource = "restore";
             whatwhen.what = WHAT.values()[savedInstanceState.getInt("what")];
@@ -269,12 +273,31 @@ public class LecturesActivity extends AppCompatActivity implements
             }
 
         } else {
-            // load the "lectures" for today
+            // Load the lectures for today. Based on the anonymous statistics
             openSource = "fresh";
             whatwhen.when = new AelfDate();
             whatwhen.today = true;
-            whatwhen.what = WHAT.MESSE;
-            whatwhen.position = 0; // 1st lecture of the office
+            whatwhen.position = 0;
+
+            if (settings.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
+                whatwhen.what = WHAT.MESSE;
+            } else {
+                long hour = whatwhen.when.get(Calendar.HOUR_OF_DAY);
+                if (hour < 3) {
+                    whatwhen.what = WHAT.COMPLIES;
+                    whatwhen.when.add(GregorianCalendar.DAY_OF_YEAR, -1);
+                } else if (hour < 4) {
+                    whatwhen.what = WHAT.LECTURES;
+                } else if (hour < 8) {
+                    whatwhen.what = WHAT.LAUDES;
+                } else if (hour < 15) {
+                    whatwhen.what = WHAT.MESSE;
+                } else if (hour < 21) {
+                    whatwhen.what = WHAT.VEPRES;
+                } else {
+                    whatwhen.what = WHAT.COMPLIES;
+                }
+            }
         }
 
         // Track app open source + target
@@ -336,6 +359,36 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Finally, refresh UI
         loadLecture(whatwhen);
+    }
+
+    private boolean canRestoreState(Bundle savedInstanceState) {
+        // We cant restore the state if
+        // - null
+        // - today AND more than an hour old
+        // The rational is, when praying on a day to day basis, you want to support short pauses and
+        // screen rotation but still open automatically on the most probable office, among the most
+        // often prayed. On the other hand, if the date was explicitely chosen to a specific one like
+        // when preparing the mass for the following sunday, we want to re-open it so that the user
+        // does not have to search for it.
+        if (savedInstanceState == null) {
+            return false;
+        }
+
+        long whenTimestamp = savedInstanceState.getLong("when");
+        long lastUpdateTimestamp = savedInstanceState.getLong("last-update", 0);
+        boolean wasToday = (whenTimestamp == DATE_TODAY);
+
+        // Not today ? Keep it!
+        if (!wasToday) {
+            return true;
+        }
+
+        // Less than 1 hour old ? Keep it
+        if ((System.currentTimeMillis() - lastUpdateTimestamp) < 1*3600*1000) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -620,10 +673,6 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        // Save instance state. Especially useful on screen rotate on older phones
-        // - what --> mass, tierce, ... ? (id)
-        // - when --> date (timestamp)
-        // - position --> active tab (id)
         super.onSaveInstanceState(outState);
 
         if (outState == null) return;
@@ -643,6 +692,7 @@ public class LecturesActivity extends AppCompatActivity implements
         outState.putInt("what", what);
         outState.putInt("position", position);
         outState.putLong("when", when);
+        outState.putLong("last-update", System.currentTimeMillis());
     }
 
     public boolean onAbout() {
