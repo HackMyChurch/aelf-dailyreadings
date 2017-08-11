@@ -182,6 +182,9 @@ public final class AelfRssParser {
                 if(fc == '"' || fc == '\'' || fc == '«') {
                     pagerTitle = titleChunks[0];
                     lectureTitle = titleChunks[1];
+                } else if (titleChunks[1].equals(lectureIn.reference)) {
+                    pagerTitle = titleChunks[0];
+                    lectureTitle = titleChunks[0];
                 } else {
                     String[] words = titleChunks[1].split("\\s+", 2);
                     if(
