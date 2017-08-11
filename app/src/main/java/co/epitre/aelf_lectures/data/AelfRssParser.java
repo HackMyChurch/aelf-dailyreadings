@@ -45,6 +45,13 @@ public final class AelfRssParser {
     // High level Lecture post-processing
     //
 
+    private static String capitalize(final String line) {
+        if (line == null) {
+            return line;
+        }
+        return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
+
     private static List<LectureItem> PostProcessLectures(List<LectureItem> lectures) {
         List<LectureItem> cleaned = new ArrayList<>();
 
@@ -247,7 +254,7 @@ public final class AelfRssParser {
                 case Empty:
                     break;
                 case Pericope:
-                    bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
+                    bufferDescription = "<h3>" + capitalize(lectureTitle) + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
                     bufferReference = lectureIn.reference;
                     bufferTitle = pagerTitle + " : " + lectureTitle;
                     bufferKey = currentKey;
@@ -269,7 +276,7 @@ public final class AelfRssParser {
                     }
                     break;
                 case Psaume:
-                    bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
+                    bufferDescription = "<h3>" + capitalize(lectureTitle) + lectureReference + "</h3><div style=\"clear: both;\"></div>" + bufferDescription + currentDescription;
                     bufferReference = lectureIn.reference;
                     bufferTitle = pagerTitle + " : " + lectureTitle;
                     bufferKey = currentKey;
@@ -290,7 +297,7 @@ public final class AelfRssParser {
                 case Regular:
                     bufferReference = lectureIn.reference;
                     bufferTitle = pagerTitle + " : " + lectureTitle;
-                    bufferDescription = "<h3>" + lectureTitle + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
+                    bufferDescription = "<h3>" + capitalize(lectureTitle) + lectureReference + "</h3><div style=\"clear: both;\"></div>" + currentDescription;
                     bufferKey = currentKey;
                     break;
                 default:
