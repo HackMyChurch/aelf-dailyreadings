@@ -18,6 +18,7 @@ import co.epitre.aelf_lectures.data.LecturesController;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
@@ -25,12 +26,9 @@ import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.content.res.Resources;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -40,8 +38,6 @@ import android.util.Log;
 import com.getsentry.raven.android.Raven;
 import com.getsentry.raven.event.BreadcrumbBuilder;
 import com.getsentry.raven.event.Breadcrumbs;
-
-import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
 
@@ -53,7 +49,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private NotificationManager mNotificationManager;
     private LecturesController mController;
 
-    private NotificationCompat.Builder mNotificationBuilder;
     NetworkStatusMonitor networkStatusMonitor;
 
     private LinkedList<LectureFuture> pendingDownloads = new LinkedList<>();
@@ -81,13 +76,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 PendingIntent.FLAG_UPDATE_CURRENT
             );
 
-        mNotificationBuilder = new NotificationCompat.Builder(mContext)
+        Notification notification = new NotificationCompat.Builder(mContext)
             .setContentTitle("AELF")
             .setContentText("Pré-chargement des lectures...")
             .setContentIntent(intent)
             .setSmallIcon(android.R.drawable.ic_popup_sync)
             .setWhen(System.currentTimeMillis())
-            .setOngoing(true);
+            .setOngoing(true)
+            .build();
+        mNotificationManager.notify(LecturesApplication.NOTIFICATION_SYNC_PROGRESS, notification);
 
         // Network state change listener
         networkStatusMonitor = NetworkStatusMonitor.getInstance();
@@ -98,13 +95,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-    }
-
-    // code to display a sync notification
-    // http://stackoverflow.com/questions/5061760/how-does-one-animate-the-android-sync-status-icon
-    private void updateNotification() {
-        mNotificationBuilder.setProgress(mTodo, mDone, false);
-        mNotificationManager.notify(LecturesApplication.NOTIFICATION_SYNC_PROGRESS, mNotificationBuilder.build());
     }
 
     private void cancelNotification() {
@@ -242,9 +232,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         mTodo = daysToSync * (whatMax+1); // all readings + meta for all days
         mDone = 0;
 
-        // notify user
-        updateNotification();
-
         // ** SYNC **
         String errorName = "success";
         try {
@@ -292,8 +279,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     Log.e(TAG, "I/O error while syncing");
                     syncResult.stats.numIoExceptions++;
                 }
-
-                updateNotification();
             }
         } catch (InterruptedException e) {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
