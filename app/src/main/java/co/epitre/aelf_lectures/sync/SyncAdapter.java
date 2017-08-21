@@ -263,7 +263,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 long timeBudget = currentTimeMillis + MAX_RUN_TIME - System.currentTimeMillis();
 
                 // Check error conditions
-                if (syncResult.stats.numIoExceptions < 10) {
+                if (syncResult.stats.numIoExceptions > 10) {
                     Log.w(TAG, "Too many errors, cancelling sync");
                     break;
                 } else if (!revalidateConnection(isManualSync, wifiOnly)) {
