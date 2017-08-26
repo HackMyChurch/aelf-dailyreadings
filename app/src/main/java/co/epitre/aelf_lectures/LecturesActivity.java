@@ -266,12 +266,10 @@ public class LecturesActivity extends AppCompatActivity implements
             if (timestamp == DATE_TODAY) {
                 whatwhen.when = new AelfDate();
                 whatwhen.today = true;
-                whatwhen.position = 0;
             } else {
                 whatwhen.when = new AelfDate(timestamp);
                 whatwhen.today = false;
             }
-
         } else {
             // Load the lectures for today. Based on the anonymous statistics
             openSource = "fresh";
