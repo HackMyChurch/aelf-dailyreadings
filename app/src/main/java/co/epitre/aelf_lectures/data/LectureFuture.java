@@ -262,8 +262,8 @@ public class LectureFuture implements Future<List<LectureItem>> {
             return false;
         }
         Log.i(TAG, "Cancelling future");
-        call.cancel();
         cancelled = true;
+        call.cancel();
         return true;
     }
 
