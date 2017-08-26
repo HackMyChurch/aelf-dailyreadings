@@ -140,7 +140,11 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        // Do not restore any state/cache beyond what we explicitely control as an attempt to fix
+        // spurious display of psalms in "hymnes" for instance on restore days after.
+        // https://stackoverflow.com/questions/15519214/prevent-fragment-recovery-in-android
+        // super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
+        super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
 
         // Load Tracker
         tracker = ((PiwikApplication) getApplication()).getTracker();
@@ -357,6 +361,18 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Finally, refresh UI
         loadLecture(whatwhen);
+    }
+
+    /**
+     * Improve bundle to prevent restoring of fragments.
+     * @param bundle bundle container
+     * @return improved bundle with removed "fragments parcelable"
+     */
+    private static Bundle createBundleNoFragmentRestore(Bundle bundle) {
+        if (bundle != null) {
+            bundle.remove("android:support:fragments");
+        }
+        return bundle;
     }
 
     private boolean canRestoreState(Bundle savedInstanceState) {
