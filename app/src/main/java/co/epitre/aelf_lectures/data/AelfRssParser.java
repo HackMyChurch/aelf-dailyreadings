@@ -212,6 +212,9 @@ public final class AelfRssParser {
                 }
             }
 
+            // Capitalize pagerTitle
+            pagerTitle = capitalize(pagerTitle);
+
             currentDescription = lectureIn.description;
 
             // Insert note if the lecture is not available (AELF bug...)
