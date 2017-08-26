@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
         minSdkVersion 10
@@ -23,15 +23,16 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:support-v4:25.4.0'
+    compile 'com.android.support:appcompat-v7:25.4.0'
 
     // Error + Usage reporting
     compile 'org.piwik.sdk:piwik-sdk:2.0.0'
-    compile 'com.getsentry.raven:raven-android:8.0.2'
+    // TODO: migrate to new version
+    compile 'com.getsentry.raven:raven-android:8.0.3'
 
     // HTTP layer
-    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }
 
 task preLoadReadings << {
