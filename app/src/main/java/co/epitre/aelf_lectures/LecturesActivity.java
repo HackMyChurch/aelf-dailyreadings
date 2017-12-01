@@ -175,7 +175,7 @@ public class LecturesActivity extends AppCompatActivity implements
             // update saved version
             editor.putInt(SyncPrefActivity.KEY_APP_VERSION, currentVersion);
             editor.putInt(SyncPrefActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
-            editor.putInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, 33); // Invalidate all readings loaded before this version
+            editor.putInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, 45); // Invalidate all readings loaded before this version
         }
 
         // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
