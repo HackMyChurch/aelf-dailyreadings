@@ -40,7 +40,6 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
@@ -71,7 +70,6 @@ import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends AppCompatActivity implements
         DatePickerFragment.CalendarDialogListener,
-        ActionBar.OnNavigationListener,
         NavigationView.OnNavigationItemSelectedListener,
         LectureFragment.LectureLinkListener,
         LectureLoadProgressListener,
@@ -323,17 +321,10 @@ public class LecturesActivity extends AppCompatActivity implements
         // prevent phone sleep
         findViewById(android.R.id.content).setKeepScreenOn(true);
 
-        // Spinner
+        // Action bar
+        // FIXME: set all caps + font size
         actionBar = getSupportActionBar();
-        assert actionBar != null;
-
-        Context context = actionBar.getThemedContext();
-        ArrayAdapter<CharSequence> list = ArrayAdapter.createFromResource(context, R.array.spinner, R.layout.support_simple_spinner_dropdown_item);
-        list.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        actionBar.setListNavigationCallbacks(list, this);
+        actionBar.setDisplayShowTitleEnabled(true);
 
         // On older phones >= 44 < 6.0, we can set status bar to translucent but not its color.
         // the trick is to place a view under the status bar to emulate it.
@@ -646,7 +637,7 @@ public class LecturesActivity extends AppCompatActivity implements
         cancelLectureLoad(false);
 
         // Refresh UI
-        actionBar.setSelectedNavigationItem(whatwhen.what.getPosition());
+        actionBar.setTitle(whatwhen.what.actionBarName());
         drawerView.setCheckedItem(whatwhen.what.getMenuId());
         updateCalendarButtonLabel();
 
@@ -902,28 +893,6 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Update to date button with "this.date"
         updateCalendarButtonLabel();
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(int position, long itemId) {
-        // Are we actually *changing* ? --> maybe not if coming from state reload
-        if (whatwhen.what.getPosition() == position) {
-            return true;
-        }
-
-        // Load new state
-        whatwhen.what = LecturesController.WHAT.values()[position];
-        whatwhen.position = 0; // on what change, move to 1st
-        whatwhen.anchor = null;
-        whatwhen_previous = whatwhen.copy();
-
-        // Track
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set office "+whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "action.select-office").name("show").value(1f).with(tracker);
-
-        // Load
-        this.loadLecture(whatwhen);
-        return true;
     }
 
     @Override

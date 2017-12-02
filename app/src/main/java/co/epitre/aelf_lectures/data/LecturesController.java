@@ -79,6 +79,18 @@ public final class LecturesController implements LectureFutureProgressListener {
             return this.name.split("_")[1];
         }
 
+        public String actionBarName() {
+            if(this.position == 6) {
+                return "Vêpres";
+            }
+            if(this.position == 8) {
+                return "Informations";
+            }
+
+            String name = this.name.split("_")[1];
+            return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        }
+
         public String prettyName() {
             if (this.position == 0) {
                 return "de la Messe";
