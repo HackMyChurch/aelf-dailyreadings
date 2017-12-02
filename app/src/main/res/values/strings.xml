@@ -10,6 +10,18 @@
     <string name="app_version">&app_version;</string>
     <string name="app_support">&app_support;</string>
 
+    <!-- Drawer items -->
+    <string name="nav_mass">Messe</string>
+    <string name="nav_informations">Informations</string>
+    <string name="nav_title_offices">Liturgies des heures</string>
+    <string name="nav_lectures">Lectures</string>
+    <string name="nav_laudes">Laudes</string>
+    <string name="nav_tierce">Tierce</string>
+    <string name="nav_sexte">Sexte</string>
+    <string name="nav_none">None</string>
+    <string name="nav_vepres">Vêpres</string>
+    <string name="nav_complies">Complies</string>
+
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
     <string name="action_share">Partager</string>
