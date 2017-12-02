@@ -10,6 +10,10 @@
     <string name="app_version">&app_version;</string>
     <string name="app_support">&app_support;</string>
 
+    <!-- Drawer actions -->
+    <string name="drawer_open">Ouvrir la liste des offices</string>
+    <string name="drawer_close">Fermer la liste des offices</string>
+
     <!-- Drawer items -->
     <string name="nav_mass">Messe</string>
     <string name="nav_informations">Informations</string>

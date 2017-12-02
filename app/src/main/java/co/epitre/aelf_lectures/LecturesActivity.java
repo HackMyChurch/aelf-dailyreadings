@@ -25,6 +25,7 @@ import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
@@ -140,6 +141,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
     private NavigationView drawerView;
     private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle drawerToggle;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -325,6 +327,7 @@ public class LecturesActivity extends AppCompatActivity implements
         // FIXME: set all caps + font size
         actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
 
         // On older phones >= 44 < 6.0, we can set status bar to translucent but not its color.
         // the trick is to place a view under the status bar to emulate it.
@@ -342,6 +345,23 @@ public class LecturesActivity extends AppCompatActivity implements
         drawerLayout = findViewById(R.id.drawer_layout);
         drawerView = findViewById(R.id.drawer_navigation_view);
         drawerView.setNavigationItemSelectedListener(this);
+
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                invalidateOptionsMenu();
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                invalidateOptionsMenu();
+            }
+        };
+
+        drawerToggle.syncState();
+        drawerLayout.setDrawerListener(drawerToggle);
 
         // Turn on periodic lectures caching
         if (mAccount != null) {
@@ -948,6 +968,10 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+
         switch (item.getItemId()) {
             case R.id.action_about:
                 return onAbout();
