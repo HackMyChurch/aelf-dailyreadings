@@ -18,6 +18,7 @@ import android.util.Log;
 
 import com.getsentry.raven.android.Raven;
 
+import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 
 /**
@@ -36,24 +37,35 @@ public final class LecturesController implements LectureFutureProgressListener {
      */
 
     public enum WHAT {
-        MESSE   (0, "lectures_messe",    "/%s/"+Credentials.API_KEY_MESSE),
-        LECTURES(1, "lectures_lectures", "/%s/"+Credentials.API_KEY_LECTURES),
-        LAUDES  (2, "lectures_laudes",   "/%s/"+Credentials.API_KEY_LAUDES),
-        TIERCE  (3, "lectures_tierce",   "/%s/"+Credentials.API_KEY_TIERCE),
-        SEXTE   (4, "lectures_sexte",    "/%s/"+Credentials.API_KEY_SEXTE),
-        NONE    (5, "lectures_none",     "/%s/"+Credentials.API_KEY_NONE),
-        VEPRES  (6, "lectures_vepres",   "/%s/"+Credentials.API_KEY_VEPRES),
-        COMPLIES(7, "lectures_complies", "/%s/"+Credentials.API_KEY_COMPLIES),
-        METAS   (8, "lectures_metas",    "/%s/"+Credentials.API_KEY_METAS);
+        MESSE   (0, R.id.nav_mass,        "lectures_messe",    "/%s/"+Credentials.API_KEY_MESSE),
+        LECTURES(1, R.id.nav_lectures,    "lectures_lectures", "/%s/"+Credentials.API_KEY_LECTURES),
+        LAUDES  (2, R.id.nav_laudes,      "lectures_laudes",   "/%s/"+Credentials.API_KEY_LAUDES),
+        TIERCE  (3, R.id.nav_tierce,      "lectures_tierce",   "/%s/"+Credentials.API_KEY_TIERCE),
+        SEXTE   (4, R.id.nav_sexte,       "lectures_sexte",    "/%s/"+Credentials.API_KEY_SEXTE),
+        NONE    (5, R.id.nav_none,        "lectures_none",     "/%s/"+Credentials.API_KEY_NONE),
+        VEPRES  (6, R.id.nav_vepres,      "lectures_vepres",   "/%s/"+Credentials.API_KEY_VEPRES),
+        COMPLIES(7, R.id.nav_complies,    "lectures_complies", "/%s/"+Credentials.API_KEY_COMPLIES),
+        METAS   (8, R.id.nav_information, "lectures_metas",    "/%s/"+Credentials.API_KEY_METAS);
 
         private String name = "";
         private String url = "";
-        private int position = 0;
+        private int position = 0; // FIXME: remove field
+        private int menu_id;
 
-        WHAT(int position, String name, String url) {
+        WHAT(int position, int menu_id, String name, String url) {
+            this.menu_id = menu_id;
             this.position = position;
             this.name = name;
             this.url = url;
+        }
+
+        public static WHAT fromMenuId(int menu_id) {
+            for (WHAT what : WHAT.values()) {
+                if(what.menu_id == menu_id) {
+                    return what;
+                }
+            }
+            return null;
         }
 
         public String getRelativeUrl() {
@@ -81,8 +93,13 @@ public final class LecturesController implements LectureFutureProgressListener {
             }
         }
 
+        // FIXME: remove
         public int getPosition(){
             return position;
+        }
+
+        public int getMenuId(){
+            return menu_id;
         }
 
         public String toString(){

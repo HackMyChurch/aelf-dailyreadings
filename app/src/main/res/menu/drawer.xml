@@ -1,39 +1,45 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- TODO: icons -->
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_mass"
-            android:title="@string/nav_mass" />
-        <!-- TODO: make it a header instead -->
-        <item
-            android:id="@+id/nav_information"
-            android:title="@string/nav_informations" />
-    </group>
+    <item
+        android:id="@+id/nav_mass"
+        android:title="@string/nav_mass"
+        android:checkable="true" />
+    <!-- TODO: make it a header instead -->
+    <item
+        android:id="@+id/nav_information"
+        android:title="@string/nav_informations"
+        android:checkable="true" />
 
     <item android:title="@string/nav_title_offices">
         <menu>
             <item
                 android:id="@+id/nav_lectures"
-                android:title="@string/nav_lectures" />
+                android:title="@string/nav_lectures"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_laudes"
-                android:title="@string/nav_laudes" />
+                android:title="@string/nav_laudes"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_tierce"
-                android:title="@string/nav_tierce" />
+                android:title="@string/nav_tierce"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_sexte"
-                android:title="@string/nav_sexte" />
+                android:title="@string/nav_sexte"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_none"
-                android:title="@string/nav_none" />
+                android:title="@string/nav_none"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_vepres"
-                android:title="@string/nav_vepres" />
+                android:title="@string/nav_vepres"
+                android:checkable="true" />
             <item
                 android:id="@+id/nav_complies"
-                android:title="@string/nav_complies" />
+                android:title="@string/nav_complies"
+                android:checkable="true" />
         </menu>
     </item>
-
 </menu>
