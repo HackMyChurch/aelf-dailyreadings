@@ -27,6 +27,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -139,6 +140,7 @@ public class LecturesActivity extends AppCompatActivity implements
      * Navigation
      */
 
+    private Toolbar toolbar;
     private NavigationView drawerView;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
@@ -325,6 +327,8 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Action bar
         // FIXME: set all caps + font size
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
@@ -345,21 +349,7 @@ public class LecturesActivity extends AppCompatActivity implements
         drawerLayout = findViewById(R.id.drawer_layout);
         drawerView = findViewById(R.id.drawer_navigation_view);
         drawerView.setNavigationItemSelectedListener(this);
-
-        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.drawer_open, R.string.drawer_close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                invalidateOptionsMenu();
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                invalidateOptionsMenu();
-            }
-        };
-
+        drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerToggle.syncState();
         drawerLayout.setDrawerListener(drawerToggle);
 
@@ -522,7 +512,7 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public void prepare_fullscreen() {
-        // This code is a plate of spagetti but fullscreen is such a mess that I'm not even sure it's
+        // This code is a plate of spaghetti but fullscreen is such a mess that I'm not even sure it's
         // possible to make it clean...
         Window window = getWindow();
 
@@ -543,7 +533,7 @@ public class LecturesActivity extends AppCompatActivity implements
             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         }
 
-        // On Android versions supporting transluent but not colored status bar, manage "color" visibility
+        // On Android versions supporting translucent but not colored status bar, manage "color" visibility
         if (statusBarBackgroundView != null) {
             statusBarBackgroundView.setAlpha(hideStatusBar?0f:1f);
         }
@@ -551,7 +541,7 @@ public class LecturesActivity extends AppCompatActivity implements
         if (doFullScreen) {
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
-            // Translucent bar, *ONLY* in portait mode (broken in landscape)
+            // Translucent bar, *ONLY* in portrait mode (broken in landscape)
             if (is_portrait) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
@@ -561,7 +551,6 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-        View pagerPaddingView = findViewById(R.id.pager_padding);
         if (Build.VERSION.SDK_INT >= 19) {
             if (is_portrait && !isMultiWindow) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -569,22 +558,18 @@ public class LecturesActivity extends AppCompatActivity implements
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             }
 
-            // Always compensate the height but only on specific version Or *always* in portrait. Yeah!
-            if (!isMultiWindow) {
-                if (is_portrait || Build.VERSION.SDK_INT < 21) {
-                    int height = actionBar.getHeight();
-                    if (!hideStatusBar) {
-                        height += get_status_bar_height();
-                    }
-                    pagerPaddingView.getLayoutParams().height = height;
-                }
+            // Compensate status bar height in full screen, with visible toolbar, on portrait mode
+            // or some specific versions in landscape too.
+            if (!isMultiWindow && !hideStatusBar && (is_portrait || Build.VERSION.SDK_INT < 21)) {
+                toolbar.setPadding(0, get_status_bar_height(), 0, 0);
             } else {
                 // When switching between modes, reset height
-                pagerPaddingView.getLayoutParams().height = 0;
+                toolbar.setPadding(0, 0, 0, 0);
             }
+
         } else {
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            pagerPaddingView.getLayoutParams().height = 0;
+            toolbar.setPadding(0, 0, 0, 0);
         }
 
         // Apply settings
