@@ -105,25 +105,7 @@ public class LectureFragment extends Fragment implements
             return -1;
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= 14) {
-            return websettings.getTextZoom();
-        }
-
-        // Legacy
-        //noinspection deprecation
-        switch (websettings.getTextSize()) {
-        case SMALLEST:
-            return 50;
-        case SMALLER:
-            return 75;
-        case LARGER:
-            return 150;
-        case LARGEST:
-            return 200;
-        default:
-            return 100;
-    }
-
+        return websettings.getTextZoom();
     }
     // Helper: set zoom as percent, even on older phones
     protected void setCurrentZoom(int zoom) {
@@ -131,28 +113,8 @@ public class LectureFragment extends Fragment implements
             return;
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= 14) {
-            websettings.setTextZoom(zoom);
-            return;
-        }
-
-        // Legacy
-        if (zoom <= 50) {
-            //noinspection deprecation
-            websettings.setTextSize(TextSize.SMALLEST);
-        } else if (zoom <= 75) {
-            //noinspection deprecation
-            websettings.setTextSize(TextSize.SMALLER);
-        } else if (zoom < 150) {
-            //noinspection deprecation
-            websettings.setTextSize(TextSize.NORMAL);
-        } else if (zoom < 200) {
-            //noinspection deprecation
-            websettings.setTextSize(TextSize.LARGER);
-        } else {
-            //noinspection deprecation
-            websettings.setTextSize(TextSize.LARGEST);
-        }
+        websettings.setTextZoom(zoom);
+        return;
     }
 
     @Override
@@ -296,7 +258,7 @@ public class LectureFragment extends Fragment implements
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                if (Build.VERSION.SDK_INT >= 19) {
                     view.evaluateJavascript(
                             "(function() { return ('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>'); })();",
                             new ValueCallback<String>() {
@@ -370,9 +332,7 @@ public class LectureFragment extends Fragment implements
         // accessibility: enable (best effort)
         websettings.setJavaScriptEnabled(true);
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                lectureView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-            }
+            lectureView.setAccessibilityDelegate(new View.AccessibilityDelegate());
         } catch (NoClassDefFoundError e) {
             Log.w(TAG, "Accessibility support is not available on this device");
         }
@@ -397,19 +357,14 @@ public class LectureFragment extends Fragment implements
         // font size
         this.refresh();
 
-        if(Build.VERSION.SDK_INT > 11)
-        {
-            // Attempt to workaround a strange native crash:
-            // http://stackoverflow.com/questions/19614526/android-crash-system-lib-libhwui-so
-            lectureView.post(new Runnable() {
-                @Override
-                public void run () {
-                    if (Build.VERSION.SDK_INT >= 11) {
-                        lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
-                    }
-                }
-            });
-        }
+        // Attempt to workaround a strange native crash:
+        // http://stackoverflow.com/questions/19614526/android-crash-system-lib-libhwui-so
+        lectureView.post(new Runnable() {
+            @Override
+            public void run () {
+                lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+            }
+        });
 
         class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
             private int initialScale;

@@ -208,9 +208,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
 
     @Override
     protected void onCancelled(List<LectureItem> lectureItems) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            super.onCancelled(lectureItems);
-        }
+        super.onCancelled(lectureItems);
         trackView("cancelled");
     }
 

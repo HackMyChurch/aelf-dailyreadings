@@ -76,8 +76,8 @@ public class DatePickerFragment extends DialogFragment
         // Samsung devices running 5.0 / 5.1 with talkback are broken when selecting a date. Yeah !
         // http://stackoverflow.com/questions/28618405/datepicker-crashes-on-my-device-when-clicked-with-personal-app
         return (Build.MANUFACTURER.equalsIgnoreCase("samsung")
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1
+                && Build.VERSION.SDK_INT >= 21
+                && Build.VERSION.SDK_INT <= 22
                 );
     }
 

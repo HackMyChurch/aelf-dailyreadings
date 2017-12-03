@@ -381,7 +381,7 @@ public class LecturesActivity extends AppCompatActivity implements
         mGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
 
         // Init display state
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 24) {
             isMultiWindow = isInMultiWindowMode();
         }
 
@@ -532,17 +532,6 @@ public class LecturesActivity extends AppCompatActivity implements
         // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
         boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
-        // Android < 4.0 --> skip most logic
-        if (Build.VERSION.SDK_INT < 14) {
-            // Hide status (top) bar. Navigation bar (> 4.0) still visible.
-            if (doFullScreen) {
-                window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
-            return;
-        }
-
         Display getOrient = getWindowManager().getDefaultDisplay();
         boolean is_portrait = getOrient.getRotation() == Surface.ROTATION_0 || getOrient.getRotation() == Surface.ROTATION_180;
         int uiOptions = 0;
@@ -555,7 +544,7 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
         // On Android versions supporting transluent but not colored status bar, manage "color" visibility
-        if (statusBarBackgroundView != null && Build.VERSION.SDK_INT >= 11) {
+        if (statusBarBackgroundView != null) {
             statusBarBackgroundView.setAlpha(hideStatusBar?0f:1f);
         }
 
@@ -599,10 +588,8 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
         // Apply settings
-        if (Build.VERSION.SDK_INT >= 11) {
-            View decorView = window.getDecorView();
-            decorView.setSystemUiVisibility(uiOptions);
-        }
+        View decorView = window.getDecorView();
+        decorView.setSystemUiVisibility(uiOptions);
     }
 
     public boolean do_manual_sync(String reason) {
@@ -1058,10 +1045,6 @@ public class LecturesActivity extends AppCompatActivity implements
     private void killPendingSyncs() {
         // If the preference changed, cancel any running sync so that we either stop waiting for
         // the wifi, either stop either the network
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
-            // This API is not available on Android < 11, keep it best effort
-            return;
-        }
 
         if (ContentResolver.getCurrentSyncs().isEmpty()) {
             // There is no sync in progress

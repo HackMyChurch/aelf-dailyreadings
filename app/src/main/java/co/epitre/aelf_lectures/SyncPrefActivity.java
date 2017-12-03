@@ -51,13 +51,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
 
         addPreferencesFromResource(R.xml.sync_preferences);
 
-        // Hide fullscreen option for oldest phones
-        if (Build.VERSION.SDK_INT < 14) {
-            Preference fullscreenPreference = this.findPreference(KEY_PREF_DISP_FULLSCREEN);
-            PreferenceScreen preferenceScreen = getPreferenceScreen();
-            preferenceScreen.removePreference(fullscreenPreference);
-        }
-
         // Register validator for server to prevent users from using a mail address...
         getPreferenceScreen().findPreference(KEY_PREF_PARTICIPATE_SERVER).setOnPreferenceChangeListener(this);
 
