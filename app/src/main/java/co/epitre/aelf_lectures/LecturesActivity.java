@@ -353,6 +353,18 @@ public class LecturesActivity extends AppCompatActivity implements
         drawerToggle.syncState();
         drawerLayout.setDrawerListener(drawerToggle);
 
+        // Open drawer on toolbar title click for easier migration / discovery
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (drawerLayout.isDrawerOpen(drawerView)) {
+                    drawerLayout.closeDrawers();
+                } else {
+                    drawerLayout.openDrawer(drawerView);
+                }
+            }
+        });
+
         // Turn on periodic lectures caching
         if (mAccount != null) {
             ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
