@@ -7,6 +7,8 @@ import java.util.GregorianCalendar;
  */
 
 public class WhatWhen {
+    public static final long DATE_TODAY = 0;
+
     public LecturesController.WHAT what;
     public AelfDate when;
     public boolean today;
