@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -264,6 +265,13 @@ public class LecturesActivity extends AppCompatActivity implements
             Raven.capture(e);
             mAccount = null;
         }
+
+        // Prepare Office fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        SectionOfficesFragment fragment = new SectionOfficesFragment();
+        fragmentTransaction.add(R.id.section_container, fragment);
+        fragmentTransaction.commit();
 
         // Select where to go from here
         whatwhen = new WhatWhen();

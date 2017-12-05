@@ -25,77 +25,10 @@
         android:layout_width="match_parent" >
 
         <!-- Main content -->
-        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/loading"
+        <FrameLayout
+            android:id="@+id/section_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <android.support.v7.widget.LinearLayoutCompat
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:id="@+id/content"
-                android:orientation="vertical"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <co.epitre.aelf_lectures.LectureViewPager
-                    android:id="@+id/pager"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="top"
-                    android:background="@color/sepia_bg"
-                    tools:context=".LecturesActivity" >
-
-                    <android.support.v4.view.PagerTabStrip
-                        android:id="@+id/pager_title_strip"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top"
-                        android:background="@color/aelf_red"
-                        android:paddingBottom="4dp"
-                        android:paddingTop="4dp"
-                        android:textColor="@color/sepia_bg" >
-                    </android.support.v4.view.PagerTabStrip>
-                </co.epitre.aelf_lectures.LectureViewPager>
-            </android.support.v7.widget.LinearLayoutCompat>
-
-            <RelativeLayout
-                android:id="@+id/loadingOverlay"
-                android:visibility="invisible"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/sepia_bg"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentTop="true" >
-
-                <ProgressBar
-                    android:id="@+id/loadingIndicator"
-                    style="?android:attr/progressBarStyleLarge"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:paddingBottom="150dp" />
-
-                <Button
-                    style="@style/Widget.AppCompat.Button.Borderless"
-                    android:id="@+id/cancelButton"
-                    android:onClick="cancelLectureLoad"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Annuler"
-                    android:textAllCaps="false"
-                    android:background="@drawable/button_shape"
-                    android:textColor="@color/sepia_fg"
-                    android:layout_centerVertical="true"
-                    android:layout_centerHorizontal="true" />
-
-            </RelativeLayout>
-        </RelativeLayout>
+            android:layout_height="match_parent" />
 
         <!-- Drawer aka "menu" -->
         <!-- Documentation: https://developer.android.com/training/material/design-library.html -->
