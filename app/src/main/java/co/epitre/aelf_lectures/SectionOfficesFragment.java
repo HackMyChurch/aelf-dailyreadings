@@ -7,13 +7,10 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -54,21 +51,12 @@ import static co.epitre.aelf_lectures.data.WhatWhen.DATE_TODAY;
  * Created by jean-tiare on 05/12/17.
  */
 
-public class SectionOfficesFragment extends Fragment implements
+public class SectionOfficesFragment extends SectionFragmentBase implements
         LectureLoadProgressListener,
         DatePickerFragment.CalendarDialogListener,
         NetworkStatusMonitor.NetworkStatusChangedListener
 {
     public static final String TAG = "SectionOfficesFragment";
-
-    /**
-     * Global Views
-     * TODO: move to base fragment class
-     */
-    protected ActionBar actionBar;
-    protected NavigationView drawerView;
-    protected LecturesActivity activity;
-    protected Menu mMenu;
 
     /**
      * Internal state
@@ -102,13 +90,7 @@ public class SectionOfficesFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // TODO: pass routing argument instead of loading intent
 
-        // Load global views (TODO: move to base class)
-        activity = (LecturesActivity) getActivity();
-        actionBar = activity.getSupportActionBar();
-        drawerView = activity.findViewById(R.id.drawer_navigation_view);
-
-        // Option menu (TODO: move to base class)
-        setHasOptionsMenu(true);
+        super.onCreateView(inflater, container, savedInstanceState);
 
         // Load settings
         Resources res = getResources();
@@ -338,14 +320,15 @@ public class SectionOfficesFragment extends Fragment implements
     }
 
     //
-    // Option menu (TODO: move to base class + overload)
+    // Option menu
     //
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
         // Inflate the menu; this adds items to the action bar
         inflater.inflate(R.menu.toolbar_offices, menu);
-        mMenu = menu;
 
         // Make the share image white
         Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
@@ -526,6 +509,13 @@ public class SectionOfficesFragment extends Fragment implements
         updateCalendarButtonLabel();
     }
 
+    public void onLink(Uri link) {
+        parseIntentUri(link);
+        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link " + whatwhen.toUrlName()).build());
+        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
+        loadLecture(whatwhen);
+    }
+
     //
     // Loader
     //
@@ -574,14 +564,6 @@ public class SectionOfficesFragment extends Fragment implements
                 }
             }
         });
-    }
-
-    // Load lecture from URL
-    public void loadLecture(Uri link) {
-        parseIntentUri(link);
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link " + whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
-        loadLecture(whatwhen);
     }
 
     // Navigate to new office, keep the current date. Used to navigate from menu
@@ -653,15 +635,6 @@ public class SectionOfficesFragment extends Fragment implements
             // Load lectures
             loadLecture(whatwhen);
         }
-    }
-
-    public void cancelLectureLoad(View v) {
-        // Hack: if this event is triggered, there was a "tap", hence we toggled fullscreen mode
-        // ==> revert. This will flicker. But that's OK for now.
-        // toggleFullscreen(); // FIXME: restore or fix once for all
-
-        // Cancel lecture load + restore previous state
-        cancelLectureLoad(true);
     }
 
     //

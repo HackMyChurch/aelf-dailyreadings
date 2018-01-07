@@ -108,7 +108,7 @@ public class LecturesActivity extends AppCompatActivity implements
     /**
      * Sections
      */
-    SectionOfficesFragment sectionOfficeFragment;
+    SectionFragmentBase sectionFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -293,12 +293,16 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Finally, load inner fragment
         if (savedInstanceState == null) {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            sectionOfficeFragment = new SectionOfficesFragment();
-            fragmentTransaction.add(R.id.section_container, sectionOfficeFragment);
-            fragmentTransaction.commit();
+            setSection(new SectionOfficesFragment());
         }
+    }
+
+    private void setSection(SectionFragmentBase fragment) {
+        sectionFragment = fragment;
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.section_container, sectionFragment);
+        fragmentTransaction.commit();
     }
 
     private static Bundle createBundleNoFragmentRestore(Bundle bundle) {
@@ -481,7 +485,7 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public boolean onRefresh(String reason) {
-        return sectionOfficeFragment.onRefresh(reason);
+        return sectionFragment.onRefresh(reason);
     }
 
     @Override
@@ -498,9 +502,21 @@ public class LecturesActivity extends AppCompatActivity implements
         // Mark item as checked / active
         item.setChecked(true);
 
-        // Select office to load
+        // Route menu item
         WHAT what = WHAT.fromMenuId(item.getItemId());
-        return sectionOfficeFragment.loadLecture(what);
+        if (what != null) {
+            SectionOfficesFragment sectionOfficeFragment;
+            try {
+                sectionOfficeFragment = (SectionOfficesFragment) sectionFragment;
+            } catch (ClassCastException e) {
+                sectionOfficeFragment = new SectionOfficesFragment();
+                setSection(sectionOfficeFragment);
+            }
+            return sectionOfficeFragment.loadLecture(what);
+        } else {
+            // This is something else :)
+            return false; // Do not select item as we do not know what this is...
+        }
     }
 
     @Override
@@ -562,7 +578,7 @@ public class LecturesActivity extends AppCompatActivity implements
             }
         } else {
             // Go to the reading
-            sectionOfficeFragment.loadLecture(link);
+            sectionFragment.onLink(link);
         }
 
         // All good
