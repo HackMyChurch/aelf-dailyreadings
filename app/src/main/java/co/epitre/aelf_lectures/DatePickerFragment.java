@@ -29,16 +29,8 @@ public class DatePickerFragment extends DialogFragment
 
     CalendarDialogListener mListener;
 
-    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        // Verify that the host activity implements the callback interface
-        try {
-            mListener = (CalendarDialogListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()+ " must implement NoticeDialogListener");
-        }
+    public void setListener(CalendarDialogListener listener) {
+        mListener = listener;
     }
 
     @Override

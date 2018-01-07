@@ -11,7 +11,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,7 +20,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -54,19 +52,11 @@ import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends AppCompatActivity implements
-        DatePickerFragment.CalendarDialogListener,
         NavigationView.OnNavigationItemSelectedListener,
         LectureFragment.LectureLinkListener,
-        SharedPreferences.OnSharedPreferenceChangeListener,
-        NetworkStatusMonitor.NetworkStatusChangedListener {
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = "AELFLecturesActivity";
-
-    /**
-     * Global state
-     */
-    private Menu mMenu;
-    private String mDateButtonLabel = "";
 
     /**
      * Gesture detector. Detect single taps that do not look like a dismiss to toggle
@@ -82,7 +72,6 @@ public class LecturesActivity extends AppCompatActivity implements
     /**
      * Global managers / resources
      */
-    NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
     SharedPreferences settings = null;
 
     /**
@@ -280,7 +269,7 @@ public class LecturesActivity extends AppCompatActivity implements
             }
         });
 
-        // Turn on periodic lectures caching
+        // Turn on periodic toolbar_main caching
         if (mAccount != null) {
             ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
             ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
@@ -314,23 +303,11 @@ public class LecturesActivity extends AppCompatActivity implements
 
     private static Bundle createBundleNoFragmentRestore(Bundle bundle) {
         if (bundle != null) {
-            // Sometime, when restoring, the displayed lectures are not consistent with the displayed
+            // Sometime, when restoring, the displayed toolbar_main are not consistent with the displayed
             // date / office. This is a bug in the restore code.
             // bundle.remove("android:support:fragments");
         }
         return bundle;
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-        networkStatusMonitor.registerNetworkStatusChangeListener(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
     }
 
     protected int get_status_bar_height() {
@@ -431,15 +408,6 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    public void updateCalendarButtonLabel(String label) {
-        mDateButtonLabel = label;
-        if(mMenu == null) {
-            return;
-        }
-        MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
-        calendarItem.setTitle(label);
-    }
-
     private void toggleFullscreen() {
         isFullScreen = !isFullScreen;
         prepare_fullscreen();
@@ -516,18 +484,6 @@ public class LecturesActivity extends AppCompatActivity implements
         return sectionOfficeFragment.onRefresh(reason);
     }
 
-    public boolean onCalendar() {
-        return sectionOfficeFragment.onCalendar();
-    }
-
-    public boolean onShare() {
-        return sectionOfficeFragment.onShare();
-    }
-
-    public void onCalendarDialogPicked(int year, int month, int day) {
-        sectionOfficeFragment.onCalendarDialogPicked(year, month, day);
-    }
-
     @Override
     /** Drawer menu callback */
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -550,17 +506,7 @@ public class LecturesActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
-        getMenuInflater().inflate(R.menu.lectures, menu);
-        mMenu = menu;
-
-        // Make the share image white
-        Drawable normalDrawable = ContextCompat.getDrawable(this, R.drawable.ic_share_black_24dp);
-        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
-        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(this, R.color.white));
-
-        // Update to date button with "this.date"
-        updateCalendarButtonLabel(mDateButtonLabel);
-        updateMenuNetworkVisibility();
+        getMenuInflater().inflate(R.menu.toolbar_main, menu);
         return true;
     }
 
@@ -577,14 +523,8 @@ public class LecturesActivity extends AppCompatActivity implements
                 return onSyncPref();
             case R.id.action_sync_do:
                 return onSyncDo();
-            case R.id.action_refresh:
-                return onRefresh("menu");
-            case R.id.action_calendar:
-                return onCalendar();
-            case R.id.action_share:
-                return onShare();
         }
-        return true;
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -672,21 +612,6 @@ public class LecturesActivity extends AppCompatActivity implements
         // Cleanup any notification
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
-    }
-
-    @Override
-    public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
-        updateMenuNetworkVisibility();
-    }
-
-    private void updateMenuNetworkVisibility() {
-        if(mMenu == null) {
-            return;
-        }
-
-        boolean visible = networkStatusMonitor.isNetworkAvailable();
-        mMenu.findItem(R.id.action_refresh).setVisible(visible);
-        mMenu.findItem(R.id.action_sync_do).setVisible(visible);
     }
 
     /**

@@ -3,6 +3,7 @@ package co.epitre.aelf_lectures;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -10,10 +11,14 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
@@ -51,17 +56,19 @@ import static co.epitre.aelf_lectures.data.WhatWhen.DATE_TODAY;
 
 public class SectionOfficesFragment extends Fragment implements
         LectureLoadProgressListener,
+        DatePickerFragment.CalendarDialogListener,
         NetworkStatusMonitor.NetworkStatusChangedListener
 {
     public static final String TAG = "SectionOfficesFragment";
 
     /**
      * Global Views
-     * TODO: move to base fragment clas
+     * TODO: move to base fragment class
      */
     protected ActionBar actionBar;
     protected NavigationView drawerView;
     protected LecturesActivity activity;
+    protected Menu mMenu;
 
     /**
      * Internal state
@@ -99,6 +106,9 @@ public class SectionOfficesFragment extends Fragment implements
         activity = (LecturesActivity) getActivity();
         actionBar = activity.getSupportActionBar();
         drawerView = activity.findViewById(R.id.drawer_navigation_view);
+
+        // Option menu (TODO: move to base class)
+        setHasOptionsMenu(true);
 
         // Load settings
         Resources res = getResources();
@@ -319,8 +329,55 @@ public class SectionOfficesFragment extends Fragment implements
     // Views
     //
 
-    private void updateCalendarButtonLabel() {
-        activity.updateCalendarButtonLabel(whatwhen.when.toShortPrettyString());
+    public void updateCalendarButtonLabel() {
+        if(mMenu == null) {
+            return;
+        }
+        MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
+        calendarItem.setTitle(whatwhen.when.toShortPrettyString());
+    }
+
+    //
+    // Option menu (TODO: move to base class + overload)
+    //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Inflate the menu; this adds items to the action bar
+        inflater.inflate(R.menu.toolbar_offices, menu);
+        mMenu = menu;
+
+        // Make the share image white
+        Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
+        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
+        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
+
+        // Update to date button with "this.date"
+        updateCalendarButtonLabel();
+        updateMenuNetworkVisibility();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                return onRefresh("menu");
+            case R.id.action_calendar:
+                return onCalendar();
+            case R.id.action_share:
+                return onShare();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void updateMenuNetworkVisibility() {
+        if(mMenu == null) {
+            return;
+        }
+
+        boolean visible = networkStatusMonitor.isNetworkAvailable();
+        mMenu.findItem(R.id.action_refresh).setVisible(visible);
+        mMenu.findItem(R.id.action_sync_do).setVisible(visible);
     }
 
     //
@@ -329,6 +386,7 @@ public class SectionOfficesFragment extends Fragment implements
 
     @Override
     public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
+        updateMenuNetworkVisibility();
         switch (networkStatusEvent) {
             case NETWORK_ON:
                 // Attempt to reload current slide, If there was an error.
@@ -363,6 +421,7 @@ public class SectionOfficesFragment extends Fragment implements
         args.putLong("time", whatwhen.when.getTimeInMillis());
 
         DatePickerFragment calendarDialog = new DatePickerFragment();
+        calendarDialog.setListener(this);
         calendarDialog.setArguments(args);
         calendarDialog.show(activity.getSupportFragmentManager(), "datePicker");
 
