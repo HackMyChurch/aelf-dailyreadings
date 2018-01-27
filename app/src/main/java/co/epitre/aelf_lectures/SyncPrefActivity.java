@@ -2,17 +2,11 @@ package co.epitre.aelf_lectures;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceScreen;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
 
 import co.epitre.aelf_lectures.data.Validator;
 
@@ -28,7 +22,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_PARTICIPATE_BETA = "pref_participate_beta";
     public static final String KEY_PREF_PARTICIPATE_NOCACHE = "pref_participate_nocache";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
-    public static final String KEY_PREF_PARTICIPATE_STATISTICS = "pref_participate_statistics";
     public static final String KEY_APP_PREVIOUS_VERSION = "previous_version";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
     public static final String KEY_APP_SYNC_LAST_SUCCESS= "app_sync_last_success";
@@ -36,18 +29,11 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
 
-    /**
-     * Statistics
-     */
-    Tracker tracker;
 
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Load Tracker
-        tracker = ((PiwikApplication) getApplication()).getTracker();
 
         addPreferencesFromResource(R.xml.sync_preferences);
 
@@ -102,27 +88,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             return;
         }
 
-        // Statistics
-        boolean enabled;
-        switch (key) {
-            case KEY_PREF_DISP_FULLSCREEN:
-                enabled = sharedPreferences.getBoolean(KEY_PREF_DISP_FULLSCREEN, false);
-                TrackHelper.track().event("OfficePreferences", "display.fullscreen").name(enabled?"enable":"disable").value(1f).with(tracker);
-                break;
-            case KEY_PREF_PARTICIPATE_BETA:
-                enabled = sharedPreferences.getBoolean(KEY_PREF_PARTICIPATE_BETA, false);
-                TrackHelper.track().event("OfficePreferences", "participate.beta").name(enabled?"enable":"disable").value(1f).with(tracker);
-                break;
-            case KEY_PREF_PARTICIPATE_NOCACHE:
-                enabled = sharedPreferences.getBoolean(KEY_PREF_PARTICIPATE_NOCACHE, false);
-                TrackHelper.track().event("OfficePreferences", "participate.cache").name(enabled?"disable":"enable").value(1f).with(tracker);
-                break;
-            case KEY_PREF_REGION:
-                String region = sharedPreferences.getString(KEY_PREF_REGION, "romain");
-                TrackHelper.track().event("OfficePreferences", "lectures.region").name(region).value(1f).with(tracker);
-                break;
-        }
-        
         // Apply changes so that sync engines takes them into account
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.commit(); // commit to file so that sync service is able to load it from disk

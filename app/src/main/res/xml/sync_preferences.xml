@@ -49,12 +49,6 @@
         android:title="@string/pref_sync_wifi_only_title" />
 
     <PreferenceCategory android:title="@string/pref_section_participate_title" />
-    <CheckBoxPreference
-        android:defaultValue="true"
-        android:key="pref_participate_statistics"
-        android:summaryOff="@string/pref_contribute_statistics_off"
-        android:summaryOn="@string/pref_contribute_statistics_on"
-        android:title="@string/pref_participate_statistics_title" />
     <Preference
         android:title="@string/pref_participate_rate_title" >
         <intent

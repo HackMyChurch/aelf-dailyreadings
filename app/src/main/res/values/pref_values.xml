@@ -75,7 +75,6 @@
     <string name="pref_sync_wifi_only_title">WiFi uniquement</string>
 
     <string name="pref_section_participate_title">Contribuer</string>
-    <string name="pref_participate_statistics_title">Remonter des statistiques anonymes</string>
     <string name="pref_participate_rate_title">Noter cette application</string>
 
     <string name="pref_section_global_participate_title">Testeurs</string>
@@ -94,8 +93,6 @@
     <string name="pref_disp_pull_to_refresh_off">Utilisez le menu pour raffraîchir les lectures (recommandé)</string>
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>
-    <string name="pref_contribute_statistics_on">Participation bien enregistrée. Merci ! Vous pouvez désactiver cette option à tout moment.</string>
-    <string name="pref_contribute_statistics_off">Envoyer des statistiques est un moyen simple de contribuer à l\'application.</string>
     <string name="pref_contribute_beta_on">Participation bien enregistrée. Merci !</string>
     <string name="pref_contribute_beta_off">Recevoir les nouvelles corrections de textes, amélioration typographiques, mises en forme...</string>
     <string name="pref_contribute_disable_cache_on">Cache désactivé. La synchronisation sera plus lente que d\'habitude.</string>

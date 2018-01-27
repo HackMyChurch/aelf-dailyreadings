@@ -26,14 +26,6 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
-
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -80,11 +72,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     ViewPager mViewPager;
     LecturePagerAdapter lecturesPagerAdapter = null;
 
-    /**
-     * Statistics
-     */
-    Tracker tracker;
-
     // This is called number of screen rotate + 1. The last time with a null argument :/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -95,9 +82,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Load settings
         Resources res = getResources();
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-
-        // Load Tracker
-        tracker = ((PiwikApplication) activity.getApplication()).getTracker();
 
         // Select where to go from here
         whatwhen = new WhatWhen();
@@ -148,10 +132,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 }
             }
         }
-
-        // Track app open source + target
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open "+openSource).build());
-        TrackHelper.track().event("OfficeActivity", "open."+openSource).name(whatwhen.toTrackerName()).value(1f).with(tracker);
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_offices, container, false);
@@ -393,8 +373,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             whatwhen.position = 0;
         }
         this.whatwhen_previous = null;
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Refresh "+whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "action.refresh."+reason).name(whatwhen.toTrackerName()).value(1f).with(tracker);
         loadLecture(whatwhen);
         return true;
     }
@@ -407,9 +385,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         calendarDialog.setListener(this);
         calendarDialog.setArguments(args);
         calendarDialog.show(activity.getSupportFragmentManager(), "datePicker");
-
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show Calendar").build());
-        TrackHelper.track().event("OfficeActivity", "action.calendar").name("show").value(1f).with(tracker);
 
         return true;
     }
@@ -480,10 +455,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         intent.putExtra(Intent.EXTRA_SUBJECT, subject);
         startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
 
-        // Track
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Share "+whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "share").name(whatwhen.toTrackerName()).value(1f).with(tracker);
-
         // All done !
         return true;
     }
@@ -502,7 +473,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         whatwhen.position = 0;
         whatwhen.anchor = null;
 
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set date "+whatwhen.toUrlName()).build());
         loadLecture(whatwhen);
 
         // Update to date button with "this.date"
@@ -511,8 +481,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
     public void onLink(Uri link) {
         parseIntentUri(link);
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Open internal link " + whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "open.internal-link").name(whatwhen.toTrackerName()).value(1f).with(tracker);
         loadLecture(whatwhen);
     }
 
@@ -577,10 +545,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         whatwhen.anchor = null;
         whatwhen_previous = whatwhen.copy();
 
-        // Track
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Set office "+whatwhen.toUrlName()).build());
-        TrackHelper.track().event("OfficeActivity", "action.select-office").name("show").value(1f).with(tracker);
-
         // Load
         this.loadLecture(whatwhen);
         return true;
@@ -619,7 +583,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         } catch (NullPointerException e) {
             // Asking for permission is racy
         } catch (InterruptedException e) {
-            Raven.capture(e);
         } finally {
             currentRefresh = null;
             setLoading(false); // FIXME: should be in the cancel code path in the task imho
@@ -696,7 +659,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 preventCancel.unlock();
             }
         } catch (Exception e) {
-            Raven.capture(e);
             throw e;
         }
     }

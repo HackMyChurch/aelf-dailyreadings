@@ -23,10 +23,7 @@ import android.view.accessibility.AccessibilityManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebSettings.TextSize;
 import android.webkit.WebViewClient;
-
-import org.piwik.sdk.extra.TrackHelper;
 
 /**
  * "Lecture" renderer

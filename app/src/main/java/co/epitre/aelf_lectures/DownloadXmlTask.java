@@ -3,32 +3,16 @@ package co.epitre.aelf_lectures;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.android.event.helper.AndroidEventBuilderHelper;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
-import com.getsentry.raven.event.EventBuilder;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import co.epitre.aelf_lectures.data.AelfDate;
@@ -75,11 +59,6 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     public static final String TAG = "DownloadXmlTask";
 
     /**
-     * Statistics
-     */
-    Tracker tracker;
-
-    /**
      * Error messages
      */
     private static final String noNetworkErrorMessage = ""+
@@ -89,7 +68,6 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     private static final String connectionErrorMessage = ""+
             "<h3>Une erreur s'est glissée lors du chargement des lectures</h3>" +
             "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
-            "<p>Si vous pensez qu'il s'agit d'une erreur, vous pouvez envoyer un mail à <a href=\"mailto:##EMAIL##?subject=Report:%20Network%20error%20loading%20##OFFICE##%20Office%20(version:%20##VERSION##)&body=##REPORT##\">support@epitre.co</a>.<p>" +
             "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/refresh\">Ré-essayer</a></div>";
     private static final String emptyOfficeErrorMessage = "" +
             "<h3>Il n'y a pas encore de lectures pour cet office</h3>" +
@@ -103,7 +81,6 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
 
     public DownloadXmlTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
         this.ctx = ctx;
-        this.tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
         this.lecturesCtrl = LecturesController.getInstance(ctx);
         this.lectureLoadProgressListener = lectureLoadProgressListener;
         this.ww = whatwhen.copy();
@@ -193,79 +170,13 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
         }
     }
 
-    private void trackView(String status) {
-        long dayDelta = ww.when.dayBetween(new GregorianCalendar());
-
-        TrackHelper.track()
-                .screen("/office/" + ww.what.urlName())
-                .title("/office/" + ww.what.urlName())
-                .dimension(LecturesApplication.STATS_DIM_SOURCE, statLectureSource)
-                .dimension(LecturesApplication.STATS_DIM_STATUS, status)
-                .dimension(LecturesApplication.STATS_DIM_DAY_DELTA, Integer.toString((int) dayDelta))
-                .dimension(LecturesApplication.STATS_DIM_DAY_NAME, ww.when.dayName())
-                .with(tracker);
-    }
-
     @Override
     protected void onCancelled(List<LectureItem> lectureItems) {
         super.onCancelled(lectureItems);
-        trackView("cancelled");
     }
 
     private List<LectureItem> buildErrorMessage(String message) {
         List<LectureItem> error = new ArrayList<>(1);
-
-        // Get version name
-        String versionName = "";
-        try {
-            versionName = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            // Only drawback here is no version displayed in about. Minor anoyance
-        }
-        message = message.replace("##VERSION##", versionName);
-
-        // Get office name / date
-        message = message.replace("##OFFICE##", ww.toUrlName());
-
-        // Get support email
-        message = message.replace("##EMAIL##", ctx.getResources().getString(R.string.app_support));
-
-        // Build detailed report, using data from AelfEventBuilderHelper
-        EventBuilder eventBuilder = new EventBuilder();
-        new AndroidEventBuilderHelper(ctx).helpBuildingEvent(eventBuilder);
-        new AelfEventBuilderHelper(ctx, tracker.getUserId()).helpBuildingEvent(eventBuilder);
-        Map<String, Map<String, Object>> contexts = eventBuilder.getEvent().getContexts();
-
-        String report = "";
-        report += "Bonjour !\n\n" +
-                "Merci d'avoir pris le temps d'envoyer un message pour signaler une erreur !\n\n" +
-                "Ce message a été pré-rempli avec les informations dont j'ai habituellement besoin pour diagnostiquer les erreurs. " +
-                "Si vous le souhaitez, vous pouvez prendre le temps de les relire ou même les supprimer. Mais cela m'aidera beaucoup si vous les conservez.\n\n" +
-                "VOUS POUVEZ AJOUTER UN MESSAGE ICI\n\n";
-        report += "Debug informations:\n";
-        report += "===================\n";
-
-        for (Map.Entry<String, Map<String, Object>> context : contexts.entrySet()) {
-            String key = context.getKey();
-            report += "\n" + key + "\n" + new String(new char[key.length()]).replace("\0", "-") + "\n";
-
-            for (Map.Entry<String, Object> entry : context.getValue().entrySet()) {
-                Object value = entry.getValue();
-                if (value != null) {
-                    report += entry.getKey() + "=" + value.toString() + "\n";
-                } else {
-                    report += entry.getKey() + "=null\n";
-                }
-            }
-        }
-
-        try {
-            message = message.replace("##REPORT##", URLEncoder.encode(report, "utf-8").replace("+", "%20"));
-        } catch (UnsupportedEncodingException e) {
-            // That's exactly the same informations as we would have sent, except that the user has no chance to give us extra info
-            Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Building error report for " + ww.toUrlName()).build());
-            Raven.capture(e);
-        }
 
         // Build and return error
         error.add(new LectureItem("error", "Erreur", message, null));
@@ -318,20 +229,15 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
         // Failed to load
         if (lectures == null) {
             if(detectSubOptimalSettings()) {
-                trackView("subOptimalSettings");
                 pager_data = buildErrorMessage(subOptimalSettingsErrorMessage);
             } else if (NetworkStatusMonitor.getInstance().isNetworkAvailable()) {
-                trackView("error");
                 pager_data = buildErrorMessage(connectionErrorMessage);
             } else {
-                trackView("noNetwork");
                 pager_data = buildErrorMessage(noNetworkErrorMessage);
             }
         } else if (lectures.isEmpty()) {
-            trackView("empty");
             pager_data = buildErrorMessage(emptyOfficeErrorMessage);
         } else {
-            trackView("success");
             isSuccess = true;
             pager_data = lectures;
         }

@@ -39,14 +39,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
-
 import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
@@ -92,11 +84,6 @@ public class LecturesActivity extends AppCompatActivity implements
     protected ActionBar actionBar;
 
     /**
-     * Statistics
-     */
-    Tracker tracker;
-
-    /**
      * Navigation
      */
 
@@ -118,9 +105,6 @@ public class LecturesActivity extends AppCompatActivity implements
         // super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
         super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
 
-        // Load Tracker
-        tracker = ((PiwikApplication) getApplication()).getTracker();
-
         // ---- need upgrade ?
         int currentVersion, savedVersion;
 
@@ -129,7 +113,6 @@ public class LecturesActivity extends AppCompatActivity implements
         try {
             packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
         } catch (NameNotFoundException e) {
-            Raven.capture(e);
             throw new RuntimeException("Could not determine current version");
         }
         currentVersion = packageInfo.versionCode;
@@ -220,7 +203,6 @@ public class LecturesActivity extends AppCompatActivity implements
         } catch (SecurityException e) {
             // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
             Log.w(TAG, "Create/Get sync account was DENIED");
-            Raven.capture(e);
             mAccount = null;
         }
 
@@ -391,11 +373,8 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public boolean do_manual_sync(String reason) {
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting "+reason+" sync ").build());
-
         if (mAccount == null) {
             Log.w(TAG, "Failed to run manual sync: we have no account...");
-            TrackHelper.track().event("OfficeActivity", "sync."+reason).name("no-account").value(1f).with(tracker);
             return false;
         }
 
@@ -406,7 +385,6 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // start sync
         ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-        TrackHelper.track().event("OfficeActivity", "sync."+reason).name("start").value(1f).with(tracker);
 
         // done
         return true;
@@ -440,16 +418,12 @@ public class LecturesActivity extends AppCompatActivity implements
     public boolean onAbout() {
         AboutDialogFragment aboutDialog = new AboutDialogFragment();
         aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show About dialog").build());
-        TrackHelper.track().event("OfficeActivity", "action.about").name("show").value(1f).with(tracker);
         return true;
     }
 
     public boolean onSyncPref() {
         Intent intent = new Intent(this, SyncPrefActivity.class);
         startActivity(intent);
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Show Preference screen").build());
-        TrackHelper.track().event("OfficeActivity", "action.preferences").name("show").value(1f).with(tracker);
         return true;
     }
 
@@ -475,9 +449,6 @@ public class LecturesActivity extends AppCompatActivity implements
         ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
 
         editor.apply();
-
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Apply optimal sync settings").build());
-        TrackHelper.track().event("OfficeActivity", "action.apply-optimal-sync-settings").name("error").value(1f).with(tracker);
 
         onRefresh("applied-settings");
 
@@ -552,7 +523,6 @@ public class LecturesActivity extends AppCompatActivity implements
             // Ignore: most likely caused because the app is loading and the pager view is not yet ready
             // but still forward to sentry as I'd rather be sure. Good news is: we need to overload this
             // function anyway :)
-            Raven.capture(e);
         }
         return false; // Fallback: consider event as not consumed
     }

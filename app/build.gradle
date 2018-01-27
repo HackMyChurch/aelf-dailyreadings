@@ -32,11 +32,6 @@ dependencies {
     // compile 'com.android.support:cardview-v7:27.0.2'
     // compile 'com.android.support:recyclerview-v7:27.0.2'
 
-    // Error + Usage reporting
-    compile 'org.piwik.sdk:piwik-sdk:2.0.0'
-    // TODO: migrate to new version
-    compile 'com.getsentry.raven:raven-android:8.0.3'
-
     // HTTP layer
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }

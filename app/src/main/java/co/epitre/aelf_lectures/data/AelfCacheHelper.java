@@ -18,20 +18,12 @@ import android.database.sqlite.SQLiteBindOrColumnIndexOutOfRangeException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
-import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteDatatypeMismatchException;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteReadOnlyDatabaseException;
 import android.database.sqlite.SQLiteStatement;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.getsentry.raven.android.Raven;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
 
 
 /**
@@ -49,7 +41,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "aelf_cache.db";
     private SharedPreferences preference = null;
     private Context ctx;
-    Tracker tracker;
 
     private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (" +
             "date TEXT PRIMARY KEY," +
@@ -68,7 +59,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
         preference = PreferenceManager.getDefaultSharedPreferences(context);
         ctx = context;
-        tracker = ((PiwikApplication) context.getApplicationContext()).getTracker();
     }
 
     /**
@@ -92,14 +82,12 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         ) {
             // If a migration did not go well, the best we can do is drop the database and re-create
             // it from scratch. This is hackish but should allow more or less graceful recoveries.
-            TrackHelper.track().event("Office", "cache.db.error").name("critical").value(1f).with(tracker);
             Log.e(TAG, "Critical database error. Droping + Re-creating", e);
             close();
             ctx.deleteDatabase(DB_NAME);
         } else {
             // Generic error. Close + re-open
             Log.e(TAG, "Datable "+e.getClass().getName()+". Closing + re-opening", e);
-            TrackHelper.track().event("Office", "cache.db.error").name(e.getClass().getName()).value(1f).with(tracker);
             close();
         }
     }
@@ -115,7 +103,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 if (maxAttempts > 0) {
                     onSqliteError(e);
                 } else {
-                    Raven.capture(e);
                 }
             } catch (Exception e) {
                 throw new IOException(e);
@@ -141,7 +128,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
             oos.writeObject(lectures);
             blob = bos.toByteArray();
         } catch (IOException e) {
-            Raven.capture(e);
             throw new RuntimeException(e);
         }
 
@@ -217,7 +203,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
                     return ois.readObject();
                 } catch (ClassNotFoundException | IOException e) {
-                    Raven.capture(e);
                     throw e;
                 } finally {
                     cur.close();
@@ -290,7 +275,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 }
                 db.setTransactionSuccessful();
             } catch (Exception e) {
-                Raven.capture(e);
                 throw e;
             } finally {
                 db.endTransaction();

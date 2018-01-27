@@ -35,10 +35,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.getsentry.raven.android.Raven;
-import com.getsentry.raven.event.BreadcrumbBuilder;
-import com.getsentry.raven.event.Breadcrumbs;
-
 // FIXME: this class is a *mess*. We need to rewrite it !
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -165,7 +161,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             ContentProviderClient provider,
             SyncResult syncResult) {
         Log.i(TAG, "Beginning network synchronization");
-        Breadcrumbs.record(new BreadcrumbBuilder().setMessage("Starting scheduled background sync").build());
 
         // Load preferences, but not yet there value
         SharedPreferences syncPref = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -271,7 +266,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 } catch (TimeoutException e) {
                     Log.e(TAG, "Sync time budget exceeded, cancelling");
                     future.cancel(true);
-                    Raven.capture(e);
                     syncResult.stats.numIoExceptions++;
                     mDone++;
                 } catch (ExecutionException e) {
@@ -284,7 +278,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
             syncResult.stats.numIoExceptions++;
         } catch (Exception e) {
-            Raven.capture(e);
             errorName = "error."+e.getClass().getName();
             throw e;
         }
@@ -338,10 +331,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         long lastSyncAge = (currentTimeMillis - lastSync) / 1000 / 3600;
         Log.d(TAG, "Last sync timestamp: "+lastSync+" age: "+lastSyncAge);
         return lastSyncAge;
-    }
-
-    public static long getLastSyncAttemptAgeHours(Context ctx) {
-        return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT);
     }
 
     public static long getLastSyncSuccessAgeHours(Context ctx) {

@@ -5,18 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Logger;
 
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.getsentry.raven.android.Raven;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
@@ -26,11 +21,6 @@ import co.epitre.aelf_lectures.SyncPrefActivity;
  */
 
 public final class LecturesController implements LectureFutureProgressListener {
-
-    /**
-     * Statistics
-     */
-    Tracker tracker;
 
     /**
      * "What to sync" constants
@@ -133,7 +123,6 @@ public final class LecturesController implements LectureFutureProgressListener {
         super();
 
         ctx = c;
-        tracker = ((PiwikApplication) c.getApplicationContext()).getTracker();
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
     }
@@ -156,7 +145,6 @@ public final class LecturesController implements LectureFutureProgressListener {
             return cache.has(what, when, minLoadDate, minLoadVersion);
         } catch (Exception e) {
             Log.e(TAG, "Failed to check if lecture is in cache", e);
-            Raven.capture(e);
             return false;
         }
     }
@@ -176,7 +164,6 @@ public final class LecturesController implements LectureFutureProgressListener {
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);
-            Raven.capture(e);
             return null;
         }
 
@@ -229,7 +216,6 @@ public final class LecturesController implements LectureFutureProgressListener {
                 cache.store(what, when, lectures);
             } catch (IOException e) {
                 Log.e(TAG, "Failed to store lecture in cache", e);
-                Raven.capture(e);
             }
         }
     }
@@ -244,7 +230,6 @@ public final class LecturesController implements LectureFutureProgressListener {
             }
         } catch (IOException e) {
             Log.e(TAG, "Failed to truncate lecture from cache", e);
-            Raven.capture(e);
         }
     }
 

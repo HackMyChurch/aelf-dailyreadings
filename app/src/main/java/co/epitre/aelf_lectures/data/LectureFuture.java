@@ -2,17 +2,10 @@ package co.epitre.aelf_lectures.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.getsentry.raven.android.Raven;
-
-import org.piwik.sdk.Tracker;
-import org.piwik.sdk.extra.PiwikApplication;
-import org.piwik.sdk.extra.TrackHelper;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
@@ -20,7 +13,6 @@ import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -125,11 +117,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
     public AelfDate when;
 
     /**
-     * Statistics
-     */
-    Tracker tracker;
-
-    /**
      * HTTP Client
      */
     private long startTime;
@@ -159,7 +146,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
 
         // Grab preferences
         preference = PreferenceManager.getDefaultSharedPreferences(ctx);
-        tracker = ((PiwikApplication) ctx.getApplicationContext()).getTracker();
         networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
         // Mark work start
@@ -327,35 +313,24 @@ public class LectureFuture implements Future<List<LectureItem>> {
     private void onHttpResponse(Response response) throws IOException, XmlPullParserException {
         // Grab response
         InputStream in = null;
-        String errorName = "unknown";
         try {
             in = response.body().byteStream();
             pendingLectures = AelfRssParser.parse(in);
             if (pendingLectures == null) {
-                errorName = "error.generic";
                 Log.w(TAG, "Failed to load lectures from network");
-            } else {
-                errorName = "success";
             }
         } catch (XmlPullParserException e) {
             Log.e(TAG, "Failed to parse API result", e);
-            errorName = "error.parse";
-            trackException(e);
             pendingIoException = new IOException(e);
         } catch (IOException e) {
-            errorName = "error.io";
             Log.w(TAG, "Failed to load lectures from network");
-            trackException(e);
             pendingIoException = e;
         } catch (Exception e) {
-            errorName = "error."+e.getClass().getName();
-            trackException(e);
             pendingIoException = new IOException(e);
         } finally {
             if(in != null) {
                 in.close();
             }
-            trackDownloadEvent(errorName);
         }
 
         if (pendingIoException != null) {
@@ -397,35 +372,5 @@ public class LectureFuture implements Future<List<LectureItem>> {
         Url = String.format(Locale.US, Url, when.toUrlString(), region, version);
 
         return Url;
-    }
-
-    private void trackDownloadEvent(String errorName) {
-        // Push event
-        float deltaTime = (System.nanoTime() - startTime) / 1000;
-        long dayDelta = when.dayBetween(new GregorianCalendar());
-
-        // Disable success reporting, this is too noisy
-        if (!errorName.equals("success")) {
-            TrackHelper.track().event("Office", "download." + errorName).name(what.urlName() + "." + dayDelta).value(deltaTime).with(tracker);
-        }
-    }
-
-    private void trackException(Exception e) {
-        // Do not track errors that will be retries anyway
-        if (canRetry()) {
-            return;
-        }
-
-        // Skip errors when loading was cancelled, can't do much about them
-        if (isCancelled()) {
-            return;
-        }
-
-        // Do not track IOException when the network is down
-        if (e instanceof IOException && !networkStatusMonitor.isNetworkAvailable()) {
-            return;
-        }
-
-        Raven.capture(e);
     }
 }
