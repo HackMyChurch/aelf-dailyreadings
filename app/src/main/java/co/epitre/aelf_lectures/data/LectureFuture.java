@@ -104,6 +104,7 @@ class AelfDns implements Dns {
 
 // Load lecture from network. Bring cancel and timeout support
 public class LectureFuture implements Future<List<LectureItem>> {
+    public static final String API_ENDPOINT = "https://api.app.epitre.co";
     private static final String TAG = "LectureFuture";
 
     /**
@@ -348,28 +349,28 @@ public class LectureFuture implements Future<List<LectureItem>> {
 
     private String buildUrl(LecturesController.WHAT what, AelfDate when) {
         boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
-        String Url = preference.getString("pref_participate_server", "");
+        String endpoint = preference.getString("pref_participate_server", "");
+        String Url = "%s/%d/office/%s/%s.rss?region=%s";
 
         // If the URL was not overloaded, build it
-        if (Url.equals("")) {
-            Url = Credentials.API_ENDPOINT;
+        if (endpoint.equals("")) {
+            endpoint = API_ENDPOINT;
 
             // If applicable, switch to beta
             if (pref_beta) {
-                Url = Url.replaceAll("^(https?://)", "$1beta.");
+                endpoint = endpoint.replaceAll("^(https?://)", "$1beta.");
             }
         }
 
-        // Append path + date placeholder
-        Url += what.getRelativeUrl();
-
-        // Append region and version placeholder
-        Url += "?region=%s&version=%d";
-
         // Fill placeholders
         String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
-        int version = preference.getInt("version", -1);
-        Url = String.format(Locale.US, Url, when.toUrlString(), region, version);
+        Url = String.format(Locale.US, Url,
+                endpoint,
+                preference.getInt("version", -1),
+                what.urlName(),
+                when.toIsoString(),
+                region
+        );
 
         return Url;
     }

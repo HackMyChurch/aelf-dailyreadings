@@ -48,15 +48,10 @@ Pour récupérer les sources:
     # Récupération du code source
     git clone https://github.com/HackMyChurch/aelf-dailyreadings.git
     cd aelf-dailyreading
-    
-    # Paramètrage des clés d'API
-    cp app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java.dist app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java
 
 Si vous souhaitez modifier le code serveur, vous pourrez le trouver ici: https://github.com/HackMyChurch/aelf-dailyreadings-server. Et pour
 utiliser un serveur de tests, vous pouvez utiliser la préférence "Paramètres > Contribuer > Testeurs > Adresse du serveur" avec une URL
 du type: "http://192.168.1.12".
-        
-Pour obtenir les clés d'API, rendez-vous dans ``app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java``, toutes les instructions à jour y sont reportées.
 
 Licence
 -------
