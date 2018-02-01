@@ -10,10 +10,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CancellationException;
@@ -27,7 +23,6 @@ import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Dns;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -40,68 +35,6 @@ interface LectureFutureProgressListener {
     void onLectureLoaded(LecturesController.WHAT what, AelfDate when, List<LectureItem> lectures);
 }
 
-// Custom caching resolver
-class AelfDns implements Dns {
-    private static final String TAG = "AelfDns";
-    private static final InetAddress[] fallbackAelfAddresses;
-    private static LinkedHashMap<String, InetAddress[]> addressCache = new LinkedHashMap<>();
-
-    static {
-        InetAddress[] fallbackAelfAddressesCandidate;
-        try {
-            fallbackAelfAddressesCandidate = new InetAddress[]{
-                    InetAddress.getByAddress(new byte[]{(byte) 149, (byte) 202, (byte) 174, (byte) 110}), // vps-aelf.epitre.co
-                    InetAddress.getByAddress(new byte[]{(byte) 164, (byte) 132, (byte) 231, (byte) 241}), // sbg-01.prod.epitre.co
-                    InetAddress.getByAddress(new byte[]{(byte) 51,  (byte) 255, (byte) 39,  (byte) 30})   // gra-01.prod.epitre.co
-            };
-        } catch (UnknownHostException e) {
-            fallbackAelfAddressesCandidate = new InetAddress[]{};
-        }
-        fallbackAelfAddresses = fallbackAelfAddressesCandidate;
-    }
-
-    @Override
-    public List<InetAddress> lookup(String hostname) throws UnknownHostException {
-        if (hostname == null) {
-            throw new UnknownHostException("hostname == null");
-        }
-
-        // Attempt cache based resolution
-        synchronized (addressCache) {
-            if (addressCache.containsKey(hostname)) {
-                Log.d(TAG, "Resolved "+hostname+" from cache");
-                return Arrays.asList(addressCache.get(hostname));
-            }
-        }
-
-        // Attempt system based resolution
-        try {
-            InetAddress[] candidates = InetAddress.getAllByName(hostname);
-            synchronized (addressCache) {
-                Log.d(TAG, "Caching "+hostname);
-                addressCache.put(hostname, candidates);
-            }
-            return Arrays.asList(candidates);
-        } catch (UnknownHostException e) {
-            // Nothing to do
-        }
-
-        // If all DNS are down / look broken / ... return a static / hard-coded list of IPs
-        Log.e(TAG, "Failed to resolve '"+hostname+"' attempting fallback to static IP list");
-        return lookupDefault(hostname);
-    }
-
-    private static List<InetAddress> lookupDefault(String hostname) throws UnknownHostException {
-        switch (hostname) {
-            case "api.app.epitre.co":
-            case "beta.api.app.epitre.co":
-                return Arrays.asList(fallbackAelfAddresses);
-            default:
-                throw new UnknownHostException(hostname);
-        }
-    }
-}
-
 // Load lecture from network. Bring cancel and timeout support
 public class LectureFuture implements Future<List<LectureItem>> {
     public static final String API_ENDPOINT = "https://api.app.epitre.co";
@@ -110,7 +43,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
     /**
      * Internal state
      */
-    private long retryBudget = 3;
     private Context ctx;
     private SharedPreferences preference = null;
     private NetworkStatusMonitor networkStatusMonitor;
@@ -127,7 +59,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
             .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
             .readTimeout   (60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
-            .dns(new AelfDns())
             .build();
 
     /**
@@ -169,7 +100,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         // Build feed URL
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
         String Url = buildUrl(what, when);
-        Log.d(TAG, "Getting "+Url+" remaining attempts: "+retryBudget);
+        Log.d(TAG, "Getting "+Url);
 
         // Build request + headers
         Request.Builder requestBuilder = new Request.Builder();
@@ -184,7 +115,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         call.enqueue(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
                 pendingIoException = e;
-                completeOrRetry();
+                Work.release();
             }
 
             @Override public void onResponse(Call call, Response response) throws IOException {
@@ -198,45 +129,13 @@ public class LectureFuture implements Future<List<LectureItem>> {
                     // Parser exceptions tends to occur on connection error while parsing
                     err = new IOException(e);
                 } finally {
-                    completeOrRetry(err);
+                    Work.release();
+                    if (err != null) {
+                        throw err;
+                    }
                 }
             }
         });
-    }
-
-    //
-    // Retry engine
-    //
-
-    private boolean canRetry() {
-        if (pendingLectures != null) return false;
-        if (cancelled)               return false;
-        if (retryBudget <= 0)        return false;
-        if (!networkStatusMonitor.isNetworkAvailable()) return false;
-        return true;
-    }
-
-    private void completeOrRetry(IOException e) throws IOException {
-        // If we can't retry, complete
-        if(!canRetry()) {
-            Work.release();
-            if (e != null) {
-                throw e;
-            }
-            return;
-        }
-
-        // Start retry
-        retryBudget--;
-        startRequest();
-    }
-
-    private void completeOrRetry() {
-        try {
-            completeOrRetry(null);
-        } catch (IOException e) {
-            // Can not fail as it only forwards the argument
-        }
     }
 
     //
