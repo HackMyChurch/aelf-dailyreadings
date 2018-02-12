@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -131,6 +132,28 @@ public final class LecturesController implements LectureFutureProgressListener {
         return LecturesController.instance;
     }
 
+    /**
+     * Build request path from a lecture type and and date. The path starts with a '/' and does not
+     * include the domain name. It is intended to be used both as a cache key and the actual request
+     * path, hence his place in the controller.
+     * @param what
+     * @param when
+     */
+    public String buildPath(WHAT what, AelfDate when) {
+        String path = "/%d/office/%s/%s.rss?region=%s";
+
+        // Fill placeholders
+        String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
+        path = String.format(Locale.US, path,
+                preference.getInt("version", -1),
+                what.urlName(),
+                when.toIsoString(),
+                region
+        );
+
+        return path;
+    }
+
     public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
         GregorianCalendar minLoadDate = null;
         long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
@@ -199,15 +222,27 @@ public final class LecturesController implements LectureFutureProgressListener {
 
     public LectureFuture getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load a lecture. When the lecture is ready, call this.onLectureLoaded to cache it
-        return new LectureFuture(ctx, what, when, this);
+        return new LectureFuture(ctx, buildPath(what, when), this);
     }
 
     @Override
-    public void onLectureLoaded(WHAT what, AelfDate when, List<LectureItem> lectures) {
+    public void onLectureLoaded(String path, List<LectureItem> lectures) {
         // does it look like an error message ? Only simple stupid heuristic for now.
         if(!looksLikeError(lectures)) {
             try {
-                cache.store(what, when, lectures);
+                // HACK: the cache will be rewritten to use the path itself. In the mean time, we need
+                // to rebuild the expected what and when as strings
+                String[] chunks = path.split("/");
+                String what_str = chunks[3];
+                String[] when_chunks = chunks[4].split("\\.", 2);
+                String when_str = when_chunks[0];
+
+                if (what_str.equals("messes")) {
+                    what_str = "messe";
+                }
+                what_str = "lectures_" + what_str;
+
+                cache.store(what_str, when_str, lectures);
             } catch (IOException e) {
                 Log.e(TAG, "Failed to store lecture in cache", e);
             }

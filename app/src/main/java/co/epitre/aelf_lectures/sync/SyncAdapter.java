@@ -259,7 +259,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 LectureFuture future = pendingDownloads.pop();
                 try {
                     future.get(timeBudget, TimeUnit.MILLISECONDS);
-                    Log.i(TAG, future.what.urlName() + " for " + future.when.toIsoString() + " SUCCESS !!");
+                    Log.d(TAG, "Successfuly loaded " + future.getPath());
                     mDone++;
                 } catch (InterruptedException e) {
                     throw e;

@@ -114,8 +114,10 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         return null;
     }
 
-    synchronized void store(LecturesController.WHAT what, GregorianCalendar when, List<LectureItem> lectures) throws IOException {
-        final String key  = computeKey(when);
+
+
+    synchronized void store(String what, String when, List<LectureItem> lectures) throws IOException {
+        final String key  = when;
         final String create_date = computeKey(new GregorianCalendar());
         final long create_version = preference.getInt("version", -1);
 

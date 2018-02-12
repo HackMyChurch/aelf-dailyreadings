@@ -11,7 +11,6 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -19,8 +18,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import co.epitre.aelf_lectures.NetworkStatusMonitor;
-import co.epitre.aelf_lectures.SyncPrefActivity;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -32,7 +29,7 @@ import okhttp3.Response;
  */
 
 interface LectureFutureProgressListener {
-    void onLectureLoaded(LecturesController.WHAT what, AelfDate when, List<LectureItem> lectures);
+    void onLectureLoaded(String path, List<LectureItem> lectures);
 }
 
 // Load lecture from network. Bring cancel and timeout support
@@ -43,11 +40,8 @@ public class LectureFuture implements Future<List<LectureItem>> {
     /**
      * Internal state
      */
-    private Context ctx;
     private SharedPreferences preference = null;
-    private NetworkStatusMonitor networkStatusMonitor;
-    public LecturesController.WHAT what;
-    public AelfDate when;
+    private String path;
 
     /**
      * HTTP Client
@@ -70,15 +64,12 @@ public class LectureFuture implements Future<List<LectureItem>> {
     private List<LectureItem> pendingLectures = null;
     private LectureFutureProgressListener listener;
 
-    public LectureFuture(Context ctx, LecturesController.WHAT what, AelfDate when, LectureFutureProgressListener listener) throws IOException {
+    public LectureFuture(Context ctx, String path, LectureFutureProgressListener listener) throws IOException {
         this.listener = listener;
-        this.what = what;
-        this.when = when;
-        this.ctx = ctx;
+        this.path = path;
 
         // Grab preferences
         preference = PreferenceManager.getDefaultSharedPreferences(ctx);
-        networkStatusMonitor = NetworkStatusMonitor.getInstance();
 
         // Mark work start
         startTime = System.nanoTime();
@@ -99,7 +90,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
 
         // Build feed URL
         boolean pref_nocache = preference.getBoolean("pref_participate_nocache", false);
-        String Url = buildUrl(what, when);
+        String Url = buildUrl();
         Log.d(TAG, "Getting "+Url);
 
         // Build request + headers
@@ -136,6 +127,14 @@ public class LectureFuture implements Future<List<LectureItem>> {
                 }
             }
         });
+    }
+
+    //
+    // Accessors
+    //
+
+    public String getPath() {
+        return this.path;
     }
 
     //
@@ -238,7 +237,7 @@ public class LectureFuture implements Future<List<LectureItem>> {
         }
 
         if (listener != null) {
-            listener.onLectureLoaded(what, when, pendingLectures);
+            listener.onLectureLoaded(this.path, pendingLectures);
         }
     }
 
@@ -246,10 +245,9 @@ public class LectureFuture implements Future<List<LectureItem>> {
     // Helpers
     //
 
-    private String buildUrl(LecturesController.WHAT what, AelfDate when) {
+    private String buildUrl() {
         boolean pref_beta = preference.getBoolean("pref_participate_beta", false);
         String endpoint = preference.getString("pref_participate_server", "");
-        String Url = "%s/%d/office/%s/%s.rss?region=%s";
 
         // If the URL was not overloaded, build it
         if (endpoint.equals("")) {
@@ -261,16 +259,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
             }
         }
 
-        // Fill placeholders
-        String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
-        Url = String.format(Locale.US, Url,
-                endpoint,
-                preference.getInt("version", -1),
-                what.urlName(),
-                when.toIsoString(),
-                region
-        );
-
-        return Url;
+        return endpoint + this.path;
     }
 }
