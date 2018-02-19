@@ -276,7 +276,14 @@ public class LecturesActivity extends AppCompatActivity implements
         // Finally, load inner fragment
         if (savedInstanceState == null) {
             setSection(new SectionOfficesFragment());
+        } else {
+            restoreSection();
         }
+    }
+
+    private void restoreSection() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        sectionFragment = (SectionFragmentBase)fragmentManager.findFragmentById(R.id.section_container);
     }
 
     private void setSection(SectionFragmentBase fragment) {
