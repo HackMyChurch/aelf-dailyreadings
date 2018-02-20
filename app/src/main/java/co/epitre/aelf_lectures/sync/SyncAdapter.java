@@ -3,36 +3,26 @@ package co.epitre.aelf_lectures.sync;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import co.epitre.aelf_lectures.LecturesApplication;
 import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LectureFuture;
 import co.epitre.aelf_lectures.data.LecturesController;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
@@ -42,7 +32,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
 
     private Context mContext;
-    private NotificationManager mNotificationManager;
     private LecturesController mController;
 
     NetworkStatusMonitor networkStatusMonitor;
@@ -55,28 +44,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
 
-        Object service = context.getSystemService(Context.NOTIFICATION_SERVICE);
-        this.mNotificationManager = (NotificationManager) service;
         this.mContext = context;
         this.mController = LecturesController.getInstance(this.getContext());
-
-        PendingIntent intent =
-                PendingIntent.getActivity(
-                mContext,
-                0,
-                new Intent(),
-                PendingIntent.FLAG_UPDATE_CURRENT
-            );
-
-        Notification notification = new NotificationCompat.Builder(mContext)
-            .setContentTitle("AELF")
-            .setContentText("Pré-chargement des lectures...")
-            .setContentIntent(intent)
-            .setSmallIcon(android.R.drawable.ic_popup_sync)
-            .setWhen(System.currentTimeMillis())
-            .setOngoing(true)
-            .build();
-        mNotificationManager.notify(LecturesApplication.NOTIFICATION_SYNC_PROGRESS, notification);
 
         // Network state change listener
         networkStatusMonitor = NetworkStatusMonitor.getInstance();
@@ -87,10 +56,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      */
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-    }
-
-    private void cancelNotification() {
-        mNotificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
     }
 
     // Sync one reading for the day
@@ -255,8 +220,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             throw e;
         }
         finally {
-            // Mark sync as done as far as the user is concerned
-            this.cancelNotification();
 
             // Track sync status
             Log.d(TAG, "Sync result: "+syncResult.toDebugString());

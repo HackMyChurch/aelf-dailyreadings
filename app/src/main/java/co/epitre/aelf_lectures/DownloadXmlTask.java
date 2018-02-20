@@ -106,6 +106,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
 
         try {
             // TODO: start only after a delay
+            // TODO: use a nicer lecture swap animation ?
             onLectureLoadProgress(LectureLoadProgress.LOAD_START);
             List<LectureItem> lectures =  lecturesCtrl.loadLectures(ww.what, ww.when, ww.useCache);
             onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
