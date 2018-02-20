@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -14,6 +15,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SyncPrefActivity;
 
@@ -166,7 +168,7 @@ public final class LecturesController implements LectureFutureProgressListener {
         }
     }
 
-    public List<LectureItem> getLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
+    public List<LectureItem> loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
         List<LectureItem> lectures;
         AelfDate minLoadDate = null;
         long minLoadVersion = -1;
@@ -220,9 +222,55 @@ public final class LecturesController implements LectureFutureProgressListener {
         return null;
     }
 
-    public LectureFuture getLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
+    public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException, InterruptedException {
         // Load a lecture. When the lecture is ready, call this.onLectureLoaded to cache it
-        return new LectureFuture(ctx, buildPath(what, when), this);
+        try {
+            return new LectureFuture(ctx, buildPath(what, when), this).get();
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof IOException) {
+                throw (IOException) e.getCause();
+            }
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<LectureItem> loadLectures(WHAT what, AelfDate when, boolean useCache) throws IOException {
+        List<LectureItem> lectures = null;
+        boolean isNetworkAvailable = NetworkStatusMonitor.getInstance().isNetworkAvailable();
+
+        // When the network is not available, always try to load from cache, even if outdated.
+        if (useCache || !isNetworkAvailable) {
+            boolean allowColdCache = !isNetworkAvailable;
+
+            // attempt to load from cache: skip loading indicator (avoids flickering)
+            // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
+            lectures = loadLecturesFromCache(what, when, allowColdCache);
+            if (lectures != null) {
+                return lectures;
+            }
+        }
+
+        try {
+            lectures = loadLecturesFromNetwork(what, when);
+        } catch (InterruptedException e) {
+            // Do not report: this is requested by the user
+        }
+
+        // Fallback: cold cache
+        if (lectures == null) {
+            // Failed to load lectures from network AND we were asked to refresh so attempt
+            // a fallback on the cache to avoid the big error message but still display a notification
+            // If the cache considers the lecture as outdated, still return it. We are in error recovery now
+            lectures = loadLecturesFromCache(what, when, true);
+        }
+
+        // Fallback: static asset
+        if (lectures == null) {
+            lectures = loadLecturesFromAssets(what, when);
+        }
+
+        return lectures;
     }
 
     @Override

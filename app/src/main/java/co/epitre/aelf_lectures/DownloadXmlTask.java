@@ -105,67 +105,14 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     protected List<LectureItem> doInBackground(Void... voids) {
 
         try {
-            List<LectureItem> lectures = null;
-            boolean isNetworkAvailable = NetworkStatusMonitor.getInstance().isNetworkAvailable();
-
-            // When the network is not available, always try to load from cache, even if outdated.
-            if (ww.useCache || !isNetworkAvailable) {
-                boolean allowColdCache = !isNetworkAvailable;
-
-                // attempt to load from cache: skip loading indicator (avoids flickering)
-                // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
-                lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, allowColdCache);
-                if (lectures != null) {
-                    statLectureSource = "cache";
-                    return lectures;
-                }
-            }
-
-            // attempts to load from network, with loading indicator
+            // TODO: start only after a delay
             onLectureLoadProgress(LectureLoadProgress.LOAD_START);
-            future = lecturesCtrl.getLecturesFromNetwork(ww.what, ww.when);
-
-            // When cancel is called, we first mark as cancelled then check for future
-            // but future may be created in the mean time, so recheck here to avoid race
-            if (isCancelled()) {
-                future.cancel(true);
-            }
-
-            try {
-                lectures = future.get();
-                statLectureSource = "network";
-            } catch (InterruptedException e) {
-                // Do not report: this is requested by the user
-            } catch (ExecutionException e) {
-                // Do not report: already done
-            }
-
-            // If cancel has been called while loading, we'll only catch it here
-            if (isCancelled()) {
-                return null;
-            }
-
-            // Fallback: cold cache
-            if (lectures == null) {
-                // Failed to load lectures from network AND we were asked to refresh so attempt
-                // a fallback on the cache to avoid the big error message but still display a notification
-                // If the cache considers the lecture as outdated, still return it. We are in error recovery now
-                lectures = lecturesCtrl.getLecturesFromCache(ww.what, ww.when, true);
-                statLectureSource = "cache";
-                onLectureLoadProgress(LectureLoadProgress.LOAD_FAIL);
-            }
-
-            // Fallback: static asset
-            if (lectures == null) {
-                lectures = lecturesCtrl.loadLecturesFromAssets(ww.what, ww.when);
-                statLectureSource = "asset";
-            }
-
+            List<LectureItem> lectures =  lecturesCtrl.loadLectures(ww.what, ww.when, ww.useCache);
+            onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
             return lectures;
         } catch (IOException e) {
-            // Error already propagated to Sentry. Do not propagate twice !
             Log.e(TAG, "I/O error while loading. AELF servers down ?");
-            onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
+            onLectureLoadProgress(LectureLoadProgress.LOAD_FAIL);
             return null;
         }
     }

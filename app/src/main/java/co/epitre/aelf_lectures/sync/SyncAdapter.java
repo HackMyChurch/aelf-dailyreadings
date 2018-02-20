@@ -47,10 +47,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     NetworkStatusMonitor networkStatusMonitor;
 
-    private LinkedList<LectureFuture> pendingDownloads = new LinkedList<>();
-    private int mTodo;
-    private int mDone;
-
     private static final long MAX_RUN_TIME = TimeUnit.MINUTES.toMillis(30);
 
     /**
@@ -102,8 +98,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Load from network, if not in cache and not outdated
         if(!mController.isLecturesInCache(what, when, false)) {
             try {
-                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" QUEUED");
-                pendingDownloads.add(mController.getLecturesFromNetwork(what, when));
+                Log.i(TAG, "Starting sync for " + what.urlName()+" for "+when.toIsoString());
+                mController.loadLecturesFromNetwork(what, when);
             } catch (IOException e) {
                 if (e.getCause() instanceof InterruptedException) {
                     throw (InterruptedException) e.getCause();
@@ -224,9 +220,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
         }
 
-        mTodo = daysToSync * (whatMax+1); // all readings + meta for all days
-        mDone = 0;
-
         // ** SYNC **
         String errorName = "success";
         try {
@@ -234,13 +227,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // future would be sharing the same date instance and save more or less on the same day
             // which is not quite good...
             for (int i = 0; i < daysToSync; i++) {
-                AelfDate when = new AelfDate();
-                when.add(Calendar.DATE, i);
-                syncDay(when, whatMax, syncResult);
-            }
-
-            // Wait for the downloads
-            while (!pendingDownloads.isEmpty()) {
                 // Compute remaining time budget
                 long timeBudget = currentTimeMillis + MAX_RUN_TIME - System.currentTimeMillis();
 
@@ -256,23 +242,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     break;
                 }
 
-                LectureFuture future = pendingDownloads.pop();
-                try {
-                    future.get(timeBudget, TimeUnit.MILLISECONDS);
-                    Log.d(TAG, "Successfuly loaded " + future.getPath());
-                    mDone++;
-                } catch (InterruptedException e) {
-                    throw e;
-                } catch (TimeoutException e) {
-                    Log.e(TAG, "Sync time budget exceeded, cancelling");
-                    future.cancel(true);
-                    syncResult.stats.numIoExceptions++;
-                    mDone++;
-                } catch (ExecutionException e) {
-                    // This is actually just a wrapped IOException
-                    Log.e(TAG, "I/O error while syncing");
-                    syncResult.stats.numIoExceptions++;
-                }
+                // Actual sync
+                AelfDate when = new AelfDate();
+                when.add(Calendar.DATE, i);
+                syncDay(when, whatMax, syncResult);
             }
         } catch (InterruptedException e) {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
