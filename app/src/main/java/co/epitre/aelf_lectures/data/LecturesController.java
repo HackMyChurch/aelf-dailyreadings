@@ -38,7 +38,7 @@ public final class LecturesController implements LectureFutureProgressListener {
         NONE    (5, R.id.nav_none,        "lectures_none"),
         VEPRES  (6, R.id.nav_vepres,      "lectures_vepres"),
         COMPLIES(7, R.id.nav_complies,    "lectures_complies"),
-        METAS   (8, R.id.nav_information, "lectures_informations");
+        METAS   (8, R.id.nav_information, "lectures_metas");
 
         private String name = "";
         private int position = 0; // FIXME: remove field
@@ -62,6 +62,9 @@ public final class LecturesController implements LectureFutureProgressListener {
         public String urlName() {
             if(this.position == 0) {
                 return "messes";
+            }
+            if(this.position == 8) {
+                return "informations";
             }
             return this.name.split("_")[1];
         }
