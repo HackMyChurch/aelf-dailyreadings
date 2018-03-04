@@ -287,7 +287,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     // Views
     //
 
-    public void updateCalendarButtonLabel() {
+    public void updateCalendarButtonLabel(WhatWhen whatwhen) {
         if(mMenu == null) {
             return;
         }
@@ -312,7 +312,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
 
         // Update to date button with "this.date"
-        updateCalendarButtonLabel();
+        updateCalendarButtonLabel(whatwhen);
         updateMenuNetworkVisibility();
     }
 
@@ -470,9 +470,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         whatwhen.anchor = null;
 
         loadLecture(whatwhen);
-
-        // Update to date button with "this.date"
-        updateCalendarButtonLabel();
     }
 
     public void onLink(Uri link) {
@@ -483,6 +480,12 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     //
     // Loader
     //
+
+    protected void refreshUI(WhatWhen whatwhen) {
+        actionBar.setTitle(whatwhen.what.actionBarName());
+        drawerView.setCheckedItem(whatwhen.what.getMenuId());
+        updateCalendarButtonLabel(whatwhen);
+    }
 
     protected void setLoading(final boolean loading) {
         // Do not trigger animations. That causes flickering.
@@ -551,9 +554,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         cancelLectureLoad(false);
 
         // Refresh UI
-        actionBar.setTitle(whatwhen.what.actionBarName());
-        drawerView.setCheckedItem(whatwhen.what.getMenuId());
-        updateCalendarButtonLabel();
+        refreshUI(whatwhen);
 
         // Start Loading
         preventCancel.lock();
