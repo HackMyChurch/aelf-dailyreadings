@@ -85,15 +85,12 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
         // Select where to go from here
         whatwhen = new WhatWhen();
-        String openSource;
 
         Uri uri = activity.getIntent().getData();
         if (uri != null) {
-            openSource = "intent";
             parseIntentUri(uri);
         } else if (canRestoreState(savedInstanceState)) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
-            openSource = "restore";
             whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what")];
             whatwhen.position = savedInstanceState.getInt("position");
 
@@ -107,7 +104,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             }
         } else {
             // Load the lectures for today. Based on the anonymous statistics
-            openSource = "fresh";
             whatwhen.when = new AelfDate();
             whatwhen.today = true;
             whatwhen.position = 0;
