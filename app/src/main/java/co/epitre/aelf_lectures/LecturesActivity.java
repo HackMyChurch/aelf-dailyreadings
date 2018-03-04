@@ -284,6 +284,7 @@ public class LecturesActivity extends AppCompatActivity implements
     private void restoreSection() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         sectionFragment = (SectionFragmentBase)fragmentManager.findFragmentById(R.id.section_container);
+        sectionFragment.onRestore();
     }
 
     private void setSection(SectionFragmentBase fragment) {

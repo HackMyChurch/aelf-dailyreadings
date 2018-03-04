@@ -42,6 +42,8 @@ public abstract class SectionFragmentBase extends Fragment {
     // Events
     //
 
+    public void onRestore() {}
+
     public boolean onRefresh(String reason) {
         return true;
     }
