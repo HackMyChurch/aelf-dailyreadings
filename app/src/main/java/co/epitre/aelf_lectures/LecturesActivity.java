@@ -487,11 +487,15 @@ public class LecturesActivity extends AppCompatActivity implements
             SectionOfficesFragment sectionOfficeFragment;
             try {
                 sectionOfficeFragment = (SectionOfficesFragment) sectionFragment;
+                sectionOfficeFragment.loadLecture(what);
             } catch (ClassCastException e) {
                 sectionOfficeFragment = new SectionOfficesFragment();
+                Bundle arguments = new Bundle();
+                arguments.putInt("what", what.getPosition());
+                sectionOfficeFragment.setArguments(arguments);
                 setSection(sectionOfficeFragment);
             }
-            return sectionOfficeFragment.loadLecture(what);
+            return true;
         } else {
             // This is something else :)
             return false; // Do not select item as we do not know what this is...

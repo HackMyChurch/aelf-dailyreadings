@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -83,18 +84,24 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         Resources res = getResources();
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
 
+        // Load arguments, if any
+        Bundle arguments = getArguments();
+        if (arguments == null && canRestoreState(savedInstanceState)) {
+            arguments = savedInstanceState;
+        }
+
         // Select where to go from here
         whatwhen = new WhatWhen();
 
         Uri uri = activity.getIntent().getData();
         if (uri != null) {
             parseIntentUri(uri);
-        } else if (canRestoreState(savedInstanceState)) {
+        } else if (arguments != null) {
             // Restore saved instance state. Especially useful on screen rotate on older phones
-            whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what")];
-            whatwhen.position = savedInstanceState.getInt("position");
+            whatwhen.what = LecturesController.WHAT.values()[arguments.getInt("what", 0)];
+            whatwhen.position = arguments.getInt("position", 0);
 
-            long timestamp = savedInstanceState.getLong("when");
+            long timestamp = arguments.getLong("when", DATE_TODAY);
             if (timestamp == DATE_TODAY) {
                 whatwhen.when = new AelfDate();
                 whatwhen.today = true;
@@ -249,7 +256,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             return false;
         }
 
-        long whenTimestamp = savedInstanceState.getLong("when");
+        long whenTimestamp = savedInstanceState.getLong("when", DATE_TODAY);
         long lastUpdateTimestamp = savedInstanceState.getLong("last-update", 0);
         boolean wasToday = (whenTimestamp == DATE_TODAY);
 
