@@ -511,6 +511,11 @@ public class LecturesActivity extends AppCompatActivity implements
                 setSection(sectionOfficeFragment);
             }
             return true;
+        } else if (item.getItemId() == R.id.nav_bible) {
+            if (!(sectionFragment instanceof SectionBibleFragment)) {
+                setSection(new SectionBibleFragment());
+            }
+            return true;
         } else {
             // This is something else :)
             return false; // Do not select item as we do not know what this is...
