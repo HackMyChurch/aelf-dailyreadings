@@ -121,6 +121,12 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         final String create_date = computeKey(new GregorianCalendar());
         final long create_version = preference.getInt("version", -1);
 
+        // Build table name
+        if (what.equals("messes")) {
+            what = "messe";
+        }
+        what = "lectures_"+what;
+
         // build blob
         final byte[] blob;
         try {

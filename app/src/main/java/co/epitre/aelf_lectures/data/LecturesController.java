@@ -23,7 +23,7 @@ import co.epitre.aelf_lectures.SyncPrefActivity;
  * Public data controller --> load either from cache, either from network
  */
 
-public final class LecturesController implements LectureFutureProgressListener {
+public final class LecturesController {
 
     /**
      * "What to sync" constants
@@ -226,9 +226,11 @@ public final class LecturesController implements LectureFutureProgressListener {
     }
 
     public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException, InterruptedException {
-        // Load a lecture. When the lecture is ready, call this.onLectureLoaded to cache it
+        List<LectureItem> lectures;
+
+        // Load lectures
         try {
-            return new LectureFuture(ctx, buildPath(what, when), this).get();
+            lectures = new LectureFuture(ctx, buildPath(what, when)).get();
         } catch (ExecutionException e) {
             if (e.getCause() instanceof IOException) {
                 throw (IOException) e.getCause();
@@ -236,6 +238,17 @@ public final class LecturesController implements LectureFutureProgressListener {
             e.printStackTrace();
             return null;
         }
+
+        // Cache lectures
+        if(!looksLikeError(lectures)) {
+            try {
+                cache.store(what.urlName(), when.toIsoString(), lectures);
+            } catch (IOException e) {
+                Log.e(TAG, "Failed to store lecture in cache", e);
+            }
+        }
+
+        return lectures;
     }
 
     public List<LectureItem> loadLectures(WHAT what, AelfDate when, boolean useCache) throws IOException {
@@ -274,30 +287,6 @@ public final class LecturesController implements LectureFutureProgressListener {
         }
 
         return lectures;
-    }
-
-    @Override
-    public void onLectureLoaded(String path, List<LectureItem> lectures) {
-        // does it look like an error message ? Only simple stupid heuristic for now.
-        if(!looksLikeError(lectures)) {
-            try {
-                // HACK: the cache will be rewritten to use the path itself. In the mean time, we need
-                // to rebuild the expected what and when as strings
-                String[] chunks = path.split("/");
-                String what_str = chunks[3];
-                String[] when_chunks = chunks[4].split("\\.", 2);
-                String when_str = when_chunks[0];
-
-                if (what_str.equals("messes")) {
-                    what_str = "messe";
-                }
-                what_str = "lectures_" + what_str;
-
-                cache.store(what_str, when_str, lectures);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to store lecture in cache", e);
-            }
-        }
     }
 
     // re-export cleanup helper

@@ -28,10 +28,6 @@ import okhttp3.Response;
  * Created by jean-tiare on 22/05/17.
  */
 
-interface LectureFutureProgressListener {
-    void onLectureLoaded(String path, List<LectureItem> lectures);
-}
-
 // Load lecture from network. Bring cancel and timeout support
 public class LectureFuture implements Future<List<LectureItem>> {
     public static final String API_ENDPOINT = "https://api.app.epitre.co";
@@ -62,10 +58,8 @@ public class LectureFuture implements Future<List<LectureItem>> {
     private Semaphore Work = new Semaphore(1);
     private IOException pendingIoException = null;
     private List<LectureItem> pendingLectures = null;
-    private LectureFutureProgressListener listener;
 
-    public LectureFuture(Context ctx, String path, LectureFutureProgressListener listener) throws IOException {
-        this.listener = listener;
+    public LectureFuture(Context ctx, String path) throws IOException {
         this.path = path;
 
         // Grab preferences
@@ -234,10 +228,6 @@ public class LectureFuture implements Future<List<LectureItem>> {
 
         if (pendingIoException != null) {
             throw pendingIoException;
-        }
-
-        if (listener != null) {
-            listener.onLectureLoaded(this.path, pendingLectures);
         }
     }
 
