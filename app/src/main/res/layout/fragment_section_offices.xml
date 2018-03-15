@@ -58,7 +58,6 @@
         <Button
             style="@style/Widget.AppCompat.Button.Borderless"
             android:id="@+id/cancelButton"
-            android:onClick="cancelLectureLoad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Annuler"

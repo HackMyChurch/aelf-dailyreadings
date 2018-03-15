@@ -139,6 +139,15 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_offices, container, false);
 
+        // Install event handler
+        Button cancelButton = view.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                cancelLectureLoad(true);
+            }
+        });
+
         // Load lecture
         loadLecture(whatwhen);
 
