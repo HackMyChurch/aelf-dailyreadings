@@ -13,10 +13,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LectureFuture;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.WhatWhen;
@@ -52,9 +50,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     private LectureLoadProgressListener lectureLoadProgressListener;
     private LecturesController lecturesCtrl = null;
 
-    LectureFuture future;
     private WhatWhen ww = null;
-    String statLectureSource = "unknown";
 
     public static final String TAG = "DownloadXmlTask";
 

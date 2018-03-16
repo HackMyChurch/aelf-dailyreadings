@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import org.xmlpull.v1.XmlPullParserException;
@@ -117,12 +116,14 @@ public final class LecturesController {
     private SharedPreferences preference = null;
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
+    private EpitreApi api = null;
     Context ctx;
 
     private LecturesController(Context c) {
         super();
 
         ctx = c;
+        api = EpitreApi.getInstance(c);
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
     }
@@ -135,28 +136,6 @@ public final class LecturesController {
            }
         }
         return LecturesController.instance;
-    }
-
-    /**
-     * Build request path from a lecture type and and date. The path starts with a '/' and does not
-     * include the domain name. It is intended to be used both as a cache key and the actual request
-     * path, hence his place in the controller.
-     * @param what
-     * @param when
-     */
-    public String buildPath(WHAT what, AelfDate when) {
-        String path = "/%d/office/%s/%s.rss?region=%s";
-
-        // Fill placeholders
-        String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
-        path = String.format(Locale.US, path,
-                preference.getInt("version", -1),
-                what.urlName(),
-                when.toIsoString(),
-                region
-        );
-
-        return path;
     }
 
     public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
@@ -225,19 +204,9 @@ public final class LecturesController {
         return null;
     }
 
-    public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException, InterruptedException {
-        List<LectureItem> lectures;
-
+    public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
-        try {
-            lectures = new LectureFuture(ctx, buildPath(what, when)).get();
-        } catch (ExecutionException e) {
-            if (e.getCause() instanceof IOException) {
-                throw (IOException) e.getCause();
-            }
-            e.printStackTrace();
-            return null;
-        }
+        List<LectureItem> lectures = api.getOffice(what.urlName(), when.toIsoString());
 
         // Cache lectures
         if(!looksLikeError(lectures)) {
@@ -267,11 +236,7 @@ public final class LecturesController {
             }
         }
 
-        try {
-            lectures = loadLecturesFromNetwork(what, when);
-        } catch (InterruptedException e) {
-            // Do not report: this is requested by the user
-        }
+        lectures = loadLecturesFromNetwork(what, when);
 
         // Fallback: cold cache
         if (lectures == null) {

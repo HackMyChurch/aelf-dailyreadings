@@ -595,10 +595,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         preventCancel.lock();
         try {
             currentRefresh.cancel(true);
-            if (currentRefresh.future != null) {
-                currentRefresh.future.cancel(true);
-            }
-
             Thread.sleep(100); // FIXME!!
         } catch (NullPointerException e) {
             // Asking for permission is racy
