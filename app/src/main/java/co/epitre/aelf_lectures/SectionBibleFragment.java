@@ -7,16 +7,26 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+// WebView dependencies
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 /**
  * Created by jean-tiare on 12/03/18.
  */
 
 public class SectionBibleFragment extends SectionFragmentBase {
+    public SectionBibleFragment(){
+        // Required empty public constructor
+        // http://kosalgeek.com/webview-fragment-android-studio/ §6 L18
+    }
     /**
      * Global managers / resources
      */
     SharedPreferences settings = null;
+
+    WebView mWebView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,6 +44,20 @@ public class SectionBibleFragment extends SectionFragmentBase {
         actionBar.setTitle("Bible");
 
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_section_bible, container, false);
+        View view = inflater.inflate(R.layout.fragment_section_bible, container, false);
+        mWebView = view.findViewById(R.id.webView);
+
+        // Force links and redirects to open in the WebView instead of in a browser
+        mWebView.setWebViewClient(new WebViewClient());
+
+        // Enable Javascript
+        WebSettings webSettings = mWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        // Use local resource
+        mWebView.loadUrl("file:///android_asset/www/index.html");
+        return view;
     }
+
+    // TODO: check if back button in Bible's webview goes back in "history"
 }
