@@ -3,7 +3,7 @@ app/src/main/java/co/epitre/aelf_lectures/data/Credentials.java
 app/src/main/assets/bin/proguard.txt
 
 # Pre-Loaded lectures
-app/src/main/assets
+app/src/main/assets/preloaded-reading
 
 # Built application files
 *.apk
