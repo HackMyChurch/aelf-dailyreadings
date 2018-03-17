@@ -1,0 +1,5 @@
+font_color                          #333 --> #5d451a
+background_color_reading_box        rgba(255,255,255,0.85) --> #efe3ce
+aelf_red                            #bf2329 --> #bf2329
+aelf_dark                           #000 --> #1a1c1f
+inactive_button                     #737373 --> #5d451a
