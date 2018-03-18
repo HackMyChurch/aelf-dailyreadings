@@ -14,6 +14,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -24,6 +25,8 @@ import android.webkit.ValueCallback;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import java.util.Locale;
 
 /**
  * "Lecture" renderer
@@ -114,6 +117,19 @@ public class LectureFragment extends Fragment implements
         return;
     }
 
+    private String colorResourceToRgba(int colorAttr) {
+        final TypedValue value = new TypedValue();
+        getContext().getTheme().resolveAttribute(colorAttr, value, true);
+        int color = value.data;
+
+        float a = (color >> 24 & 0xff)/(float)255;
+        int r = color >> 16 & 0xff;
+        int g = color >> 8  & 0xff;
+        int b = color >> 0  & 0xff;
+
+        return String.format(Locale.ENGLISH, "rgba(%d, %d, %d, %.2f)", r, g, b, a);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Context context = getActivity();
@@ -122,9 +138,9 @@ public class LectureFragment extends Fragment implements
         StringBuilder htmlString = new StringBuilder();
         String body = getArguments().getString(ARG_TEXT_HTML);
 
-        String col_red_hex = Integer.toHexString(ContextCompat.getColor(context, R.color.aelf_red)).substring(2);
-        String col_sepia_light = Integer.toHexString(ContextCompat.getColor(context, R.color.sepia_bg)).substring(2);
-        String col_sepia_dark = Integer.toHexString(ContextCompat.getColor(context, R.color.sepia_fg)).substring(2);
+        String color_text_accent = colorResourceToRgba(R.attr.colorLectureAccent);
+        String color_text_bg = colorResourceToRgba(R.attr.colorLectureBackground);
+        String color_text_fg = colorResourceToRgba(R.attr.colorLectureText);
 
         htmlString.append("<!DOCTYPE html>" +
                 "<html>" +
@@ -133,8 +149,8 @@ public class LectureFragment extends Fragment implements
                         "<style type=\"text/css\">" +
                         "body{" +
                         "	margin:24px;" +
-                        "	background-color:#"+col_sepia_light+";" +
-                        "	color:#"+col_sepia_dark+";" +
+                        "	background-color: transparent;" +
+                        "   color: "+color_text_fg+";" +
                         "   font-family: sans-serif;" +
                         "	font-size: 15px;" + // regular body
                         "	font-weight: regular;" +
@@ -154,14 +170,14 @@ public class LectureFragment extends Fragment implements
                         "    text-align: center;" +
                         "    padding: 13px;" +
                         "    margin-top: 10px;" +
-                        "    color: #"+col_sepia_dark+";" +
+                        "   color: "+color_text_fg+";" +
                         "	 font-size: 17px;" +
                         "    text-decoration: none;" +
-                        "    border: 1px solid #"+col_sepia_dark+";" +
+                        "    border: 1px solid "+color_text_fg+";" +
                         "}"+
                         ".app-office-navigation a:active, .app-office-navigation a.active {" +
-                        "    color: #"+col_sepia_dark+";" +
-                        "    background-color: #"+col_sepia_light+";" +
+                        "    color: "+color_text_fg+";" +
+                        "    background-color: "+color_text_bg+";" +
                         "}"+
                         "b i{" + // sub-title
                         "	font-size: 15px;" +
@@ -189,10 +205,10 @@ public class LectureFragment extends Fragment implements
                         "   padding-top: 0;" +
                         "}" +
                         "font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
-                        "	color: #"+col_red_hex+";" +
+                        "    color: "+color_text_accent+";" +
                         "} " +
                         "font[color='#000000'] {" + // regular text
-                        "	color: #"+col_sepia_dark+";" +
+                        "    color: "+color_text_fg+";" +
                         "} " +
                         ".verse {" + // psaume verse number
                         "	display: block;" +
@@ -202,7 +218,7 @@ public class LectureFragment extends Fragment implements
                         "   margin-top: 4px;" +
                         "   margin-left: -30px;" +
                         "	font-size: 10px;" +
-                        "	color: #"+col_red_hex+";" +
+                        "   color: "+color_text_accent+";" +
                         "}" +
                         "sup {" + // inflections: do not affect line-height
                         "   vertical-align: baseline;" +
@@ -233,7 +249,7 @@ public class LectureFragment extends Fragment implements
                         "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked
                         "}" +
                         ".antienne-title {" + // antienne
-                        "	color: #"+col_red_hex+";" +
+                        "    color: "+color_text_accent+";" +
                         "   font-style: italic;" +
                         "} " +
                         "</style>" +

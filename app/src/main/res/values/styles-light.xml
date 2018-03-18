@@ -1,0 +1,36 @@
+<resources>
+    <style name="AelfAppBaseThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Shell / Native theme colors -->
+        <item name="colorAccent">@color/light_aelf_accent</item>
+        <item name="colorAccentDark">@color/light_aelf_accent_dark</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryDark">@color/light_aelf_primary_dark</item>
+        <item name="colorDrawerItemText">@color/light_aelf_primary_dark</item>
+
+        <!-- Lecture colors -->
+        <item name="colorLectureText">@color/light_aelf_lecture_text</item>
+        <item name="colorLectureBackground">@color/light_aelf_lecture_background</item>
+        <item name="colorLectureAccent">@color/light_aelf_accent</item>
+        <item name="android:actionMenuTextColor">@color/white</item>
+        <item name="toolbarNavigationButtonStyle">@style/Widget.AppCompat.Toolbar.Button.Navigation</item>
+
+        <!-- Component styles -->
+        <item name="actionBarStyle">@style/AelfActionBarLight</item>
+        <item name="toolbarStyle">@style/AelfActionBar</item>
+        <item name="tabstripStyle">@style/AelfTabStripLight</item>
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AelfAppThemeLight" parent="AelfAppBaseThemeLight">
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
+    <style name="AelfActionBarLight" parent="AelfActionBar">
+    </style>
+
+    <style name="AelfTabStripLight">
+        <item name="android:background">@color/light_aelf_accent</item>
+        <item name="android:textColor">@color/light_aelf_lecture_background</item>
+    </style>
+
+</resources>

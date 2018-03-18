@@ -1,0 +1,13 @@
+<resources>
+    <style name="AelfActionBar" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="titleTextAppearance">@style/AelfToolBarTitleText</item>
+        <item name="android:background">@color/light_aelf_primary_dark</item>
+    </style>
+
+    <style name="AelfToolBarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="colorPrimary">@color/white</item>
+    </style>
+</resources>

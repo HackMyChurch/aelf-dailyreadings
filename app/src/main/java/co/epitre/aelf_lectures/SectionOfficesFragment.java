@@ -7,12 +7,12 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -525,9 +525,13 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             return;
         }
 
+        TypedValue colorValue = new TypedValue();
+        getContext().getTheme().resolveAttribute(R.attr.colorLectureAccent, colorValue, true);
+
         final RelativeLayout loadingOverlay = view.findViewById(R.id.loadingOverlay);
         final ProgressBar loadingIndicator = view.findViewById(R.id.loadingIndicator);
         final Button cancelButton = view.findViewById(R.id.cancelButton);
+        final int colorAccent = colorValue.data;
 
         loadingOverlay.post(new Runnable() {
             public void run() {
@@ -541,7 +545,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                     buttonFadeIn.setStartOffset(2500);
                     buttonFadeIn.setDuration(500);
 
-                    loadingIndicator.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(getContext(), R.color.sepia_fg), android.graphics.PorterDuff.Mode.MULTIPLY);
+                    loadingIndicator.getIndeterminateDrawable().setColorFilter(colorAccent, android.graphics.PorterDuff.Mode.MULTIPLY);
                     cancelButton.setVisibility(View.VISIBLE);
                     cancelButton.setAnimation(buttonFadeIn);
                     loadingOverlay.setVisibility(View.VISIBLE);

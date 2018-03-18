@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<color name="sepia_bg">#efe3ce</color>
-	<color name="sepia_fg">#5d451a</color>
-	<color name="aelf_red">#bf2329</color>
-	<color name="aelf_dark">#1a1c1f</color>
+	<!-- Light theme -->
+	<color name="light_aelf_primary">#13171F</color>
+	<color name="light_aelf_primary_dark">#1E2024</color>
+	<color name="light_aelf_lecture_background">#efe3ce</color>
+	<color name="light_aelf_lecture_text">#5d451a</color>
+	<color name="light_aelf_accent">#bf2329</color>
+	<color name="light_aelf_accent_dark">#bf2329</color>
+
+	<!-- Dark theme -->
+	<color name="dark_aelf_primary">#13171F</color>            <!-- http://paletton.com/#uid=13J0u0k5W6N5dkR5MeDdF5Vk65w -->
+	<color name="dark_aelf_primary_dark">#1E2024</color>
+	<color name="dark_aelf_lecture_background">#13171F</color> <!-- http://paletton.com/#uid=13E1k0ke15J79fQ6-6Bjt4Npb3- -->
+	<color name="dark_aelf_lecture_text">#ddefe9de</color>
+	<color name="dark_aelf_accent">#f9787e</color>             <!-- http://paletton.com/#uid=35B1k0kq8opg-vKlrryt0jU-9eO -->
+	<color name="dark_aelf_accent_dark">#d8474e</color>        <!-- http://paletton.com/#uid=35B1k0kq8opg-vKlrryt0jU-9eO -->
+
+	<!-- Common -->
 	<color name="white">#ffffffff</color>
 </resources>

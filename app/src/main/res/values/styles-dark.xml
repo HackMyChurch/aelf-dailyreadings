@@ -1,0 +1,34 @@
+<resources>
+    <style name="AelfAppBaseThemeDark" parent="Theme.AppCompat.NoActionBar">
+        <!-- Shell / Native theme colors -->
+        <item name="colorAccent">@color/dark_aelf_accent</item>
+        <item name="colorAccentDark">@color/dark_aelf_accent_dark</item>
+        <item name="colorPrimary">@color/dark_aelf_primary</item>
+        <item name="colorPrimaryDark">@color/dark_aelf_primary_dark</item>
+        <item name="android:colorBackground">@color/dark_aelf_primary_dark</item>
+        <item name="colorDrawerItemText">@color/white</item>
+
+        <!-- Lecture colors -->
+        <item name="colorLectureText">@color/dark_aelf_lecture_text</item>
+        <item name="colorLectureBackground">@color/dark_aelf_lecture_background</item>
+        <item name="colorLectureAccent">@color/dark_aelf_accent</item>
+
+        <!-- Component styles -->
+        <item name="toolbarStyle">@style/AelfActionBarDark</item>
+        <item name="tabstripStyle">@style/AelfTabStripDark</item>
+    </style>
+
+    <!-- Application theme. -->
+    <style name="AelfAppThemeDark" parent="AelfAppBaseThemeDark">
+    </style>
+
+    <style name="AelfActionBarDark" parent="AelfActionBar">
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat</item>
+    </style>
+
+    <style name="AelfTabStripDark">
+        <item name="android:background">@color/dark_aelf_primary_dark</item>
+        <item name="android:textColor">@color/dark_aelf_accent</item>
+    </style>
+
+</resources>

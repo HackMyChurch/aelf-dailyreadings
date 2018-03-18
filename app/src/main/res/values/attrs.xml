@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorDrawerItemText" format="color"/>
+    <attr name="colorAccentDark" format="color"/>
+    <attr name="colorLectureText" format="color"/>
+    <attr name="colorLectureAccent" format="color"/>
+    <attr name="colorLectureBackground" format="color"/>
+    <attr name="tabstripStyle" format="reference"/>
+</resources>

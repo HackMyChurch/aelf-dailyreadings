@@ -228,7 +228,7 @@ public class LecturesActivity extends AppCompatActivity implements
             statusBarBackgroundView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             statusBarBackgroundView.getLayoutParams().height = get_status_bar_height();
             ((ViewGroup) getWindow().getDecorView()).addView(statusBarBackgroundView);
-            statusBarBackgroundView.setBackgroundColor(ContextCompat.getColor(this, R.color.aelf_dark));
+            statusBarBackgroundView.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_aelf_primary_dark));
         }
 
         // Navigation drawer

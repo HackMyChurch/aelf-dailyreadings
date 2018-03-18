@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle" >
     <corners android:radius="0dp" />
-    <solid android:color="@color/sepia_bg" />
+    <solid android:color="?attr/colorLectureBackground" />
     <size
         android:width="200dp"
         android:height="50dp"
         />
     <stroke
         android:width="1dp"
-        android:color="@color/sepia_fg"
+        android:color="?attr/colorLectureText"
         />
 </shape>

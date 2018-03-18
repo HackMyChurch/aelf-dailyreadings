@@ -19,19 +19,17 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:gravity="top"
-            android:background="@color/sepia_bg"
+            android:background="?attr/colorLectureBackground"
             tools:context=".LecturesActivity" >
 
             <android.support.v4.view.PagerTabStrip
                 android:id="@+id/pager_title_strip"
+                style="?attr/tabstripStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:background="@color/aelf_red"
                 android:paddingBottom="4dp"
-                android:paddingTop="4dp"
-                android:textColor="@color/sepia_bg" >
-            </android.support.v4.view.PagerTabStrip>
+                android:paddingTop="4dp"></android.support.v4.view.PagerTabStrip>
         </co.epitre.aelf_lectures.LectureViewPager>
     </android.support.v7.widget.LinearLayoutCompat>
 
@@ -40,7 +38,7 @@
         android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/sepia_bg"
+        android:background="?attr/colorLectureBackground"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
@@ -56,16 +54,16 @@
             android:paddingBottom="150dp" />
 
         <Button
-            style="@style/Widget.AppCompat.Button.Borderless"
             android:id="@+id/cancelButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_shape"
             android:text="Annuler"
             android:textAllCaps="false"
-            android:background="@drawable/button_shape"
-            android:textColor="@color/sepia_fg"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true" />
+            android:textColor="?attr/colorLectureText" />
 
     </RelativeLayout>
 </RelativeLayout>
