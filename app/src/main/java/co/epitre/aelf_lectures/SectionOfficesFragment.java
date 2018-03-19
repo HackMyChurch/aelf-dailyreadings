@@ -139,6 +139,9 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_offices, container, false);
 
+        // Get view handles
+        mViewPager = view.findViewById(R.id.pager);
+
         // Install event handler
         Button cancelButton = view.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(new View.OnClickListener() {
@@ -660,9 +663,8 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             try {
                 // 1 slide fragment <==> 1 lecture
                 lecturesPagerAdapter = new LecturePagerAdapter(activity.getSupportFragmentManager(), lectures);
-
                 FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-                mViewPager = activity.findViewById(R.id.pager);
+
                 mViewPager.setAdapter(lecturesPagerAdapter);
                 mViewPager.setCurrentItem(whatwhen.position);
 
