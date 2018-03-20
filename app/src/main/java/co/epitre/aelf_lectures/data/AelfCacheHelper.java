@@ -124,6 +124,8 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         // Build table name
         if (what.equals("messes")) {
             what = "messe";
+        } else if (what.equals("informations")) {
+            what = "metas";
         }
         what = "lectures_"+what;
 
