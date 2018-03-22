@@ -538,6 +538,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 if(loading) {
                     Animation fadeIn = new AlphaAnimation(0, 1);
                     fadeIn.setInterpolator(new DecelerateInterpolator());
+                    fadeIn.setStartOffset(500);
                     fadeIn.setDuration(500);
 
                     Animation buttonFadeIn = new AlphaAnimation(0, 1);
