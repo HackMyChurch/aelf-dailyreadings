@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures;
 
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
@@ -53,6 +54,13 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Enable Javascript
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        // Enable Dom Storage https://stackoverflow.com/questions/33079762/android-webview-uncaught-typeerror-cannot-read-property-getitem-of-null
+        webSettings.setDomStorageEnabled(true);
+
+        // Enable remote debugging
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(true);
+        }
 
         // Use local resource
         mWebView.loadUrl("file:///android_asset/www/index.html");
