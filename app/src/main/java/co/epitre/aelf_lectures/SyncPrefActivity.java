@@ -7,6 +7,7 @@ import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.data.Validator;
 
@@ -15,6 +16,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_DISP_PULL_TO_REFRESH = "pref_disp_pull_to_refresh";
+    public static final String KEY_PREF_DISP_NIGHT_MODE = "pref_disp_night_mode";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
@@ -33,6 +35,12 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     @SuppressWarnings("deprecation")
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Install theme before anything else
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+        this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
+
+        // Call parent
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.sync_preferences);
@@ -81,6 +89,8 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             } else {
                 pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
             }
+        } else if (key.equals(KEY_PREF_DISP_NIGHT_MODE)) {
+            recreate();
         }
 
         // Stop here is called with null preference pointer from the constructor

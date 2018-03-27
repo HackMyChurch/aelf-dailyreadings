@@ -99,6 +99,11 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Install theme before anything else
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        Boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+        this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
+
         // Do not restore any state/cache beyond what we explicitely control as an attempt to fix
         // spurious display of psalms in "hymnes" for instance on restore days after.
         // https://stackoverflow.com/questions/15519214/prevent-fragment-recovery-in-android
@@ -119,7 +124,6 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // load saved version, if any
         Resources res = getResources();
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
         settings.registerOnSharedPreferenceChangeListener(this);
         savedVersion = settings.getInt(SyncPrefActivity.KEY_APP_VERSION, -1);
 
@@ -582,6 +586,8 @@ public class LecturesActivity extends AppCompatActivity implements
             SharedPreferences.Editor editor = settings.edit();
             editor.putLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
             editor.apply();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE)) {
+            recreate();
         }
     }
 
