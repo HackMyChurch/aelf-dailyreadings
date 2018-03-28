@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -254,6 +256,15 @@ public class LecturesActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        // Task switcher color for Android >= 21
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap appIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+            String appName = getString(R.string.app_name);
+            int appColor = getResources().getColor(R.color.dark_aelf_primary_dark);
+            ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(appName, appIcon, appColor);
+            setTaskDescription(taskDescription);
+        }
 
         // Turn on periodic toolbar_main caching
         if (mAccount != null) {
