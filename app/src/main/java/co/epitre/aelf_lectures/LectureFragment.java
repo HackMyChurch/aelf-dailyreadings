@@ -226,6 +226,18 @@ public class LectureFragment extends Fragment implements
                         "   display: block;" +
                         "   margin-bottom: 5px;" +
                         "}" +
+                        // Highlight the current position in the lecture. This is hint for the user
+                        ":focus {" +
+                        "    outline: none;" +
+                        "    border-left: 2px "+color_text_accent+" solid;" +
+                        "    margin-left: -4px;" +
+                        "}" +
+                        ".line:focus, div.antienne:focus {" +
+                        "    padding-left: 2px;" +
+                        "}" +
+                        ".line-wrap:focus {" +
+                        "    padding-left: 27px;" +
+                        "}" +
                         ".line-wrap {" +
                         "   display: block;" +
                         "   padding-left: 25px;" +
