@@ -248,8 +248,9 @@ public class LectureFragment extends Fragment implements
                         "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked
                         "}" +
                         ".antienne-title {" + // antienne
-                        "    color: "+color_text_accent+";" +
+                        "   color: "+color_text_accent+";" +
                         "   font-style: italic;" +
+                        "   font-weight: bold;" +
                         "} " +
                         "</style>" +
                     "</head>" +
