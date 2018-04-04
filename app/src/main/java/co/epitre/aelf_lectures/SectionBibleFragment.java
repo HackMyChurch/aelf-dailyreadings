@@ -57,9 +57,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Enable Dom Storage https://stackoverflow.com/questions/33079762/android-webview-uncaught-typeerror-cannot-read-property-getitem-of-null
         webSettings.setDomStorageEnabled(true);
 
-        // TEST different settings
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true); // does not solve the dropdown menu pb
-
         // Enable remote debugging
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             WebView.setWebContentsDebuggingEnabled(true);
@@ -71,4 +68,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
     // TODO: check if back button in Bible's webview goes back in "history"
+    // TODO: Bug : webview reloads when orientation changes
+    // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
+    // TODO : Test Bible on tablet !
 }

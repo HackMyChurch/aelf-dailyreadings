@@ -14742,7 +14742,7 @@ img {
 
 @media(max-width:767px) {
     .block-summary .block-bible-navigation.chapter ul.scroll {
-        height: 48vh
+        height: 230%
     }
     .block-summary .block-bible-navigation.chapter ul.scroll li {
         display: block;
@@ -15246,7 +15246,7 @@ img {
     border-radius: 0;
     border: 0;
     background: rgba(115, 115, 115, 0.93);
-    max-height: 65vh;
+    max-height: 1200%;
     overflow-y: scroll
 }
 
