@@ -84,7 +84,10 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
 
-    // TODO: Bug : webview reloads when orientation changes
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
+    // TODO : Add support for pinch to zoom in Bible (or at least buttons zooming)
     // TODO : Test Bible on tablet !
+    // TODO : Link daily readings from mass and offices to Bible
+    // TODO : Intent filter for opening bible link in app...
+    // TODO : Add search in Bible function...
 }
