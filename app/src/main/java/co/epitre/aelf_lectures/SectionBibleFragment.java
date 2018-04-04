@@ -66,8 +66,24 @@ public class SectionBibleFragment extends SectionFragmentBase {
         mWebView.loadUrl("file:///android_asset/www/index.html");
         return view;
     }
+    // Make the back button goes back in webview's history
+    /**
+     * Back pressed send from activity.
+     *
+     * @return if event is consumed, it will return true.
+     * https://www.skoumal.net/en/android-handle-back-press-in-fragment/
+     */
+    @Override
+    public boolean onBackPressed() {
+        if (mWebView.canGoBack()) {
+            mWebView.goBack();
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-    // TODO: check if back button in Bible's webview goes back in "history"
+
     // TODO: Bug : webview reloads when orientation changes
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
     // TODO : Test Bible on tablet !

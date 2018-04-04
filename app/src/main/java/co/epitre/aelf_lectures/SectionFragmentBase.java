@@ -61,4 +61,11 @@ public abstract class SectionFragmentBase extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
     }
+    /**
+     * Could handle back press.
+     * @return true if back press was handled
+     */
+    public boolean onBackPressed() {
+        return false;
+    }
 }
