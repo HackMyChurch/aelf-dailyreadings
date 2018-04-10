@@ -56,6 +56,6 @@ du type: "http://192.168.1.12".
 Licence
 -------
 
-MIT, 2013-2015 Jean-Tiare Le Bigot <jt@yadutaf.fr>
+MIT, 2013-2018 Jean-Tiare Le Bigot <jt@yadutaf.fr>
 
 
