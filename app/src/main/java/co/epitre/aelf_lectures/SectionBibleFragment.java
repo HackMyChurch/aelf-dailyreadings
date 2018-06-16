@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import static co.epitre.aelf_lectures.LecturesActivity.TAG;
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -22,6 +24,13 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Required empty public constructor
         // http://kosalgeek.com/webview-fragment-android-studio/ §6 L18
     }
+    // OnPageFinished info : https://stackoverflow.com/questions/32956073/why-is-the-onpagefinished-method-not-recognized
+    //public class MyBrowser extends WebViewClient {
+        //@Override
+        //public void onPageFinished(WebView view, String url) {
+        //}
+
+
     /**
      * Global managers / resources
      */
@@ -48,8 +57,24 @@ public class SectionBibleFragment extends SectionFragmentBase {
         View view = inflater.inflate(R.layout.fragment_section_bible, container, false);
         mWebView = view.findViewById(R.id.webView);
 
+        // Dark theme support
+        final boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+
         // Force links and redirects to open in the WebView instead of in a browser
-        mWebView.setWebViewClient(new WebViewClient());
+        // onPageFinished infos found on https://stackoverflow.com/a/6720004
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished (WebView view, String url) {
+                super.onPageFinished(mWebView, url);
+                if (nightMode) {
+                    mWebView.loadUrl("javascript:document.body.classList.add('dark-theme')");
+                    Log.d(TAG, "Night mode activated");
+                } else {
+                    mWebView.loadUrl("javascript:document.body.classList.remove('dark-theme')");
+                    Log.d(TAG, "Night mode deactivated");
+                }
+            }
+        });
 
         // Enable Javascript
         WebSettings webSettings = mWebView.getSettings();
@@ -66,7 +91,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         mWebView.loadUrl("file:///android_asset/www/index.html");
         return view;
     }
-    // Make the back button goes back in webview's history
+        // Make the back button goes back in webview's history
     /**
      * Back pressed send from activity.
      *
