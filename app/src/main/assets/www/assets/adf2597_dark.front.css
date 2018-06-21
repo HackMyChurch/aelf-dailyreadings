@@ -1,6 +1,6 @@
 .dark-theme .block-summary .block-bible-navigation .nav li.active a {
 
-    background-color: #f9789e;
+    background-color: #d8474e;
     color: #efe9de;
 
 }
@@ -8,6 +8,12 @@
 .dark-theme {
     color: #efe9de;
     background-color: #13171F;
+}
+
+@media (max-width: 767px){
+.dark-theme .block-summary .block-bible-navigation .tab-content {
+    background-color: #13171F;
+    }
 }
 
 body.dark-theme #menu-mobile li a.active {
@@ -24,15 +30,7 @@ body.dark-theme #menu-mobile li a.active:after {
     background-color: #13171F
 }
 
-.dark-theme .block-summary 
-.block-bible-navigation 
-.nav 
-li.active 
-a {
 
-    background-color: #f9789e;
-    color: #efe9de;
-}
 
 .dark-theme  .block-summary .block-bible-navigation .nav li a {
 
@@ -42,26 +40,26 @@ a {
 
 .dark-theme .block-summary .block-bible-navigation .tab-content ol li:first-child a {
 
-    border-top: 1px solid #000;
+    border-top: 1px solid #f9787e;
 
 }
 
 .dark-theme .block-summary .block-bible-navigation .tab-content ol li a {
 
-    border-bottom: 1px solid #1a1c1f;
-    border-right: 34px solid #1a1c1f;
+    border-bottom: 1px solid #f9787e;
+    border-right: 34px solid #13171f;
 
 }
 
 .dark-theme .block-summary .block-bible-navigation .tab-content a {
 
-    color: #000;
+    color: #efe9de;
 
 }
 
 .dark-theme .block-summary .block-bible-navigation.chapter .others-books {
 
-    background: #d8474e;
+    background: #db595f;
     color: #efe9de;
 
 }
@@ -70,6 +68,7 @@ a {
 .dark-theme .block-summary .block-bible-navigation.chapter ul.scroll {
     background: #13171f;
     color: #efe9de;
+    box-shadow: 1px 1px 1px 0px #efe9de;
     }
 }
 
@@ -81,7 +80,7 @@ a {
 
 .dark-theme .block-summary .block-bible-navigation.chapter ul a.active {
 
-    background: #f9789e;
+    background: #df6b71;
     color: #efe9de;
 
 }
@@ -94,7 +93,7 @@ body.dark-theme #right-col .dropdown.selector.dropdown-menu-mobile .dropdown-tog
 
 body.dark-theme #right-col .dropdown.selector.dropdown-menu-mobile {
 
-    background: #d8474e;
+    background: #db595f;
     
 }
 
@@ -132,19 +131,19 @@ body.dark-theme #right-col .dropdown.selector.dropdown-menu-mobile {
 
 .dark-theme .verse_number {
 
-    color: #f9789e;
+    color: #df6b71;
  
 }
 
 .dark-theme .block-single-reading #pagination span {
 
     color: #efe9de;
-    background: #000;
+    background: #d8474e;
 
 }
 
 .dark-theme .btn-aelf.btn-red {
-    background-color: #f9789e
+    background-color: #df6b71;
 }
 
 .dark-theme .btn-aelf.btn-red:hover, .btn-aelf.btn-red:focus, .btn-aelf.btn-red:active {
