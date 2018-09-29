@@ -38,7 +38,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="start"
             app:insetForeground="@null"
-            app:itemBackground="@drawable/menu_item_bg"
+            app:itemBackground="?attr/drawableMenuItemBg"
             app:itemTextColor="@drawable/menu_item_text"
             app:menu="@menu/drawer" />
         <!-- app:headerLayout="@layout/my_drawer_header" -->

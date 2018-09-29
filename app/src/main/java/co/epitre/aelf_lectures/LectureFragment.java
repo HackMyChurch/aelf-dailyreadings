@@ -149,7 +149,7 @@ public class LectureFragment extends Fragment implements
                         "<style type=\"text/css\">" +
                         "body{" +
                         "	margin:24px;" +
-                        "	background-color: transparent;" +
+                        "	background-color: "+color_text_bg+";" +
                         "   color: "+color_text_fg+";" +
                         "   font-family: sans-serif;" +
                         "	font-size: 15px;" + // regular body

@@ -18,6 +18,8 @@
         <item name="actionBarStyle">@style/AelfActionBarLight</item>
         <item name="toolbarStyle">@style/AelfActionBar</item>
         <item name="tabstripStyle">@style/AelfTabStripLight</item>
+        <item name="drawableMenuItemBg">@drawable/menu_item_bg_light</item>
+        <item name="drawableButtonShape">@drawable/button_shape_light</item>
     </style>
 
     <!-- Application theme. -->
