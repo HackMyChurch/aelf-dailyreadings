@@ -58,23 +58,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         super(context, autoInitialize, allowParallelSyncs);
     }
 
-    // Sync one reading for the day
+    // Sync one reading for the day, if it is not yet in the cache or is in the current week.
     private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) throws InterruptedException {
-        // Load from network, if not in cache and not outdated
-        if(!mController.isLecturesInCache(what, when, false)) {
-            try {
-                Log.i(TAG, "Starting sync for " + what.urlName()+" for "+when.toIsoString());
-                mController.loadLecturesFromNetwork(what, when);
-            } catch (IOException e) {
-                if (e.getCause() instanceof InterruptedException) {
-                    throw (InterruptedException) e.getCause();
-                }
-                // Error already propagated to Sentry. Do not propagate twice !
-                Log.e(TAG, "I/O error while syncing");
-                syncResult.stats.numIoExceptions++;
+        // Do we need to refresh
+        if (mController.isLecturesInCache(what, when, false)) {
+            if (when.isWithin7NextDays()) {
+                // We always load for this week to allow corrections made by volunteers to
+                // eventually reach the phones.
+                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" REFRESHING (<7 days)");
+            } else {
+                // This is more than a week ahead and we already have a version in the cache
+                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
+                return;
             }
-        } else {
-            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
+        }
+
+        // Load from the network
+        try {
+            Log.i(TAG, "Starting sync for " + what.urlName()+" for "+when.toIsoString());
+            mController.loadLecturesFromNetwork(what, when);
+        } catch (IOException e) {
+            if (e.getCause() instanceof InterruptedException) {
+                throw (InterruptedException) e.getCause();
+            }
+            Log.e(TAG, "I/O error while syncing");
+            syncResult.stats.numIoExceptions++;
         }
     }
 
