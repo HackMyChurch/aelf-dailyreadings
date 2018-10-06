@@ -8,6 +8,11 @@ body {
     margin: 0
 }
 
+/* AELF Daily reading patch: disable search box */
+.block-bible-search {
+    display: none
+}
+
 article,
 aside,
 details,
