@@ -25,7 +25,7 @@ body.dark-theme #menu-mobile li a.active:after {
     border-color: #d8474e transparent transparent transparent;
 }
 
-.dark-theme body {
+.dark-theme body, .dark-theme .block-summary {
     color: #efe9de;
     background-color: #13171F
 }
@@ -36,19 +36,6 @@ body.dark-theme #menu-mobile li a.active:after {
 
     background: #c4c4c4;
     color: #000;
-}
-
-.dark-theme .block-summary .block-bible-navigation .tab-content ol li:first-child a {
-
-    border-top: 1px solid #f9787e;
-
-}
-
-.dark-theme .block-summary .block-bible-navigation .tab-content ol li a {
-
-    border-bottom: 1px solid #f9787e;
-    border-right: 34px solid #13171f;
-
 }
 
 .dark-theme .block-summary .block-bible-navigation .tab-content a {
