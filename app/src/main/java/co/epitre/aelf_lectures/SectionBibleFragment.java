@@ -22,14 +22,7 @@ import static co.epitre.aelf_lectures.LecturesActivity.TAG;
 public class SectionBibleFragment extends SectionFragmentBase {
     public SectionBibleFragment(){
         // Required empty public constructor
-        // http://kosalgeek.com/webview-fragment-android-studio/ §6 L18
     }
-    // OnPageFinished info : https://stackoverflow.com/questions/32956073/why-is-the-onpagefinished-method-not-recognized
-    //public class MyBrowser extends WebViewClient {
-        //@Override
-        //public void onPageFinished(WebView view, String url) {
-        //}
-
 
     /**
      * Global managers / resources
@@ -86,7 +79,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         mWebView.loadUrl("file:///android_asset/www/index.html");
         return view;
     }
-        // Make the back button goes back in webview's history
+
     /**
      * Back pressed send from activity.
      *
