@@ -17,6 +17,7 @@
     <!-- Drawer items -->
     <string name="nav_mass">Messe</string>
     <string name="nav_informations">Informations</string>
+    <string name="nav_bible">Bible</string>
     <string name="nav_title_offices">Liturgies des heures</string>
     <string name="nav_lectures">Lectures</string>
     <string name="nav_laudes">Laudes</string>

@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -40,6 +41,8 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
+import java.util.List;
 
 import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
@@ -511,6 +514,11 @@ public class LecturesActivity extends AppCompatActivity implements
                 setSection(sectionOfficeFragment);
             }
             return true;
+        } else if (item.getItemId() == R.id.nav_bible) {
+            if (!(sectionFragment instanceof SectionBibleFragment)) {
+                setSection(new SectionBibleFragment());
+            }
+            return true;
         } else {
             // This is something else :)
             return false; // Do not select item as we do not know what this is...
@@ -663,5 +671,27 @@ public class LecturesActivity extends AppCompatActivity implements
         accountManager.addAccountExplicitly(newAccount, null, null);
         return newAccount;
     }
+    /**
+     * Back Button
+     */
+    @Override
+    public void onBackPressed() {
 
+        List fragmentList = getSupportFragmentManager().getFragments();
+
+        boolean handled = false;
+        for(Object f : fragmentList) {
+            if(f instanceof SectionFragmentBase) {
+                handled = ((SectionFragmentBase)f).onBackPressed();
+
+                if(handled) {
+                    break;
+                }
+            }
+        }
+
+        if(!handled) {
+            super.onBackPressed();
+        }
+    }
 }
