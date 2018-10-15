@@ -39,7 +39,7 @@ public class NetworkStatusMonitor extends BroadcastReceiver {
         void onNetworkStatusChanged(NetworkStatusEvent networkStatusEvent);
     }
 
-    List<NetworkStatusChangedListener> networkStatusChangeListeners = new LinkedList();
+    List<NetworkStatusChangedListener> networkStatusChangeListeners = new LinkedList<>();
 
     // Internal state
     private long listeners = 0;
