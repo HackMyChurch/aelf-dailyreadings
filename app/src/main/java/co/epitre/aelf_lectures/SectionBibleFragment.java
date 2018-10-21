@@ -10,16 +10,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 // WebView dependencies
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import static co.epitre.aelf_lectures.LecturesActivity.TAG;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Created by jean-tiare on 12/03/18.
  */
 
 public class SectionBibleFragment extends SectionFragmentBase {
+    public static final String TAG = "SectionBibleFragment";
+
     public SectionBibleFragment(){
         // Required empty public constructor
     }
@@ -54,23 +59,31 @@ public class SectionBibleFragment extends SectionFragmentBase {
         final boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
 
         // Force links and redirects to open in the WebView instead of in a browser
-        // onPageFinished infos found on https://stackoverflow.com/a/6720004
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageFinished (WebView view, String url) {
-                super.onPageFinished(mWebView, url);
-                if (nightMode) {
-                    mWebView.loadUrl("javascript:document.body.classList.add('dark-theme')");
-                    Log.d(TAG, "Night mode activated");
-                } else {
-                    mWebView.loadUrl("javascript:document.body.classList.remove('dark-theme')");
-                    Log.d(TAG, "Night mode deactivated");
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+                if (url.equals("file:///android_asset/www/virtual/application.css")) {
+                    // Load the CSS file corresponding to the selected theme
+                    String themeName = nightMode ? "dark":"light";
+                    try {
+                        InputStream styleStream = getActivity().getAssets().open("www/assets/application_"+themeName+".css");
+                        return new WebResourceResponse("text/css", "UTF-8", styleStream);
+                    } catch (IOException e) {
+                        Log.e(TAG, "Failed to load "+themeName+" theme", e);
+                        return null;
+                    }
                 }
+
+                return super.shouldInterceptRequest(view, url);
             }
         });
+        // Clear the cache on theme change so that we can inject our own CSS
+        mWebView.clearCache(true);
+
+        // Tweak settings
+        WebSettings webSettings = mWebView.getSettings();
 
         // Enable Javascript
-        WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         // Enable Dom Storage https://stackoverflow.com/questions/33079762/android-webview-uncaught-typeerror-cannot-read-property-getitem-of-null
         webSettings.setDomStorageEnabled(true);
