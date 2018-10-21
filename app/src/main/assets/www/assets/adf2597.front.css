@@ -14536,7 +14536,12 @@ img {
 }
 
 .block-summary .block-bible-navigation .tab-content a {
-    color: #000
+    color: #000;
+
+    /* AELF Daily reading patch: make it easier to finger-click */
+    display: block;
+    text-decoration: none;
+    padding: 9px 5px 9px 15px
 }
 
 .block-summary .block-bible-navigation .tab-content a:hover,
