@@ -1,10 +1,3 @@
-.block-summary .block-bible-navigation .nav li.active a {
-
-    background-color: #d8474e;
-    color: #efe9de;
-
-}
-
 body {
     color: #efe9de;
     background-color: #13171F;
@@ -31,11 +24,15 @@ body, .block-summary {
 }
 
 
-
- .block-summary .block-bible-navigation .nav li a {
-
+/* Main menu: book category selector */
+.block-summary .block-bible-navigation .nav li a {
     background: #c4c4c4;
     color: #000;
+}
+
+.block-summary .block-bible-navigation .nav li.active a {
+    background-color: #d8474e;
+    color: #efe9de;
 }
 
 .block-summary .block-bible-navigation .tab-content a {
