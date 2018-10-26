@@ -56,6 +56,26 @@ public class SectionBibleFragment extends SectionFragmentBase {
         View view = inflater.inflate(R.layout.fragment_section_bible, container, false);
         mWebView = view.findViewById(R.id.webView);
 
+        // Get webview settings settings
+        final WebSettings webSettings = mWebView.getSettings();
+
+        // Zoom support
+        mWebView.setOnTouchListener(new PinchToZoomListener(getContext()) {
+            public int onZoomStart() {
+                return super.onZoomStart();
+            }
+
+            public void onZoomEnd(int zoomLevel) {
+                super.onZoomEnd(zoomLevel);
+                webSettings.setTextZoom(zoomLevel);
+            }
+
+            public void onZoom(int zoomLevel) {
+                super.onZoom(zoomLevel);
+                webSettings.setTextZoom(zoomLevel);
+            }
+        });
+
         // Dark theme support
         final boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
 
@@ -80,9 +100,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
         });
         // Clear the cache on theme change so that we can inject our own CSS
         mWebView.clearCache(true);
-
-        // Tweak settings
-        WebSettings webSettings = mWebView.getSettings();
 
         // Enable Javascript
         webSettings.setJavaScriptEnabled(true);
@@ -142,7 +159,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
-    // TODO : Add support for pinch to zoom in Bible (or at least buttons zooming)
     // TODO : Test Bible on tablet !
     // TODO : Link daily readings from mass and offices to Bible
     // TODO : Intent filter for opening bible link in app...
