@@ -1,10 +1,11 @@
 package co.epitre.aelf_lectures;
 
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,8 +34,8 @@ public class SectionBibleFragment extends SectionFragmentBase {
      * Global managers / resources
      */
     SharedPreferences settings = null;
-
     WebView mWebView;
+    int activityRequestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -109,6 +110,36 @@ public class SectionBibleFragment extends SectionFragmentBase {
         }
     }
 
+    /**
+     * Lifecycle
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        // Get current requested orientation, so that we can restore it
+        activityRequestedOrientation = activity.getRequestedOrientation();
+
+        // Disable landscape view, this is currently broken
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        activity.setRequestedOrientation(activityRequestedOrientation);
+    }
 
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
     // TODO : Add support for pinch to zoom in Bible (or at least buttons zooming)
@@ -116,4 +147,5 @@ public class SectionBibleFragment extends SectionFragmentBase {
     // TODO : Link daily readings from mass and offices to Bible
     // TODO : Intent filter for opening bible link in app...
     // TODO : Add search in Bible function...
+    // TODO (later): support landscape orientation
 }
