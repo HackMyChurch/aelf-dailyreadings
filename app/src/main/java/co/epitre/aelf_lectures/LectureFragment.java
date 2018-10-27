@@ -4,20 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
@@ -98,15 +94,6 @@ public class LectureFragment extends Fragment implements
         setCurrentZoom(zoom);
     }
 
-
-    // Helper: get zoom as percent, even on older phones
-    protected int getCurrentZoom() {
-        if (websettings == null) {
-            return -1;
-        }
-
-        return websettings.getTextZoom();
-    }
     // Helper: set zoom as percent, even on older phones
     protected void setCurrentZoom(int zoom) {
         if (websettings == null) {
@@ -383,75 +370,23 @@ public class LectureFragment extends Fragment implements
             }
         });
 
-        class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-            private int initialScale;
-            private int newZoom;
-
-            @Override
-            public boolean onScale(ScaleGestureDetector detector) {
-                // Compute new zoom
-                float scale = detector.getScaleFactor();
-                newZoom = (int)(initialScale * scale);
-
-                // Minimum zoom is 100%. This helps keep something at least a little readable
-                // and intuitively reset to default zoom level.
-                if (newZoom < 100) {
-                    newZoom = 100;
-                }
-
-                // Apply zoom
-                Log.d(TAG, "pinch scaling factor: "+scale+"; new zoom: "+newZoom);
-                setCurrentZoom(newZoom);
-
-                // Do not restart scale factor to 1, until the user removed his fingers
-                return false;
-            }
-
-            @Override
-            public boolean onScaleBegin(ScaleGestureDetector detector) {
-                initialScale = getCurrentZoom();
-
-                // Disable "Swipe to refresh" to prevent accidental refresh while zooming
+        lectureView.setOnTouchListener(new PinchToZoomListener(context) {
+            public int onZoomStart() {
                 isZooming = true;
                 refreshSwipeToRefreshEnabled();
-
-                return super.onScaleBegin(detector);
+                return super.onZoomStart();
             }
 
-            @Override
-            public void onScaleEnd(ScaleGestureDetector detector) {
-                super.onScaleEnd(detector);
-
-                // Re-enable "Swipe to refresh"
+            public void onZoomEnd(int zoomLevel) {
+                super.onZoomEnd(zoomLevel);
                 isZooming = false;
                 refreshSwipeToRefreshEnabled();
-
-                // Save new scale preference
-                Context context = getActivity();
-                if(context == null) {
-                    return; // we're a dead object
-                }
-
-                // load current zoom level
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, newZoom);
-                editor.apply();
+                setCurrentZoom(zoomLevel);
             }
-        }
 
-        final ScaleGestureDetector mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
-        if (Build.VERSION.SDK_INT >= 23) {
-            mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
-        }
-        if (Build.VERSION.SDK_INT >= 19) {
-            mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
-        }
-
-        lectureView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mScaleDetector.onTouchEvent(event);
-                return mScaleDetector.isInProgress();
+            public void onZoom(int zoomLevel) {
+                super.onZoom(zoomLevel);
+                setCurrentZoom(zoomLevel);
             }
         });
 

@@ -1,0 +1,18 @@
+/* Light theme file */
+
+/* Main menu: book category selector */
+.block-summary .block-bible-navigation .nav li a {
+    background: #efe9de;
+    color: #000000;
+}
+
+.block-summary .block-bible-navigation .nav li.active a {
+    background-color: #bf2329;
+    color: #efe9de;
+}
+
+/* Main page: clicked book name */
+.block-summary .block-bible-navigation .tab-content a:focus {
+    background-color: #bf2329;
+    color: #efe9de;
+}

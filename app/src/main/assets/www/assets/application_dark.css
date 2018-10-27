@@ -1,0 +1,153 @@
+body {
+    color: #efe9de;
+    background-color: #13171F;
+}
+
+@media (max-width: 767px){
+.block-summary .block-bible-navigation .tab-content {
+    background-color: #13171F;
+    }
+}
+
+#menu-mobile li a.active {
+    background-color: #d8474e;
+    color: #efe9de;
+}
+
+#menu-mobile li a.active:after {
+    border-color: #d8474e transparent transparent transparent;
+}
+
+body, .block-summary {
+    color: #efe9de;
+    background-color: #13171F
+}
+
+
+/* Main menu: book category selector */
+.block-summary .block-bible-navigation .nav li a {
+    background: #c4c4c4;
+    color: #000;
+}
+
+.block-summary .block-bible-navigation .nav li.active a {
+    background-color: #d8474e;
+    color: #efe9de;
+}
+
+.block-summary .block-bible-navigation .tab-content a {
+
+    color: #efe9de;
+
+}
+
+.block-summary .block-bible-navigation.chapter .others-books {
+
+    background: #db595f;
+    color: #efe9de;
+
+}
+
+@media (max-width: 991px){
+.block-summary .block-bible-navigation.chapter ul.scroll {
+    background: #13171f;
+    color: #efe9de;
+    box-shadow: 1px 1px 1px 0px #efe9de;
+    }
+}
+
+.block-summary .block-bible-navigation.chapter ul a, .block-summary .block-bible-navigation.chapter ul a:hover, .block-summary .block-bible-navigation.chapter ul a:focus, .block-summary .block-bible-navigation.chapter ul a:active {
+
+    color: #efe9de;
+
+}
+
+.block-summary .block-bible-navigation.chapter ul a.active {
+
+    background: #df6b71;
+    color: #efe9de;
+
+}
+
+#right-col .dropdown.selector.dropdown-menu-mobile .dropdown-toggle {
+
+    color: #efe9de;
+  
+}
+
+#right-col .dropdown.selector.dropdown-menu-mobile {
+
+    background: #db595f;
+    
+}
+
+#right-col .dropdown.selector.dropdown-menu-mobile .dropdown-menu a, #right-col .dropdown.selector.dropdown-menu-mobile .dropdown-menu span {
+    color: #efe9de;
+}
+
+.h1 .small,
+.h1 small,
+.h2 .small,
+.h2 small,
+.h3 .small,
+.h3 small,
+.h4 .small,
+.h4 small,
+.h5 .small,
+.h5 small,
+.h6 .small,
+.h6 small,
+h1 .small,
+h1 small,
+h2 .small,
+h2 small,
+h3 .small,
+h3 small,
+h4 .small,
+h4 small,
+h5 .small,
+h5 small,
+h6 .small,
+h6 small {
+
+    color: #777
+}
+
+.verse_number {
+
+    color: #df6b71;
+ 
+}
+
+.block-single-reading #pagination span {
+
+    color: #efe9de;
+    background: #d8474e;
+
+}
+
+.btn-aelf.btn-red {
+    background-color: #df6b71;
+}
+
+.btn-aelf.btn-red:hover, .btn-aelf.btn-red:focus, .btn-aelf.btn-red:active {
+
+    background-color: #000 !important;
+    color: #efe9de !important;
+
+}
+
+.btn-aelf {
+
+    background-color: #000;
+    color: #efe9de !important;
+
+}
+.row {
+    background-color: #13171F;
+}
+
+.block-single-reading {
+    background: #efe9de;
+    background: #13171F;
+}
