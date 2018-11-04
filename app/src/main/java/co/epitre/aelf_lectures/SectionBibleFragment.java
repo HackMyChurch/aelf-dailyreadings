@@ -1,14 +1,21 @@
 package co.epitre.aelf_lectures;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 // WebView dependencies
@@ -21,8 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LecturesController;
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -30,6 +35,7 @@ import co.epitre.aelf_lectures.data.LecturesController;
 
 public class SectionBibleFragment extends SectionFragmentBase {
     public static final String TAG = "SectionBibleFragment";
+    public static final String BASE_RES_URL = "file:///android_asset/www/";
 
     public SectionBibleFragment(){
         // Required empty public constructor
@@ -118,7 +124,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
             mWebView.restoreState(savedInstanceState);
         } else {
             // Load default page
-            mWebView.loadUrl("file:///android_asset/www/index.html");
+            mWebView.loadUrl(BASE_RES_URL + "index.html");
         }
         return view;
     }
@@ -162,12 +168,74 @@ public class SectionBibleFragment extends SectionFragmentBase {
         }
 
         // Load requested page
-        mWebView.loadUrl("file:///android_asset/www/" + parsedUrl);
+        mWebView.loadUrl(BASE_RES_URL + parsedUrl);
     }
 
-    /**
-     * Lifecycle
-     */
+    //
+    // Option menu
+    //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Inflate the menu; this adds items to the action bar
+        inflater.inflate(R.menu.toolbar_bible, menu);
+
+        // Make the share image white
+        Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
+        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
+        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_share:
+                return onShare();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    //
+    // Events
+    //
+
+    public boolean onShare() {
+        if (mWebView == null) {
+            return false;
+        }
+
+        // Get current webview URL
+        String webviewUrl = mWebView.getUrl();
+        webviewUrl = webviewUrl.substring(BASE_RES_URL.length() - 1, webviewUrl.length()- ".html".length());
+        if (webviewUrl.equals("/index")) {
+            webviewUrl = "/bible";
+        }
+
+        // Get current webview title
+        String webviewTitle = mWebView.getTitle();
+
+        // Build share message
+        String websiteUrl = "https://www.aelf.org" + webviewUrl;
+        String message = webviewTitle + ": " + websiteUrl;
+        String subject = webviewTitle;
+
+        // Create the intent
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
+
+        // All done !
+        return true;
+    }
+
+    //
+    // Lifecycle
+    //
+
     @Override
     public void onResume() {
         super.onResume();
