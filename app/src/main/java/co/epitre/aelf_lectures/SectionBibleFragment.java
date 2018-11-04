@@ -106,8 +106,12 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Enable Dom Storage https://stackoverflow.com/questions/33079762/android-webview-uncaught-typeerror-cannot-read-property-getitem-of-null
         webSettings.setDomStorageEnabled(true);
 
-        // Use local resource
-        mWebView.loadUrl("file:///android_asset/www/index.html");
+        // Load webview
+        if (savedInstanceState == null) {
+            mWebView.loadUrl("file:///android_asset/www/index.html");
+        } else {
+            mWebView.restoreState(savedInstanceState);
+        }
         return view;
     }
 
@@ -156,6 +160,14 @@ public class SectionBibleFragment extends SectionFragmentBase {
         }
 
         activity.setRequestedOrientation(activityRequestedOrientation);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mWebView != null) {
+            mWebView.saveState(outState);
+        }
     }
 
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
