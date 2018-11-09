@@ -291,11 +291,16 @@ public class LecturesActivity extends AppCompatActivity implements
             isMultiWindow = isInMultiWindowMode();
         }
 
+        // Get intent URI, if any
+        Uri uri = getIntent().getData();
+
         // Finally, load inner fragment
-        if (savedInstanceState == null) {
-            setSection(new SectionOfficesFragment());
-        } else {
+        if (uri != null) {
+            onLink(uri);
+        } else if (savedInstanceState != null) {
             restoreSection();
+        } else {
+            setSection(new SectionOfficesFragment());
         }
     }
 
@@ -566,11 +571,15 @@ public class LecturesActivity extends AppCompatActivity implements
     public boolean onLectureLink(Uri link) {
         // This comes from a tap event --> revert
         toggleFullscreen();
+        return onLink(link);
+    }
 
+    private boolean onLink(Uri link) {
         // Handle special URLs
         String scheme = link.getScheme();
         String host = link.getHost();
         String path = link.getPath();
+        String[] chunks = path.split("/");
 
         if (scheme.equals("aelf")) {
             if (host.equals("app.epitre.co")) {
@@ -581,9 +590,23 @@ public class LecturesActivity extends AppCompatActivity implements
                     onApplyOptimalSyncSettings();
                 }
             }
-        } else {
-            // Go to the reading
-            sectionFragment.onLink(link);
+        } else if (host.equals("www.aelf.org")) {
+            // Route to the appropriate fragment
+            if (chunks.length >= 2 && chunks[1].equals("bible")) {
+                // Bible link
+                if (!(sectionFragment instanceof SectionBibleFragment)) {
+                    setSection(new SectionBibleFragment());
+                } else {
+                    sectionFragment.onLink(link);
+                }
+            } else if (chunks.length == 1 || chunks.length >= 2 && chunks[1].matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
+                // Home page or Office link
+                if (!(sectionFragment instanceof SectionOfficesFragment)) {
+                    setSection(new SectionOfficesFragment());
+                } else {
+                    sectionFragment.onLink(link);
+                }
+            }
         }
 
         // All good

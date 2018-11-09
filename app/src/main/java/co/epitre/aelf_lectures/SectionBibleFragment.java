@@ -1,13 +1,21 @@
 package co.epitre.aelf_lectures;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 // WebView dependencies
@@ -18,6 +26,8 @@ import android.webkit.WebViewClient;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -25,6 +35,7 @@ import java.io.InputStream;
 
 public class SectionBibleFragment extends SectionFragmentBase {
     public static final String TAG = "SectionBibleFragment";
+    public static final String BASE_RES_URL = "file:///android_asset/www/";
 
     public SectionBibleFragment(){
         // Required empty public constructor
@@ -43,11 +54,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
         // Load settings
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-
-        Uri uri = activity.getIntent().getData();
-        if (uri != null) {
-            // Do something like loading a specific reference ?
-        }
 
         // Set Section title (Can be anywhere in the class !)
         actionBar.setTitle("Bible");
@@ -106,8 +112,20 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Enable Dom Storage https://stackoverflow.com/questions/33079762/android-webview-uncaught-typeerror-cannot-read-property-getitem-of-null
         webSettings.setDomStorageEnabled(true);
 
-        // Use local resource
-        mWebView.loadUrl("file:///android_asset/www/index.html");
+        // Get intent link, if any
+        Uri uri = activity.getIntent().getData();
+
+        // Load webview
+        if (uri != null) {
+            // Parse link and open linked page
+            onLink(uri);
+        } else if (savedInstanceState != null) {
+            // Restore state
+            mWebView.restoreState(savedInstanceState);
+        } else {
+            // Load default page
+            mWebView.loadUrl(BASE_RES_URL + "index.html");
+        }
         return view;
     }
 
@@ -127,9 +145,97 @@ public class SectionBibleFragment extends SectionFragmentBase {
         }
     }
 
-    /**
-     * Lifecycle
-     */
+    @Override
+    public void onLink(Uri uri) {
+        String path = uri.getPath();
+        String host = uri.getHost();
+
+        String parsedUrl = "index.html";
+
+        if (host.equals("www.aelf.org")) {
+            // AELF Website
+            String[] chunks = path.split("/");
+
+            if (chunks.length >= 2 && chunks[1].equals("bible")) {
+                if (chunks.length == 2) {
+                    // Bible home page
+                    parsedUrl = "index.html";
+                } else {
+                    parsedUrl = TextUtils.join("/", Arrays.copyOfRange(chunks, 1, chunks.length));
+                    parsedUrl += ".html";
+                }
+            }
+        }
+
+        // Load requested page
+        mWebView.loadUrl(BASE_RES_URL + parsedUrl);
+    }
+
+    //
+    // Option menu
+    //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Inflate the menu; this adds items to the action bar
+        inflater.inflate(R.menu.toolbar_bible, menu);
+
+        // Make the share image white
+        Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
+        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
+        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_share:
+                return onShare();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    //
+    // Events
+    //
+
+    public boolean onShare() {
+        if (mWebView == null) {
+            return false;
+        }
+
+        // Get current webview URL
+        String webviewUrl = mWebView.getUrl();
+        webviewUrl = webviewUrl.substring(BASE_RES_URL.length() - 1, webviewUrl.length()- ".html".length());
+        if (webviewUrl.equals("/index")) {
+            webviewUrl = "/bible";
+        }
+
+        // Get current webview title
+        String webviewTitle = mWebView.getTitle();
+
+        // Build share message
+        String websiteUrl = "https://www.aelf.org" + webviewUrl;
+        String message = webviewTitle + ": " + websiteUrl;
+        String subject = webviewTitle;
+
+        // Create the intent
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
+
+        // All done !
+        return true;
+    }
+
+    //
+    // Lifecycle
+    //
+
     @Override
     public void onResume() {
         super.onResume();
@@ -158,10 +264,17 @@ public class SectionBibleFragment extends SectionFragmentBase {
         activity.setRequestedOrientation(activityRequestedOrientation);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mWebView != null) {
+            mWebView.saveState(outState);
+        }
+    }
+
     // TODO : Fix shadow on "Autres Livres" dropdown menu not showing on real phone
     // TODO : Test Bible on tablet !
     // TODO : Link daily readings from mass and offices to Bible
-    // TODO : Intent filter for opening bible link in app...
     // TODO : Add search in Bible function...
     // TODO (later): support landscape orientation
 }
