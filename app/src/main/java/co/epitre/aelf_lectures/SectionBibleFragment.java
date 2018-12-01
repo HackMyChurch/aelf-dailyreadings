@@ -126,6 +126,21 @@ public class SectionBibleFragment extends SectionFragmentBase {
             // Load default page
             mWebView.loadUrl(BASE_RES_URL + "index.html");
         }
+
+        //Save last URL
+        // onPageFinished infos found on https://stackoverflow.com/a/6720004
+        mWebView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(mWebView, url);
+                String last_url = mWebView.getUrl();
+                Log.d(TAG, "Last page visited is " + last_url);
+                //TODO: Save the value in a persistent storage, maybe sharedpreferences and use it when the webview is re-created.
+            }
+        });
+
+        //TODO: Save scroll position and restore it.
+
         return view;
     }
 
