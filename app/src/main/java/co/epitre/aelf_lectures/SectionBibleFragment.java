@@ -131,11 +131,16 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // onPageFinished infos found on https://stackoverflow.com/a/6720004
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageFinished(WebView view, String url) {
+            public void onPageFinished(WebView view, String url, String KEY_BIBLE_LAST_PAGE) {
                 super.onPageFinished(mWebView, url);
                 String last_url = mWebView.getUrl();
                 Log.d(TAG, "Last page visited is " + last_url);
                 //TODO: Save the value in a persistent storage, maybe sharedpreferences and use it when the webview is re-created.
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString(last_url, KEY_BIBLE_LAST_PAGE);
+                editor.commit();
+                String last_url_key = settings.getString(KEY_BIBLE_LAST_PAGE,"file://default_value_ahahaha");
+                Log.d(TAG,"The last page key is "+last_url_key);
             }
         });
 
