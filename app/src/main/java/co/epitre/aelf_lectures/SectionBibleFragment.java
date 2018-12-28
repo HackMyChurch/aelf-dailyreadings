@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -27,6 +28,8 @@ import android.webkit.WebViewClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+
+import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_BIBLE_LAST_PAGE;
 
 
 /**
@@ -124,23 +127,25 @@ public class SectionBibleFragment extends SectionFragmentBase {
             mWebView.restoreState(savedInstanceState);
         } else {
             // Load default page
-            mWebView.loadUrl(BASE_RES_URL + "index.html");
+            Log.d(TAG,"Loading webview, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
+            mWebView.loadUrl(settings.getString(KEY_BIBLE_LAST_PAGE,(BASE_RES_URL + "index.html")));
         }
 
         //Save last URL
         // onPageFinished infos found on https://stackoverflow.com/a/6720004
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
-            public void onPageFinished(WebView view, String url, String KEY_BIBLE_LAST_PAGE) {
+            public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(mWebView, url);
                 String last_url = mWebView.getUrl();
-                Log.d(TAG, "Last page visited is " + last_url);
+                Log.d(TAG, "last_url is " + last_url);
                 //TODO: Save the value in a persistent storage, maybe sharedpreferences and use it when the webview is re-created.
+                SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
-                editor.putString(last_url, KEY_BIBLE_LAST_PAGE);
-                editor.commit();
-                String last_url_key = settings.getString(KEY_BIBLE_LAST_PAGE,"file://default_value_ahahaha");
-                Log.d(TAG,"The last page key is "+last_url_key);
+                editor.putString(KEY_BIBLE_LAST_PAGE, last_url);
+                editor.apply();
+                Log.d(TAG,"onPageFinished, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
+
             }
         });
 

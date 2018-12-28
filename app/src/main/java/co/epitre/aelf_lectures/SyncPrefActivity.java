@@ -30,6 +30,7 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_APP_CACHE_MIN_VERSION= "min_cache_version";
     public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
+    public static final String KEY_BIBLE_LAST_PAGE = "";
 
 
     @SuppressWarnings("deprecation")
