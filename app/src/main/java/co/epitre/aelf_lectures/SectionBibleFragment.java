@@ -127,6 +127,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
             mWebView.restoreState(savedInstanceState);
         } else {
             // Load default page
+            SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
             Log.d(TAG,"Loading webview, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
             mWebView.loadUrl(settings.getString(KEY_BIBLE_LAST_PAGE,(BASE_RES_URL + "index.html")));
         }
@@ -139,7 +140,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
                 super.onPageFinished(mWebView, url);
                 String last_url = mWebView.getUrl();
                 Log.d(TAG, "last_url is " + last_url);
-                //TODO: Save the value in a persistent storage, maybe sharedpreferences and use it when the webview is re-created.
                 SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString(KEY_BIBLE_LAST_PAGE, last_url);
@@ -148,7 +148,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
             }
         });
-
+        //TODO: Create the following two methods somewhere ; getLastUrl() returning String ; setLastUrl(String last_url)
         //TODO: Save scroll position and restore it.
 
         return view;
