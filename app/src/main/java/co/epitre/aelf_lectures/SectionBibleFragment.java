@@ -148,7 +148,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
             }
         });
-        //TODO: Create the following two methods somewhere ; getLastUrl() returning String ; setLastUrl(String last_url)
         //TODO: Save scroll position and restore it.
 
         return view;
