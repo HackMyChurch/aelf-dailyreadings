@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <android.support.v7.widget.LinearLayoutCompat
+    <androidx.appcompat.widget.LinearLayoutCompat
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/content"
@@ -22,16 +22,16 @@
             android:background="?attr/colorLectureBackground"
             tools:context=".LecturesActivity" >
 
-            <android.support.v4.view.PagerTabStrip
+            <androidx.viewpager.widget.PagerTabStrip
                 android:id="@+id/pager_title_strip"
                 style="?attr/tabstripStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
                 android:paddingBottom="4dp"
-                android:paddingTop="4dp"></android.support.v4.view.PagerTabStrip>
+                android:paddingTop="4dp"></androidx.viewpager.widget.PagerTabStrip>
         </co.epitre.aelf_lectures.LectureViewPager>
-    </android.support.v7.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <RelativeLayout
         android:id="@+id/loadingOverlay"

@@ -3,11 +3,10 @@ package co.epitre.aelf_lectures;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.os.Build;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.view.ContextThemeWrapper;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.view.ContextThemeWrapper;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;

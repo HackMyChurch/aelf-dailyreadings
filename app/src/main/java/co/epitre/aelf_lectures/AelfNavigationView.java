@@ -1,8 +1,8 @@
 package co.epitre.aelf_lectures;
 
 import android.content.Context;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.WindowInsetsCompat;
+import com.google.android.material.navigation.NavigationView;
+import androidx.core.view.WindowInsetsCompat;
 import android.util.AttributeSet;
 
 /**
