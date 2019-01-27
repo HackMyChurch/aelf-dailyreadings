@@ -92,7 +92,7 @@
             android:process=":sync">
             <!-- This intent filter is required. It allows the system to launch our sync service
             as needed. -->
-            <intent-filter>co.epitre.aelf_lectures.sync.StubProvider
+            <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
             <!-- This points to a required XML file which describes our SyncAdapter. -->
