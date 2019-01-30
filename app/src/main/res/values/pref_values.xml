@@ -70,7 +70,7 @@
     <string name="pref_disp_night_mode_title">Mode nuit</string>
 
     <string name="pref_section_sync_title">Mode hors connexion</string>
-    <string name="pref_lectures_title">Lecture à synchroniser</string>
+    <string name="pref_lectures_title">Lectures à synchroniser</string>
     <string name="pref_duree_title">Télécharger à l\'avance</string>
     <string name="pref_conserv_title">Conserver les textes pendant</string>
     <string name="pref_sync_wifi_only_title">WiFi uniquement</string>
@@ -88,7 +88,7 @@
     <string name="pref_section_contact_title">Garder le contact</string>
     <string name="pref_contact_mail_title">Envoyer un e-mail au développeur</string>
     <string name="pref_contact_twitter_title">Suivre @AELF_officiel sur Twitter</string>
-    <string name="pref_contact_mailing_title">S\'abonner au lectures par e-mail</string>
+    <string name="pref_contact_mailing_title">S\'abonner aux lectures par email</string>
 
     <string name="pref_disp_pull_to_refresh_on">Glissez du haut vers le bas pour rafraîchir les lectures</string>
     <string name="pref_disp_pull_to_refresh_off">Utilisez le menu pour raffraîchir les lectures (recommandé)</string>
