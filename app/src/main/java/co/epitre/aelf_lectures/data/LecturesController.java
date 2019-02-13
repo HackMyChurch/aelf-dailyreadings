@@ -68,6 +68,13 @@ public final class LecturesController {
             return this.name.split("_")[1];
         }
 
+        public String aelfUrlName() {
+            if(this.position == 8) {
+                return "informations";
+            }
+            return this.name.split("_")[1];
+        }
+
         public String actionBarName() {
             if(this.position == 6) {
                 return "Vêpres";
