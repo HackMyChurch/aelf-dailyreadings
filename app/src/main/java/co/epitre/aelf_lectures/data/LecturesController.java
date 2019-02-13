@@ -69,8 +69,9 @@ public final class LecturesController {
         }
 
         public String aelfUrlName() {
+            // There is no specific page for the informations, link to the mass
             if(this.position == 8) {
-                return "informations";
+                return "messe";
             }
             return this.name.split("_")[1];
         }
