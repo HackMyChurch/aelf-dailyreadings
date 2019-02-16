@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -23,7 +24,6 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -31,7 +31,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -51,20 +50,18 @@ import co.epitre.aelf_lectures.sync.SyncAdapter;
 public class LecturesActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         LectureFragment.LectureLinkListener,
+        DrawerLayout.DrawerListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = "AELFLecturesActivity";
 
     /**
-     * Gesture detector. Detect single taps that do not look like a dismiss to toggle
-     * full screen mode.
+     * Full screen mode
      */
     private boolean isFocused = true;
     private boolean isFullScreen = true;
     private boolean isMultiWindow = false;
-    private boolean isInLongPress = false;
     private View statusBarBackgroundView = null;
-    private GestureDetectorCompat mGestureDetector;
 
     /**
      * Global managers / resources
@@ -246,7 +243,8 @@ public class LecturesActivity extends AppCompatActivity implements
         drawerView.setNavigationItemSelectedListener(this);
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerToggle.syncState();
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(this);
 
         // Open drawer on toolbar title click for easier migration / discovery
         toolbar.setOnClickListener(new View.OnClickListener() {
@@ -282,9 +280,6 @@ public class LecturesActivity extends AppCompatActivity implements
                 do_manual_sync("outdated");
             }
         }
-
-        // Install gesture detector
-        mGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
 
         // Init display state
         if (Build.VERSION.SDK_INT >= 24) {
@@ -421,8 +416,13 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    private void toggleFullscreen() {
-        isFullScreen = !isFullScreen;
+    private void enterFullscreen() {
+        isFullScreen = true;
+        prepare_fullscreen();
+    }
+
+    private void exitFullscreen() {
+        isFullScreen = false;
         prepare_fullscreen();
     }
 
@@ -441,7 +441,6 @@ public class LecturesActivity extends AppCompatActivity implements
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         // Force fullscreen to false and refresh screen
         super.onMultiWindowModeChanged(isInMultiWindowMode);
-        isFullScreen = false;
         isMultiWindow = isInMultiWindowMode;
         prepare_fullscreen();
     }
@@ -556,21 +555,17 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        mGestureDetector.onTouchEvent(event);
         try {
             return super.dispatchTouchEvent(event);
         } catch (IndexOutOfBoundsException e) {
             // Ignore: most likely caused because the app is loading and the pager view is not yet ready
-            // but still forward to sentry as I'd rather be sure. Good news is: we need to overload this
-            // function anyway :)
+            // but still forward to sentry as I'd rather be sure.
         }
         return false; // Fallback: consider event as not consumed
     }
 
     @Override
     public boolean onLectureLink(Uri link) {
-        // This comes from a tap event --> revert
-        toggleFullscreen();
         return onLink(link);
     }
 
@@ -661,28 +656,6 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     /**
-     * Detect simple taps that are not immediately following a long press (ie: skip cancels)
-     */
-    private class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public void onLongPress(MotionEvent event) {
-            isInLongPress = true;
-            Log.d(TAG, "onLongPress: " + event.toString());
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent event) {
-            if (!isInLongPress) {
-                // Disabled: noisy, low value
-                // TrackHelper.track().event("OfficeActivity", "fullscreen.toggle").name("tap").value(1f).with(tracker);
-                toggleFullscreen();
-            }
-            isInLongPress = false;
-            return true;
-        }
-    }
-
-    /**
      * Create a new dummy account for the sync adapter
      */
     public Account CreateSyncAccount() {
@@ -717,4 +690,34 @@ public class LecturesActivity extends AppCompatActivity implements
             super.onBackPressed();
         }
     }
+
+    /*
+     * Orientation change
+     */
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        prepare_fullscreen();
+    }
+
+    /*
+     * Drawer open / close listener
+     */
+
+    @Override
+    public void onDrawerOpened(@NonNull View drawerView) {
+        exitFullscreen();
+    }
+
+    @Override
+    public void onDrawerClosed(@NonNull View drawerView) {
+        enterFullscreen();
+    }
+
+    @Override
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
+
+    @Override
+    public void onDrawerStateChanged(int newState) {}
 }
