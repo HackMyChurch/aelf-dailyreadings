@@ -343,8 +343,18 @@ public class LecturesActivity extends AppCompatActivity implements
         // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
         boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
+        // Detect orientation
         Display getOrient = getWindowManager().getDefaultDisplay();
         boolean is_portrait = getOrient.getRotation() == Surface.ROTATION_0 || getOrient.getRotation() == Surface.ROTATION_180;
+
+        // Guess the device type
+        Configuration cfg = getResources().getConfiguration();
+        boolean is_tablet = cfg.smallestScreenWidthDp >= 600;
+
+        // Guess navigation bar location (bottom or side)
+        boolean has_bottom_navigation_bar = is_portrait || is_tablet;
+
+        // Build UI options
         int uiOptions = 0;
 
         // When the user wants fullscreen, always hide the status bar, even after a "tap"
@@ -363,7 +373,7 @@ public class LecturesActivity extends AppCompatActivity implements
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
             // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-            if (is_portrait) {
+            if (has_bottom_navigation_bar) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
             if (Build.VERSION.SDK_INT >= 19) {
@@ -373,7 +383,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
         if (Build.VERSION.SDK_INT >= 19) {
-            if (is_portrait && !isMultiWindow) {
+            if (has_bottom_navigation_bar && !isMultiWindow) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             } else  {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -381,7 +391,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
             // Compensate status bar height in full screen, with visible toolbar, on portrait mode
             // or some specific versions in landscape too.
-            if (!isMultiWindow && !hideStatusBar && (is_portrait || Build.VERSION.SDK_INT < 21)) {
+            if (!isMultiWindow && !hideStatusBar && (has_bottom_navigation_bar || Build.VERSION.SDK_INT < 21)) {
                 toolbar.setPadding(0, get_status_bar_height(), 0, 0);
             } else {
                 // When switching between modes, reset height
