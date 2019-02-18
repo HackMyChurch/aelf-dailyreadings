@@ -423,7 +423,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         LectureItem lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
-        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.urlName();
+        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.aelfUrlName();
         if (lecture.key != null) {
             url += "#"+lecture.key;
         }

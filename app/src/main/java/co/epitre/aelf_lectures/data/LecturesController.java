@@ -68,6 +68,14 @@ public final class LecturesController {
             return this.name.split("_")[1];
         }
 
+        public String aelfUrlName() {
+            // There is no specific page for the informations, link to the mass
+            if(this.position == 8) {
+                return "messe";
+            }
+            return this.name.split("_")[1];
+        }
+
         public String actionBarName() {
             if(this.position == 6) {
                 return "Vêpres";
