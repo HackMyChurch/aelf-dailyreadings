@@ -38,6 +38,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -257,6 +258,18 @@ public class LecturesActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        // Add some padding at the bottom of the drawer to account for the navigation bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @Override
+                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
+                    View navigationMenuView = findViewById(R.id.design_navigation_view);
+                    navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
+                    return windowInsets.consumeSystemWindowInsets();
+                }
+            });
+        }
 
         // Task switcher color for Android >= 21
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
