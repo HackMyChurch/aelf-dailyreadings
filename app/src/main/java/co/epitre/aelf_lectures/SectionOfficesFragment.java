@@ -332,11 +332,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Inflate the menu; this adds items to the action bar
         inflater.inflate(R.menu.toolbar_offices, menu);
 
-        // Make the share image white
-        Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
-        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
-        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
-
         // Update to date button with "this.date"
         updateCalendarButtonLabel(whatwhen);
         updateMenuNetworkVisibility();
