@@ -205,11 +205,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
         // Inflate the menu; this adds items to the action bar
         inflater.inflate(R.menu.toolbar_bible, menu);
-
-        // Make the share image white
-        Drawable normalDrawable = ContextCompat.getDrawable(activity, R.drawable.ic_share_black_24dp);
-        Drawable wrapDrawable = DrawableCompat.wrap(normalDrawable);
-        DrawableCompat.setTint(wrapDrawable, ContextCompat.getColor(activity, R.color.white));
     }
 
     @Override
