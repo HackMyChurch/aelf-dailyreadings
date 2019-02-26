@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -23,7 +24,6 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -31,7 +31,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
-import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -39,6 +38,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
@@ -51,19 +51,17 @@ import co.epitre.aelf_lectures.sync.SyncAdapter;
 public class LecturesActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         LectureFragment.LectureLinkListener,
+        DrawerLayout.DrawerListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     public static final String TAG = "AELFLecturesActivity";
 
     /**
-     * Gesture detector. Detect single taps that do not look like a dismiss to toggle
-     * full screen mode.
+     * Full screen mode
      */
     private boolean isFullScreen = true;
     private boolean isMultiWindow = false;
-    private boolean isInLongPress = false;
     private View statusBarBackgroundView = null;
-    private GestureDetectorCompat mGestureDetector;
 
     /**
      * Global managers / resources
@@ -242,7 +240,8 @@ public class LecturesActivity extends AppCompatActivity implements
         drawerView.setNavigationItemSelectedListener(this);
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerToggle.syncState();
-        drawerLayout.setDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(drawerToggle);
+        drawerLayout.addDrawerListener(this);
 
         // Open drawer on toolbar title click for easier migration / discovery
         toolbar.setOnClickListener(new View.OnClickListener() {
@@ -255,6 +254,18 @@ public class LecturesActivity extends AppCompatActivity implements
                 }
             }
         });
+
+        // Add some padding at the bottom of the drawer to account for the navigation bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                @Override
+                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
+                    View navigationMenuView = findViewById(R.id.design_navigation_view);
+                    navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
+                    return windowInsets.consumeSystemWindowInsets();
+                }
+            });
+        }
 
         // Task switcher color for Android >= 21
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -278,9 +289,6 @@ public class LecturesActivity extends AppCompatActivity implements
                 do_manual_sync("outdated");
             }
         }
-
-        // Install gesture detector
-        mGestureDetector = new GestureDetectorCompat(this, new TapGestureListener());
 
         // Init display state
         if (Build.VERSION.SDK_INT >= 24) {
@@ -338,8 +346,18 @@ public class LecturesActivity extends AppCompatActivity implements
         // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
         boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
+        // Detect orientation
         Display getOrient = getWindowManager().getDefaultDisplay();
         boolean is_portrait = getOrient.getRotation() == Surface.ROTATION_0 || getOrient.getRotation() == Surface.ROTATION_180;
+
+        // Guess the device type
+        Configuration cfg = getResources().getConfiguration();
+        boolean is_tablet = cfg.smallestScreenWidthDp >= 600;
+
+        // Guess navigation bar location (bottom or side)
+        boolean has_bottom_navigation_bar = is_portrait || is_tablet;
+
+        // Build UI options
         int uiOptions = 0;
 
         // When the user wants fullscreen, always hide the status bar, even after a "tap"
@@ -358,7 +376,7 @@ public class LecturesActivity extends AppCompatActivity implements
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
             // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-            if (is_portrait) {
+            if (has_bottom_navigation_bar) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
             if (Build.VERSION.SDK_INT >= 19) {
@@ -368,7 +386,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
         if (Build.VERSION.SDK_INT >= 19) {
-            if (is_portrait && !isMultiWindow) {
+            if (has_bottom_navigation_bar && !isMultiWindow) {
                 window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             } else  {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -376,7 +394,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
             // Compensate status bar height in full screen, with visible toolbar, on portrait mode
             // or some specific versions in landscape too.
-            if (!isMultiWindow && !hideStatusBar && (is_portrait || Build.VERSION.SDK_INT < 21)) {
+            if (!isMultiWindow && !hideStatusBar && (has_bottom_navigation_bar || Build.VERSION.SDK_INT < 21)) {
                 toolbar.setPadding(0, get_status_bar_height(), 0, 0);
             } else {
                 // When switching between modes, reset height
@@ -411,8 +429,13 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    private void toggleFullscreen() {
-        isFullScreen = !isFullScreen;
+    private void enterFullscreen() {
+        isFullScreen = true;
+        prepare_fullscreen();
+    }
+
+    private void exitFullscreen() {
+        isFullScreen = false;
         prepare_fullscreen();
     }
 
@@ -432,7 +455,6 @@ public class LecturesActivity extends AppCompatActivity implements
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         // Force fullscreen to false and refresh screen
         super.onMultiWindowModeChanged(isInMultiWindowMode);
-        isFullScreen = false;
         isMultiWindow = isInMultiWindowMode;
         prepare_fullscreen();
     }
@@ -547,21 +569,17 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
-        mGestureDetector.onTouchEvent(event);
         try {
             return super.dispatchTouchEvent(event);
         } catch (IndexOutOfBoundsException e) {
             // Ignore: most likely caused because the app is loading and the pager view is not yet ready
-            // but still forward to sentry as I'd rather be sure. Good news is: we need to overload this
-            // function anyway :)
+            // but still forward to sentry as I'd rather be sure.
         }
         return false; // Fallback: consider event as not consumed
     }
 
     @Override
     public boolean onLectureLink(Uri link) {
-        // This comes from a tap event --> revert
-        toggleFullscreen();
         return onLink(link);
     }
 
@@ -652,28 +670,6 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     /**
-     * Detect simple taps that are not immediately following a long press (ie: skip cancels)
-     */
-    private class TapGestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public void onLongPress(MotionEvent event) {
-            isInLongPress = true;
-            Log.d(TAG, "onLongPress: " + event.toString());
-        }
-
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent event) {
-            if (!isInLongPress) {
-                // Disabled: noisy, low value
-                // TrackHelper.track().event("OfficeActivity", "fullscreen.toggle").name("tap").value(1f).with(tracker);
-                toggleFullscreen();
-            }
-            isInLongPress = false;
-            return true;
-        }
-    }
-
-    /**
      * Create a new dummy account for the sync adapter
      */
     public Account CreateSyncAccount() {
@@ -708,4 +704,34 @@ public class LecturesActivity extends AppCompatActivity implements
             super.onBackPressed();
         }
     }
+
+    /*
+     * Orientation change
+     */
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        prepare_fullscreen();
+    }
+
+    /*
+     * Drawer open / close listener
+     */
+
+    @Override
+    public void onDrawerOpened(@NonNull View drawerView) {
+        exitFullscreen();
+    }
+
+    @Override
+    public void onDrawerClosed(@NonNull View drawerView) {
+        enterFullscreen();
+    }
+
+    @Override
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
+
+    @Override
+    public void onDrawerStateChanged(int newState) {}
 }
