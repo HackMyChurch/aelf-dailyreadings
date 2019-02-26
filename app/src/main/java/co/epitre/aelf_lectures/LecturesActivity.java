@@ -108,11 +108,8 @@ public class LecturesActivity extends AppCompatActivity implements
         Boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
         this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
 
-        // Do not restore any state/cache beyond what we explicitely control as an attempt to fix
-        // spurious display of psalms in "hymnes" for instance on restore days after.
-        // https://stackoverflow.com/questions/15519214/prevent-fragment-recovery-in-android
-        // super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
-        super.onCreate(createBundleNoFragmentRestore(savedInstanceState));
+        // Restore state
+        super.onCreate(savedInstanceState);
 
         // ---- need upgrade ?
         int currentVersion, savedVersion;
@@ -318,15 +315,6 @@ public class LecturesActivity extends AppCompatActivity implements
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.section_container, sectionFragment);
         fragmentTransaction.commit();
-    }
-
-    private static Bundle createBundleNoFragmentRestore(Bundle bundle) {
-        if (bundle != null) {
-            // Sometime, when restoring, the displayed toolbar_main are not consistent with the displayed
-            // date / office. This is a bug in the restore code.
-            // bundle.remove("android:support:fragments");
-        }
-        return bundle;
     }
 
     protected int get_status_bar_height() {
