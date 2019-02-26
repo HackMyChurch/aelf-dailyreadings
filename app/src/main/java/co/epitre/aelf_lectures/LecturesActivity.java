@@ -59,7 +59,6 @@ public class LecturesActivity extends AppCompatActivity implements
      * Gesture detector. Detect single taps that do not look like a dismiss to toggle
      * full screen mode.
      */
-    private boolean isFocused = true;
     private boolean isFullScreen = true;
     private boolean isMultiWindow = false;
     private boolean isInLongPress = false;
@@ -302,6 +301,9 @@ public class LecturesActivity extends AppCompatActivity implements
         } else {
             setSection(new SectionOfficesFragment());
         }
+
+        // Setup the (full) screen
+        prepare_fullscreen();
     }
 
     private void restoreSection() {
@@ -343,7 +345,7 @@ public class LecturesActivity extends AppCompatActivity implements
         Window window = getWindow();
 
         // Fullscreen does not make sense when in multi-window mode
-        boolean doFullScreen = isFullScreen && !isMultiWindow && isFocused;
+        boolean doFullScreen = isFullScreen && !isMultiWindow;
 
         // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
         boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
@@ -431,10 +433,11 @@ public class LecturesActivity extends AppCompatActivity implements
         // manage application's intrusiveness for different Android versions
         super.onWindowFocusChanged(hasFocus);
 
-        // Always pretend we are going fullscreen. This limits flickering considerably
-        isFullScreen = hasFocus;
-        isFocused = hasFocus;
-        prepare_fullscreen();
+        // If we are gaining the focus, go fullscreen
+        if (hasFocus) {
+            isFullScreen = true;
+            prepare_fullscreen();
+        }
     }
 
     @Override
