@@ -106,6 +106,22 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
                 return super.shouldInterceptRequest(view, url);
             }
+            //Save last URL
+            // onPageFinished infos found on https://stackoverflow.com/a/6720004
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(mWebView, url);
+                String last_url = mWebView.getUrl();
+                Log.d(TAG, "last_url is " + last_url);
+                SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString(KEY_BIBLE_LAST_PAGE, last_url);
+                editor.apply();
+                Log.d(TAG,"onPageFinished, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
+
+            }
+            //TODO: Save scroll position and restore it.
+
         });
         // Clear the cache on theme change so that we can inject our own CSS
         mWebView.clearCache(true);
@@ -131,24 +147,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
             Log.d(TAG,"Loading webview, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
             mWebView.loadUrl(settings.getString(KEY_BIBLE_LAST_PAGE,(BASE_RES_URL + "index.html")));
         }
-
-        //Save last URL
-        // onPageFinished infos found on https://stackoverflow.com/a/6720004
-        mWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(mWebView, url);
-                String last_url = mWebView.getUrl();
-                Log.d(TAG, "last_url is " + last_url);
-                SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = settings.edit();
-                editor.putString(KEY_BIBLE_LAST_PAGE, last_url);
-                editor.apply();
-                Log.d(TAG,"onPageFinished, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
-
-            }
-        });
-        //TODO: Save scroll position and restore it.
 
         return view;
     }
