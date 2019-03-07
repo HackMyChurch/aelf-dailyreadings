@@ -39,6 +39,7 @@ import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_BIBLE_LAST_PAGE;
 public class SectionBibleFragment extends SectionFragmentBase {
     public static final String TAG = "SectionBibleFragment";
     public static final String BASE_RES_URL = "file:///android_asset/www/";
+    public static final String INDEX_URL = BASE_RES_URL+"index.html";
 
     public SectionBibleFragment(){
         // Required empty public constructor
@@ -145,7 +146,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
             // Load default page
             SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
             Log.d(TAG,"Loading webview, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
-            mWebView.loadUrl(settings.getString(KEY_BIBLE_LAST_PAGE,(BASE_RES_URL + "index.html")));
+            mWebView.loadUrl(settings.getString(KEY_BIBLE_LAST_PAGE, INDEX_URL));
         }
 
         return view;
@@ -159,12 +160,14 @@ public class SectionBibleFragment extends SectionFragmentBase {
      */
     @Override
     public boolean onBackPressed() {
-        if (mWebView.canGoBack()) {
-            mWebView.goBack();
-            return true;
-        } else {
+        // If the current page is the index, do the default action.
+        if (mWebView.getUrl().equals(INDEX_URL)) {
             return false;
         }
+
+        // Go back to the index
+        mWebView.loadUrl(INDEX_URL);
+        return true;
     }
 
     @Override
