@@ -524,7 +524,7 @@ public class LecturesActivity extends AppCompatActivity implements
             try {
                 sectionOfficeFragment = (SectionOfficesFragment) sectionFragment;
                 sectionOfficeFragment.loadLecture(what);
-            } catch (ClassCastException e) {
+            } catch (ClassCastException|NullPointerException e) {
                 sectionOfficeFragment = new SectionOfficesFragment();
                 Bundle arguments = new Bundle();
                 arguments.putInt("what", what.getPosition());
@@ -571,9 +571,8 @@ public class LecturesActivity extends AppCompatActivity implements
     public boolean dispatchTouchEvent(MotionEvent event) {
         try {
             return super.dispatchTouchEvent(event);
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException|NullPointerException e) {
             // Ignore: most likely caused because the app is loading and the pager view is not yet ready
-            // but still forward to sentry as I'd rather be sure.
         }
         return false; // Fallback: consider event as not consumed
     }

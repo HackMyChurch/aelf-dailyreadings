@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -112,13 +113,22 @@ public class SectionBibleFragment extends SectionFragmentBase {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(mWebView, url);
+
+                Activity activity = getActivity();
+                if (activity == null) {
+                    return;
+                }
+
+                SharedPreferences settings = activity.getPreferences(Context.MODE_PRIVATE);
+                if (settings == null) {
+                    return;
+                }
+
                 String last_url = mWebView.getUrl();
                 Log.d(TAG, "last_url is " + last_url);
-                SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString(KEY_BIBLE_LAST_PAGE, last_url);
                 editor.apply();
-                Log.d(TAG,"onPageFinished, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
 
             }
             //TODO: Save scroll position and restore it.
