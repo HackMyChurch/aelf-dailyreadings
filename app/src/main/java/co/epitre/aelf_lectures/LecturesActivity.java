@@ -99,11 +99,16 @@ public class LecturesActivity extends AppCompatActivity implements
      */
     SectionFragmentBase sectionFragment;
 
+    /**
+     * Theme
+     */
+    Boolean nightMode = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Install theme before anything else
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-        Boolean nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+        nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
         this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
 
         // Restore state
@@ -475,6 +480,15 @@ public class LecturesActivity extends AppCompatActivity implements
         return do_manual_sync("manual");
     }
 
+    public boolean onToggleNightMode() {
+        // Toggle the value
+        nightMode = !nightMode;
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, nightMode);
+        editor.apply();
+        return true;
+    }
+
     public boolean onApplyOptimalSyncSettings() {
         SharedPreferences.Editor editor = settings.edit();
 
@@ -547,6 +561,7 @@ public class LecturesActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
         getMenuInflater().inflate(R.menu.toolbar_main, menu);
+        menu.findItem(R.id.action_toggle_night_mode).setChecked(nightMode);
         return true;
     }
 
@@ -563,6 +578,8 @@ public class LecturesActivity extends AppCompatActivity implements
                 return onSyncPref();
             case R.id.action_sync_do:
                 return onSyncDo();
+            case R.id.action_toggle_night_mode:
+                return onToggleNightMode();
         }
         return super.onOptionsItemSelected(item);
     }
