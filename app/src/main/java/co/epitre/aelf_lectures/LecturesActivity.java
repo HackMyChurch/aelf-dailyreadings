@@ -579,6 +579,7 @@ public class LecturesActivity extends AppCompatActivity implements
             case R.id.action_sync_do:
                 return onSyncDo();
             case R.id.action_toggle_night_mode:
+                item.setChecked(!item.isChecked()); // Fast visual feedback
                 return onToggleNightMode();
         }
         return super.onOptionsItemSelected(item);
@@ -655,8 +656,35 @@ public class LecturesActivity extends AppCompatActivity implements
             editor.putLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
             editor.apply();
         } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE)) {
-            recreate();
+            refreshTheme();
         }
+    }
+
+    private void refreshTheme() {
+        // Run action on the UI thread, after the current event has been processed. If we do not
+        // postpone the event processing, the current event (theme change for instance...) will be
+        // considered as non processed and processed by the child activity in the reverse order
+        // they appeared. The last event to be processed will be the first to be generated, that is,
+        // we will always refresh to the first page we ever refreshed to.
+        drawerView.post(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(LecturesActivity.this, LecturesActivity.class);
+
+                // Store context as Uri to re-use existing link handling
+                if (sectionFragment != null) {
+                    Uri uri = sectionFragment.getUri();
+                    if (uri != null) {
+                        intent.setData(uri);
+                    }
+                }
+
+                // Restart the activity with a cross-fade
+                startActivity(intent);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                finish();
+            }
+        });
     }
 
     // If there is any sync in progress, terminate it. This allows the sync engine to pick up any

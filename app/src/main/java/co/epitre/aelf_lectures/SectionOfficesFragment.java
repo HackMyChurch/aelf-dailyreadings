@@ -233,6 +233,30 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     }
 
     //
+    // API
+    //
+
+    public Uri getUri() {
+        // Make sure we DO have something to share
+        // FIXME: racy, the loader will update it and it's in a thread
+        if (lecturesPagerAdapter == null || mViewPager == null) {
+            return null;
+        }
+
+        // Get current lecture
+        int position = mViewPager.getCurrentItem();
+        LectureItem lecture = lecturesPagerAdapter.getLecture(position);
+
+        // Build URL
+        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.aelfUrlName();
+        if (lecture.key != null) {
+            url += "#"+lecture.key;
+        }
+
+        return Uri.parse(url);
+    }
+
+    //
     // Lifecycle
     //
 
@@ -413,15 +437,12 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             return false;
         }
 
-        // Get current position
+        // Get current lecture
         int position = mViewPager.getCurrentItem();
         LectureItem lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
-        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.aelfUrlName();
-        if (lecture.key != null) {
-            url += "#"+lecture.key;
-        }
+        String url = getUri().toString();
 
         // Build the data
         String prettyDate = whatwhen.when.toPrettyString();
