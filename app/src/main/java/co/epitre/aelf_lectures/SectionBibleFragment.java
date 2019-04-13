@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -107,6 +108,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
                 return super.shouldInterceptRequest(view, url);
             }
+
             //Save last URL
             // onPageFinished infos found on https://stackoverflow.com/a/6720004
             @Override
@@ -120,6 +122,15 @@ public class SectionBibleFragment extends SectionFragmentBase {
                 editor.apply();
                 Log.d(TAG,"onPageFinished, KEY_BIBLE_LAST_PAGE is " + settings.getString(KEY_BIBLE_LAST_PAGE,"null"));
 
+                // Inject margin at the bottom to account for the navigation bar
+                Resources resources = getContext().getResources();
+                int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+                int navigationBarHeight = 0;
+                if (resourceId > 0) {
+                    navigationBarHeight = (int)(resources.getDimension(resourceId) / getResources().getDisplayMetrics().density);
+                }
+
+                mWebView.loadUrl("javascript:(function(){document.body.style.marginBottom = '"+navigationBarHeight+"px';})()");
             }
             //TODO: Save scroll position and restore it.
 
