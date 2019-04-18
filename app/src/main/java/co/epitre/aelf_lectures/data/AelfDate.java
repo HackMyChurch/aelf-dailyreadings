@@ -121,9 +121,18 @@ public class AelfDate extends GregorianCalendar {
     }
 
     public boolean isWithin7NextDays() {
+        // Get today's date, clear the time part
         GregorianCalendar today = new GregorianCalendar();
+        today.set(GregorianCalendar.HOUR_OF_DAY, 0);
+        today.set(GregorianCalendar.MINUTE, 0);
+        today.set(GregorianCalendar.SECOND, 0);
+        today.set(GregorianCalendar.MILLISECOND, 0);
+
+        // Get next weeks's date, clear the time part
         GregorianCalendar nextWeek = new GregorianCalendar();
-        nextWeek.add(GregorianCalendar.DAY_OF_YEAR, 7);
+        nextWeek.add(GregorianCalendar.DAY_OF_YEAR, 8);
+
+        // Compare
         return compareTo(today) >= 0 && compareTo(nextWeek) < 0;
     }
 
