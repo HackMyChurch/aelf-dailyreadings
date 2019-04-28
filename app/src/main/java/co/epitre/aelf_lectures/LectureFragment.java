@@ -35,6 +35,11 @@ public class LectureFragment extends Fragment implements
      */
     private static final String TAG = "LectureFragment";
     public static final String ARG_TEXT_HTML = "text html";
+
+    /**
+     * Views
+     */
+    protected ViewGroup parent;
     protected WebView lectureView;
     protected WebSettings websettings;
     private SwipeRefreshLayout swipeLayout;
@@ -47,6 +52,7 @@ public class LectureFragment extends Fragment implements
      */
     private boolean isZooming = false;
     private boolean hasNetwork = false;
+    private int base_width = 0;
 
     @Override
     public void onNetworkStatusChanged(NetworkStatusMonitor.NetworkStatusEvent networkStatusEvent) {
@@ -96,12 +102,25 @@ public class LectureFragment extends Fragment implements
 
     // Helper: set zoom as percent, even on older phones
     protected void setCurrentZoom(int zoom) {
-        if (websettings == null) {
+        if (websettings == null || parent == null) {
             return;
         }
 
+        // Compute new width
+        int parent_width = parent.getMeasuredWidth();
+        int current_width = lectureView.getMeasuredWidth();
+        int new_width = base_width * zoom / 100;
+        if (new_width > parent_width) {
+            new_width = parent_width;
+        }
+
+        // Apply new width and zoom
         websettings.setTextZoom(zoom);
-        return;
+        if (current_width != new_width) {
+            ViewGroup.LayoutParams params = lectureView.getLayoutParams();
+            params.width = new_width;
+            lectureView.setLayoutParams(params);
+        }
     }
 
     private String colorResourceToRgba(int colorAttr) {
@@ -267,6 +286,9 @@ public class LectureFragment extends Fragment implements
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
 
+        // get base width
+        base_width = (int)(450 * getResources().getDisplayMetrics().density);
+
         // Log.d("HTML IN", "VERSION: "+lectureView.getSettings().getUserAgentString()+" DATA: "+reading);
 
         // Capture links
@@ -371,15 +393,18 @@ public class LectureFragment extends Fragment implements
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
         preferences.registerOnSharedPreferenceChangeListener(this);
 
-        // font size
-        this.refresh();
-
-        // Attempt to workaround a strange native crash:
-        // http://stackoverflow.com/questions/19614526/android-crash-system-lib-libhwui-so
-        lectureView.post(new Runnable() {
+        // Refresh the zoom on layout change (screen split, rotation, ...)
+        parent = (ViewGroup)lectureView.getParent();
+        parent.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
-            public void run () {
-                lectureView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int width = right - left;
+                int oldWidth = oldRight - oldLeft;
+
+                // On width change
+                if (width != oldWidth) {
+                    refresh();
+                }
             }
         });
 
