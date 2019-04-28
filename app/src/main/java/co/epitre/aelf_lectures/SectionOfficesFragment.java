@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -651,7 +652,10 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 break;
             case LOAD_FAIL:
                 setLoading(false);
-                Toast.makeText(getContext(), "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
+                Context context = getContext();
+                if(context != null) {
+                    Toast.makeText(context, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case LOAD_DONE:
                 setLoading(false);
