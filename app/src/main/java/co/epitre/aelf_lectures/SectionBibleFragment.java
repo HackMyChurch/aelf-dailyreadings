@@ -229,6 +229,22 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
     //
+    // API
+    //
+
+    public Uri getUri() {
+        // Get current webview URL
+        String webviewUrl = mWebView.getUrl();
+        webviewUrl = webviewUrl.substring(BASE_RES_URL.length() - 1, webviewUrl.length()- ".html".length());
+        if (webviewUrl.equals("/index")) {
+            webviewUrl = "/bible";
+        }
+
+        // Get and return the Uri
+        return Uri.parse("https://www.aelf.org" + webviewUrl);
+    }
+
+    //
     // Events
     //
 
@@ -237,12 +253,8 @@ public class SectionBibleFragment extends SectionFragmentBase {
             return false;
         }
 
-        // Get current webview URL
-        String webviewUrl = mWebView.getUrl();
-        webviewUrl = webviewUrl.substring(BASE_RES_URL.length() - 1, webviewUrl.length()- ".html".length());
-        if (webviewUrl.equals("/index")) {
-            webviewUrl = "/bible";
-        }
+        // Get current URL
+        String webviewUrl = getUri().toString();
 
         // Get current webview title
         String webviewTitle = mWebView.getTitle();

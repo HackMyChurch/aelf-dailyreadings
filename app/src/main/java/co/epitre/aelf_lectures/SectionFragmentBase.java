@@ -39,6 +39,12 @@ public abstract class SectionFragmentBase extends Fragment {
     }
 
     //
+    // Callback
+    //
+
+    public abstract Uri getUri();
+
+    //
     // Events
     //
 

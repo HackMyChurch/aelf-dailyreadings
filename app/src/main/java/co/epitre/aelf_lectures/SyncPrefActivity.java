@@ -90,8 +90,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
             } else {
                 pref.setSummary("L'application fonctionne avec le serveur de test: "+server+". En cas de doute, vous pouvez effacer cette valeur sans danger.");
             }
-        } else if (key.equals(KEY_PREF_DISP_NIGHT_MODE)) {
-            recreate();
         }
 
         // Stop here is called with null preference pointer from the constructor
