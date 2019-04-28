@@ -255,7 +255,7 @@ public class LecturesActivity extends AppCompatActivity implements
             }
         });
 
-        // Add some padding at the bottom of the drawer to account for the navigation bar
+        // Add some padding at the bottom of the drawer and content to account for the navigation bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
             drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
                 @Override
@@ -376,7 +376,7 @@ public class LecturesActivity extends AppCompatActivity implements
             uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
 
             // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-            if (has_bottom_navigation_bar) {
+            if (has_bottom_navigation_bar && hideStatusBar) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
             if (Build.VERSION.SDK_INT >= 19) {

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -148,6 +149,14 @@ public class LectureFragment extends Fragment implements
         String color_text_bg = colorResourceToRgba(R.attr.colorLectureBackground);
         String color_text_fg = colorResourceToRgba(R.attr.colorLectureText);
 
+        // Compute navigation bar height
+        Resources resources = getContext().getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        int navigationBarHeight = 0;
+        if (resourceId > 0) {
+            navigationBarHeight = (int)(resources.getDimensionPixelSize(resourceId) / getResources().getDisplayMetrics().density);
+        }
+
         htmlString.append("<!DOCTYPE html>" +
                 "<html>" +
                     "<head>" +
@@ -155,6 +164,7 @@ public class LectureFragment extends Fragment implements
                         "<style type=\"text/css\">" +
                         "body{" +
                         "	margin:24px;" +
+                        "	margin-bottom:"+(24+navigationBarHeight)+"px;" +
                         "	background-color: "+color_text_bg+";" +
                         "   color: "+color_text_fg+";" +
                         "   font-family: sans-serif;" +

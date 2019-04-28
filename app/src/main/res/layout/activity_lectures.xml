@@ -23,6 +23,7 @@
         <!-- Main content -->
         <FrameLayout
             android:id="@+id/section_container"
+            android:background="?attr/colorLectureBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
