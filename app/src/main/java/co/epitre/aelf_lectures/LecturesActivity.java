@@ -547,8 +547,14 @@ public class LecturesActivity extends AppCompatActivity implements
             }
             return true;
         } else if (item.getItemId() == R.id.nav_bible) {
-            if (!(sectionFragment instanceof SectionBibleFragment)) {
-                setSection(new SectionBibleFragment());
+            if (settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BIBLE_V2, false)) {
+                if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
+                    setSection(new SectionBibleV2Fragment());
+                }
+            } else {
+                if (!(sectionFragment instanceof SectionBibleFragment)) {
+                    setSection(new SectionBibleFragment());
+                }
             }
             return true;
         } else {
@@ -620,10 +626,18 @@ public class LecturesActivity extends AppCompatActivity implements
             // Route to the appropriate fragment
             if (chunks.length >= 2 && chunks[1].equals("bible")) {
                 // Bible link
-                if (!(sectionFragment instanceof SectionBibleFragment)) {
-                    setSection(new SectionBibleFragment());
+                if (settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BIBLE_V2, false)) {
+                    if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
+                        setSection(new SectionBibleV2Fragment());
+                    } else {
+                        sectionFragment.onLink(link);
+                    }
                 } else {
-                    sectionFragment.onLink(link);
+                    if (!(sectionFragment instanceof SectionBibleFragment)) {
+                        setSection(new SectionBibleFragment());
+                    } else {
+                        sectionFragment.onLink(link);
+                    }
                 }
             } else if (chunks.length == 1 || chunks.length >= 2 && chunks[1].matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
                 // Home page or Office link
@@ -655,6 +669,10 @@ public class LecturesActivity extends AppCompatActivity implements
             editor.putLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
             editor.apply();
         } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE)) {
+            refreshTheme();
+        } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_BIBLE_V2)) {
+            // Restart the activity to reload the fragment. This is not optimal but temporary
+            // and rare.
             refreshTheme();
         }
     }
