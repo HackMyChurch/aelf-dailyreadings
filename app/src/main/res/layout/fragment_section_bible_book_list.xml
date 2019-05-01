@@ -5,9 +5,14 @@
     android:layout_height="match_parent"
     android:background="?attr/colorLectureBackground">
 
-    <FrameLayout
-        android:id="@+id/bible_container"
-        android:background="?attr/colorLectureBackground"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/book_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="40dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:scrollbars="vertical" />
+
 </LinearLayout>

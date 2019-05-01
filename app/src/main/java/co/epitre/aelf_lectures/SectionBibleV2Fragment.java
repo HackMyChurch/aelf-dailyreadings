@@ -11,6 +11,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import co.epitre.aelf_lectures.bible.BibleMenuFragment;
+
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -43,6 +48,14 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
         // Get intent link, if any
         Uri uri = activity.getIntent().getData();
+
+        // If there is no state to restore, initialize the Bible section with the menu
+        if (savedInstanceState == null) {
+            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.bible_container, new BibleMenuFragment());
+            fragmentTransaction.commit();
+        }
 
         return view;
     }
