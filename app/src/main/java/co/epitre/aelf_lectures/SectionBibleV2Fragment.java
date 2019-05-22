@@ -10,10 +10,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
+import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
 
 
@@ -50,11 +55,15 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         Uri uri = activity.getIntent().getData();
 
         // If there is no state to restore, initialize the Bible section with the menu
+        BibleMenuFragment bibleMenuFragment;
+        FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         if (savedInstanceState == null) {
-            FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+            bibleMenuFragment = new BibleMenuFragment();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.bible_container, new BibleMenuFragment());
+            fragmentTransaction.replace(R.id.bible_container, bibleMenuFragment);
             fragmentTransaction.commit();
+        } else {
+            bibleMenuFragment = (BibleMenuFragment)fragmentManager.findFragmentById(R.id.bible_container);
         }
 
         return view;
@@ -99,8 +108,30 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     //
 
     @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // STUB
+    }
+
+    //
+    // Events
+    //
+
+    @Subscribe
+    public void onBibleEntryClick(BibleBookListAdapter.OnBibleEntryClickEvent event) {
+        String item = "Click detected on item " + event.mBibleBookId;
+        Toast.makeText(getContext(), item, Toast.LENGTH_LONG).show();
     }
 }

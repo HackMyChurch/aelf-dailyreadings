@@ -31,7 +31,7 @@ public class BibleMenuBookListFragment extends Fragment {
     /**
      * Book list
      */
-    private BiblePart mBiblePart;
+    private int mBiblePartId;
     private RecyclerView mRecyclerView;
     private BibleBookListAdapter mAdapter;
     private GridLayoutManager mLayoutManager;
@@ -64,11 +64,10 @@ public class BibleMenuBookListFragment extends Fragment {
         updateListBottomMargin();
 
         // Load the Bible part book list
-        int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
-        mBiblePart = BibleBookList.getInstance().getParts().get(biblePartId);
+        mBiblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
 
         // Specify an adapter
-        mAdapter = new BibleBookListAdapter(mBiblePart);
+        mAdapter = new BibleBookListAdapter(mBiblePartId);
         mRecyclerView.setAdapter(mAdapter);
 
         // Automatically expand span for the titles

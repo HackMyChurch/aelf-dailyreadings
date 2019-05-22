@@ -8,16 +8,37 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.greenrobot.eventbus.EventBus;
+
 import co.epitre.aelf_lectures.R;
 
-public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdapter.ViewHolder> {
+public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdapter.ViewHolder> implements View.OnClickListener {
+
+    /**
+     * Event listeners
+     */
+
+    public class OnBibleEntryClickEvent {
+        public final int mBiblePartId;
+        public final int mBibleBookId;
+        public final BibleBookEntryLayout mBibleBookEntryLayout;
+
+        public OnBibleEntryClickEvent(int biblePartId, int bibleBookId, @NonNull BibleBookEntryLayout bibleBookEntryLayout) {
+            this.mBiblePartId = biblePartId;
+            this.mBibleBookId = bibleBookId;
+            this.mBibleBookEntryLayout = bibleBookEntryLayout;
+        }
+    }
+
     /**
      * Book list
      */
+    private int mBiblePartId;
     private BiblePart mBiblePart;
 
-    BibleBookListAdapter(@NonNull BiblePart biblePart) {
-        mBiblePart = biblePart;
+    BibleBookListAdapter(int biblePartId) {
+        mBiblePartId = biblePartId;
+        mBiblePart = BibleBookList.getInstance().getParts().get(mBiblePartId);
     }
 
     @Override
@@ -53,6 +74,13 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
         // Set the Title
         TextView textView = holder.itemView.findViewById(R.id.title);
         textView.setText(bookEntry.getName());
+
+        // Attach on click listener
+        View button = holder.itemView.findViewById(R.id.title_button);
+        if (button != null) {
+            button.setTag(R.id.title_button, position);
+            button.setOnClickListener(this);
+        }
     }
 
     @Override
@@ -73,5 +101,29 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
         ViewHolder(@NonNull View itemView) {
             super(itemView);
         }
+    }
+
+    //
+    // Events
+    //
+
+    @Override
+    public void onClick(View v) {
+        // Resolve position
+        int position;
+        try {
+            position = (Integer) v.getTag(R.id.title_button);
+        } catch (Exception e) {
+            return;
+        }
+
+        // Find the main view holder
+        BibleBookEntryLayout bibleBookEntryLayout = (BibleBookEntryLayout) v.getParent();
+        if (bibleBookEntryLayout == null) {
+            return;
+        }
+
+        // Forward event
+        EventBus.getDefault().post(new OnBibleEntryClickEvent(mBiblePartId, position, bibleBookEntryLayout));
     }
 }
