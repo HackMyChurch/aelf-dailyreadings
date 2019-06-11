@@ -32,6 +32,9 @@ dependencies {
 
     // HTTP layer
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+
+    // Foundation
+    implementation 'org.greenrobot:eventbus:3.1.1'
 }
 
 task preLoadReadings(type: Exec) {
