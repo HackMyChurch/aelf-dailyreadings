@@ -48,6 +48,9 @@ public class BibleMenuFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_bible_menu, container, false);
 
+        // Set section title
+        actionBar.setTitle("Bible de la liturgie");
+
         // Setup the pager
         mBibleMenuPagerAdapter = new BibleMenuPagerAdapter(getChildFragmentManager(), BibleBookList.getInstance());
         mViewPager = view.findViewById(R.id.bible_menu_pager);

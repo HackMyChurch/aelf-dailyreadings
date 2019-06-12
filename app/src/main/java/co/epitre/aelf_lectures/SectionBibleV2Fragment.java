@@ -10,14 +10,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import co.epitre.aelf_lectures.bible.BibleBookEntryLayout;
+import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
 
@@ -44,9 +46,6 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
         // Load settings
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
-
-        // Set Section title (Can be anywhere in the class !)
-        actionBar.setTitle("Bible V2");
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_biblev2, container, false);
@@ -103,6 +102,19 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         return Uri.parse("https://www.aelf.org/bible");
     }
 
+    public void openBook(int biblePartId, int bibleBookId, BibleBookEntryLayout bibleBookEntryLayout) {
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        BibleBookFragment bibleBookFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.bible_container, bibleBookFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
     //
     // Lifecycle
     //
@@ -131,7 +143,6 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
     @Subscribe
     public void onBibleEntryClick(BibleBookListAdapter.OnBibleEntryClickEvent event) {
-        String item = "Click detected on item " + event.mBibleBookId;
-        Toast.makeText(getContext(), item, Toast.LENGTH_LONG).show();
+        openBook(event.mBiblePartId, event.mBibleBookId, event.mBibleBookEntryLayout);
     }
 }
