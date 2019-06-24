@@ -29,7 +29,7 @@ Description
 Comment contribuer ?
 --------------------
 
- - en installant l'application (https://play.google.com/store/apps/details?id=co.epitre.aelf_lectures)
+ - en installant l'application via Google Play (https://play.google.com/store/apps/details?id=co.epitre.aelf_lectures) ou F-Droid (https://f-droid.org/packages/co.epitre.aelf_lectures/)
  - en contribuant au code de l'application (https://github.com/HackMyChurch/aelf-dailyreadings/pulls)
  - en contribuant aux tests, rapport d'erreur et échanges sur Github (https://github.com/HackMyChurch/aelf-dailyreadings/issues)
  - en améliorant les textes de présentation
@@ -57,5 +57,3 @@ Licence
 -------
 
 MIT, 2013-2018 Jean-Tiare Le Bigot <jt@yadutaf.fr>
-
-
