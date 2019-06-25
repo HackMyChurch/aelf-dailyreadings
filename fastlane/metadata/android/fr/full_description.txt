@@ -1,0 +1,29 @@
+AELF - Bible et lectures du jour est l'application la plus simple pour être accompagné par la parole de Dieu, où que vous soyez. Et surtout elle sait se faire discrète.
+
+La parole de Dieu, rien que la parole de Dieu
+
+- Retrouvez l'intégralité de la Bible, issue de la traduction liturgique, la traduction de la Messe.
+- Priez avec les textes de la Messe et de la liturgie des heures. Messe, lectures, laudes, tierce, sexte, none, vêpres, complies.
+- Méditez la parole, sans distractions. Affichage sobre en plein écran, sans risque de passage en veille.
+- Ne cherchez pas, il n'y a aucune fioriture, aucune distraction, rien que la Parole.
+
+Accessible, pour tous
+
+- Utilisez votre téléphone, il est compatible. Sans sacrifier la "note de gueule". (Android 4+ à Android 9)
+- Réglez la taille du texte selon vos préférences, selon votre écran.
+- Laissez vous guider avec "Talkback". L'application est compatible.
+- Lisez sans souffrir. Les textes sont mis en forme.
+
+En tout temps, tout lieu
+
+- Basculez en mode "nuit" dans les préférences pour un affichage plus doux et plus respectueux des yeux dans la pénombre.
+- Synchronisez automatiquement les textes pour les méditer depuis une grotte... ou dans le calme du mode avion.
+- Naviguez dans le temps, la date est réglable au moins un mois à l'avance.
+
+En terre de confiance
+
+- Cette application n'utilise Internet que pour une chose: charger les textes de la Parole. Aucune donnée autre que les rapport d'erreurs automatiques Android, qu'elle soit personnelle ou statistique n'est transmise par l'application.
+- Application proposée bénévolement, sans aucune publicité avec le soutien de l'Association épiscopale liturgique pour les pays francophones (http://www.aelf.org)
+- Textes et logo reproduit avec l'aimable autorisation de l'AELF.
+
+Le partage au cœur : Retrouvez l'ensemble du code source de l'application sur https://github.com/HackMyChurch/aelf-dailyreadings
