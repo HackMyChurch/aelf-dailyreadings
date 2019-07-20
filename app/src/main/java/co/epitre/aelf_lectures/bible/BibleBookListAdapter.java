@@ -73,7 +73,7 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
 
         // Set the Title
         TextView textView = holder.itemView.findViewById(R.id.title);
-        textView.setText(bookEntry.getName());
+        textView.setText(bookEntry.getEntryName());
 
         // Attach on click listener
         View button = holder.itemView.findViewById(R.id.title_button);

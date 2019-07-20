@@ -35,7 +35,7 @@ public class BibleBookFragment extends Fragment {
     /**
      * Pager
      */
-    private BibleBookEntry mBibleBook;
+    private BibleBookEntry mBibleBookEntry;
     protected BibleChapterPagerAdapter mBibleChapterPagerAdapter;
     protected ViewPager mViewPager;
     protected TabLayout mTabLayout;
@@ -70,13 +70,13 @@ public class BibleBookFragment extends Fragment {
         int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
         int bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
-        mBibleBook = biblePart.getBibleBookEntries().get(bibleBookId);
+        mBibleBookEntry = biblePart.getBibleBookEntries().get(bibleBookId);
 
         // Set section title
-        actionBar.setTitle(mBibleBook.getName());
+        actionBar.setTitle(mBibleBookEntry.getBookName());
 
         // Setup the pager
-        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager());
+        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry);
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
@@ -87,6 +87,9 @@ public class BibleBookFragment extends Fragment {
             mTabLayout.setTabMode(TabLayout.MODE_FIXED);
             mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         }
+
+        // Select requested chapter
+        mViewPager.setCurrentItem(mBibleBookEntry.getChapterRefPosition());
 
         return view;
     }

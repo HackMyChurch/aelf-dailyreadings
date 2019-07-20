@@ -107,4 +107,11 @@ public class BibleBookEntry {
         }
         return book.getChapter(position);
     }
+
+    public int getChapterRefPosition() {
+        if (this.mChapterRef == null) {
+            return 0;
+        }
+        return getBook().getChapterPosition(this.mChapterRef);
+    }
 }
