@@ -18,6 +18,7 @@ import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_SERV
 // http://stackoverflow.com/questions/40069273/unable-to-get-provider-rarely-crash-on-kitkat
 public class LecturesApplication extends Application {
     private static final String TAG = "LecturesApplication";
+    private static LecturesApplication instance;
     private SharedPreferences settings;
 
     public static final int NOTIFICATION_SYNC_PROGRESS = 1;
@@ -29,12 +30,26 @@ public class LecturesApplication extends Application {
         Log.i(TAG, "app start...");
         checkAppReplacingState();
 
+        // Get global manager instances
+        instance = this;
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Boot application
         initNetworkStatusMonitor();
         isValidServer();
     }
+
+    //
+    // Accessors
+    //
+
+    public static LecturesApplication getInstance() {
+        return instance;
+    }
+
+    //
+    // Internals
+    //
 
     private void checkAppReplacingState() {
         if (getResources() == null) {
