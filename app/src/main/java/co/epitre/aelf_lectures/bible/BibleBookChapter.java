@@ -67,9 +67,15 @@ public class BibleBookChapter {
             return mContent;
         }
 
+        StringBuilder chapterStringBuilder = new StringBuilder();
+
+        // Insert the title
+        chapterStringBuilder.append("<h3>");
+        chapterStringBuilder.append(getChapterName());
+        chapterStringBuilder.append("</h3>");
+
         // Load from the assets
         String assetPath = "bible/"+mBookRef+"/"+mChapterRef+".html";
-        StringBuilder chapterStringBuilder = new StringBuilder();
         try {
             InputStreamReader chapterStream = new InputStreamReader(LecturesApplication.getInstance().getAssets().open(assetPath));
             BufferedReader br = new BufferedReader(chapterStream);
