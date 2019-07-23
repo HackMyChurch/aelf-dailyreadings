@@ -19,7 +19,7 @@ public class BibleBookList {
     private BibleBookList() {
         this.mParts = new ArrayList<>();
         this
-                .addPart(new BiblePart("Ancien Testament")
+                .addPart(new BiblePart("Ancien Testament", "ancien")
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.SECTION, "Pentateuque"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "La Genèse", "Gn"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "L'Exode", "Ex"))
@@ -71,7 +71,7 @@ public class BibleBookList {
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Zacharie", "Za"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Malachie", "Ml"))
                 )
-                .addPart(new BiblePart("Nouveau Testament")
+                .addPart(new BiblePart("Nouveau Testament", "nouveau")
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.SECTION, "Évangiles"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Évangile selon Saint Matthieu", "Mt"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Évangile selon Saint Marc", "Mc"))
@@ -106,7 +106,7 @@ public class BibleBookList {
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "L'Apocalypse", "Ap"))
                 );
 
-        BiblePart biblePart = new BiblePart("Psaumes");
+        BiblePart biblePart = new BiblePart("Psaumes", "psaumes");
         for (int i = 1; i<= 150; i++) {
             if (i == 9 || i == 113) {
                 biblePart.addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Livre des Psaumes", "Psaume "+i+"A", "Ps", i+"A"));

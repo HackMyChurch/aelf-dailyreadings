@@ -23,6 +23,10 @@ public class BibleMenuPagerAdapter extends FragmentPagerAdapter {
         return mBibleBookList.getParts().get(position).getName();
     }
 
+    public String getRoute(int position) {
+        return mBibleBookList.getParts().get(position).getRoute();
+    }
+
     @NonNull
     @Override
     public Fragment getItem(int position) {

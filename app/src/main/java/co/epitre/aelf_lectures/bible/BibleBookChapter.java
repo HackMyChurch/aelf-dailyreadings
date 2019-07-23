@@ -93,4 +93,8 @@ public class BibleBookChapter {
         mContent = chapterStringBuilder.toString();
         return mContent;
     }
+
+    public String getRoute() {
+        return "/"+mBookRef+"/"+mChapterRef;
+    }
 }

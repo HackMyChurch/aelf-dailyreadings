@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.navigation.NavigationView;
@@ -16,7 +15,7 @@ import com.google.android.material.tabs.TabLayout;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 
-public class BibleBookFragment extends Fragment {
+public class BibleBookFragment extends BibleFragment {
     /**
      * Internal
      */
@@ -92,5 +91,28 @@ public class BibleBookFragment extends Fragment {
         mViewPager.setCurrentItem(mBibleBookEntry.getChapterRefPosition());
 
         return view;
+    }
+
+    @Override
+    public String getRoute() {
+        if (mViewPager == null) {
+            return null;
+        }
+
+        int position = mViewPager.getCurrentItem();
+        return mBibleChapterPagerAdapter.getRoute(position);
+    }
+
+    @Override
+    public String getTitle() {
+        if (mViewPager == null || mBibleBookEntry == null || mBibleChapterPagerAdapter == null) {
+            return null;
+        }
+
+        int position = mViewPager.getCurrentItem();
+        String BookTitle = mBibleBookEntry.getBookName();
+        String ChapterTitle = mBibleChapterPagerAdapter.getPageTitle(position).toString();
+
+        return BookTitle + " — " + ChapterTitle;
     }
 }

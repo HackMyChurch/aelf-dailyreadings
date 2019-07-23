@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import org.greenrobot.eventbus.Subscribe;
 import co.epitre.aelf_lectures.bible.BibleBookEntryLayout;
 import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
+import co.epitre.aelf_lectures.bible.BibleFragment;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
 
 
@@ -39,6 +41,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
      * Global managers / resources
      */
     SharedPreferences settings = null;
+    BibleFragment mCurrentBibleFragment;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -57,12 +60,12 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         BibleMenuFragment bibleMenuFragment;
         FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
         if (savedInstanceState == null) {
-            bibleMenuFragment = new BibleMenuFragment();
+            mCurrentBibleFragment = new BibleMenuFragment();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.bible_container, bibleMenuFragment);
+            fragmentTransaction.replace(R.id.bible_container, mCurrentBibleFragment);
             fragmentTransaction.commit();
         } else {
-            bibleMenuFragment = (BibleMenuFragment)fragmentManager.findFragmentById(R.id.bible_container);
+            mCurrentBibleFragment = (BibleFragment)fragmentManager.findFragmentById(R.id.bible_container);
         }
 
         return view;
@@ -88,7 +91,8 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            // STUB
+            case R.id.action_share:
+                return onShare();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -98,8 +102,18 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     //
 
     public Uri getUri() {
-        // STUB
-        return Uri.parse("https://www.aelf.org/bible");
+        String route = "";
+        if (mCurrentBibleFragment != null) {
+            route = mCurrentBibleFragment.getRoute();
+        }
+        return Uri.parse("https://www.aelf.org/bible"+route);
+    }
+
+    public String getTitle() {
+        if (mCurrentBibleFragment != null) {
+            return mCurrentBibleFragment.getTitle();
+        }
+        return "Bible de la liturgie";
     }
 
     public void openBook(int biblePartId, int bibleBookId, BibleBookEntryLayout bibleBookEntryLayout) {
@@ -108,9 +122,9 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
             return;
         }
         FragmentManager fragmentManager = activity.getSupportFragmentManager();
-        BibleBookFragment bibleBookFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
+        mCurrentBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.bible_container, bibleBookFragment);
+        fragmentTransaction.replace(R.id.bible_container, mCurrentBibleFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -144,5 +158,26 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     @Subscribe
     public void onBibleEntryClick(BibleBookListAdapter.OnBibleEntryClickEvent event) {
         openBook(event.mBiblePartId, event.mBibleBookId, event.mBibleBookEntryLayout);
+    }
+
+    public boolean onShare() {
+        // Get current URL
+        String uri = getUri().toString();
+
+        // Get current webview title
+        String title = getTitle();
+
+        // Build share message
+        String message = title + ": " + uri;
+
+        // Create the intent
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, message);
+        intent.putExtra(Intent.EXTRA_SUBJECT, title);
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
+
+        // All done !
+        return true;
     }
 }

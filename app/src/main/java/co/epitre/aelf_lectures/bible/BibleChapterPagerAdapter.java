@@ -32,6 +32,10 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
         return mBibleBookEntry.getChapters().get(position).getChapterName();
     }
 
+    public String getRoute(int position) {
+        return mBibleBookEntry.getChapters().get(position).getRoute();
+    }
+
     @Override
     public int getCount() {
         return mBibleBookEntry.getChapters().size();

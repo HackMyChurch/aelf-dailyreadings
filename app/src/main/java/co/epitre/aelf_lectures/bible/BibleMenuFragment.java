@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.navigation.NavigationView;
@@ -16,7 +15,7 @@ import com.google.android.material.tabs.TabLayout;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 
-public class BibleMenuFragment extends Fragment {
+public class BibleMenuFragment extends BibleFragment {
 
     /**
      * Global Views
@@ -59,5 +58,29 @@ public class BibleMenuFragment extends Fragment {
         mTabLayout.setupWithViewPager(mViewPager);
 
         return view;
+    }
+
+    @Override
+    public String getRoute() {
+        // Make sure we have a view pager
+        if (mViewPager ==  null || mBibleMenuPagerAdapter == null) {
+            return null;
+        }
+
+        // Return the route
+        int position = mViewPager.getCurrentItem();
+        return mBibleMenuPagerAdapter.getRoute(position);
+    }
+
+    @Override
+    public String getTitle() {
+        // Make sure we have a view pager
+        if (mViewPager ==  null || mBibleMenuPagerAdapter == null) {
+            return null;
+        }
+
+        int position = mViewPager.getCurrentItem();
+        String partTitle = mBibleMenuPagerAdapter.getPageTitle(position).toString();
+        return "Bible de la liturgie — " + partTitle;
     }
 }
