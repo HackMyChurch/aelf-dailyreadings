@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -22,6 +23,7 @@ public class BibleBookFragment extends BibleFragment {
 
     private final static String BIBLE_PART_ID = "biblePartId";
     private final static String BIBLE_BOOK_ID = "bibleBookId";
+    private final static String BIBLE_CHAPTER_ID = "bibleChapterId";
 
     /**
      * Global Views
@@ -39,12 +41,76 @@ public class BibleBookFragment extends BibleFragment {
     protected ViewPager mViewPager;
     protected TabLayout mTabLayout;
 
+    // FIXME: this is *very* ineficient
+    public static BibleBookFragment newInstance(Uri uri) {
+        String path = uri.getPath();
+        String[] chunks = path.split("/");
+
+        int biblePartId = 0;
+        int bibleBookId = 0;
+        int bibleChapterId = 0;
+        BibleBookEntry bibleBookEntry = null;
+
+        // Locate book
+        if (chunks.length > 2) {
+            String bookRef = chunks[2];
+
+            BibleBookList bibleBookList = BibleBookList.getInstance();
+            search:
+            for (BiblePart candidateBiblePart: bibleBookList.getParts()) {
+                bibleBookId = 0;
+                for (BibleBookEntry candidateBibleBookEntry: candidateBiblePart.getBibleBookEntries()) {
+                    String candidateBookRef = candidateBibleBookEntry.getBookRef();
+
+                    if (candidateBookRef != null && candidateBookRef.equals(bookRef)) {
+                        bibleBookEntry = candidateBibleBookEntry;
+                        break search;
+                    }
+                    bibleBookId++;
+                }
+                biblePartId++;
+            }
+
+            // Not found
+            if (bibleBookEntry == null) {
+                biblePartId = 0;
+                bibleBookId = 0;
+            }
+        }
+
+        // Locate chapter
+        if (chunks.length > 3 && bibleBookEntry != null) {
+            String chapterRef = chunks[3];
+            boolean found = false;
+
+            for (BibleBookChapter bibleBookChapter: bibleBookEntry.getChapters()) {
+                if (bibleBookChapter.getChapterRef().equals(chapterRef)) {
+                    found = true;
+                    break;
+                }
+                bibleChapterId++;
+            }
+
+            // Not found
+            if (!found) {
+                bibleChapterId = 0;
+            }
+        }
+
+        return newInstance(biblePartId, bibleBookId, bibleChapterId);
+    }
+
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId) {
+        return newInstance(biblePartId, bibleBookId, -1);
+    }
+
+    public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId) {
         BibleBookFragment fragment = new BibleBookFragment();
 
         Bundle args = new Bundle();
         args.putInt(BIBLE_PART_ID, biblePartId);
         args.putInt(BIBLE_BOOK_ID, bibleBookId);
+        args.putInt(BIBLE_CHAPTER_ID, bibleChapterId);
         fragment.setArguments(args);
 
         return fragment;
@@ -68,8 +134,14 @@ public class BibleBookFragment extends BibleFragment {
         // Load the Bible part book list
         int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
         int bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
+        int bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
         mBibleBookEntry = biblePart.getBibleBookEntries().get(bibleBookId);
+
+        // Get the first chapter
+        if (bibleChapterId < 0) {
+            bibleChapterId = mBibleBookEntry.getChapterRefPosition();
+        }
 
         // Set section title
         actionBar.setTitle(mBibleBookEntry.getBookName());
@@ -88,7 +160,7 @@ public class BibleBookFragment extends BibleFragment {
         }
 
         // Select requested chapter
-        mViewPager.setCurrentItem(mBibleBookEntry.getChapterRefPosition());
+        mViewPager.setCurrentItem(bibleChapterId);
 
         return view;
     }

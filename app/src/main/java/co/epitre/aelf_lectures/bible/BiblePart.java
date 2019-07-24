@@ -20,6 +20,10 @@ public class BiblePart {
         return this.mName;
     }
 
+    public String getPartRef() {
+        return this.mPartRef;
+    }
+
     public String getRoute() {
         return "#"+this.mPartRef;
     }

@@ -114,7 +114,7 @@ public class BibleBook {
 
     public int getChapterPosition(String chapterRef) {
         int i = 0;
-        for (BibleBookChapter chapter: mChapters) {
+        for (BibleBookChapter chapter: getChapters()) {
             if (chapter.getChapterRef().equals(chapterRef)) {
                 return i;
             }
