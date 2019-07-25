@@ -4,8 +4,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.viewpager.widget.ViewPager;
@@ -162,6 +164,9 @@ public class BibleBookFragment extends BibleFragment {
         // Select requested chapter
         mViewPager.setCurrentItem(bibleChapterId);
 
+        // Setup the chapter selection menu
+        mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
+
         return view;
     }
 
@@ -186,5 +191,54 @@ public class BibleBookFragment extends BibleFragment {
         String ChapterTitle = mBibleChapterPagerAdapter.getPageTitle(position).toString();
 
         return BookTitle + " — " + ChapterTitle;
+    }
+
+    private void showChapterSelectionMenu(View menuAnchor) {
+        if (menuAnchor == null || mTabLayout == null) {
+            return;
+        }
+
+        // Build menu
+        PopupMenu popupMenu = new PopupMenu(getContext(), menuAnchor);
+        Menu menu = popupMenu.getMenu();
+        int menuPosition = 0;
+        int selectedTabPosition = mTabLayout.getSelectedTabPosition();
+        for (BibleBookChapter chapter: mBibleBookEntry.getBook().getChapters()) {
+            MenuItem item = menu.add(Menu.NONE, Menu.NONE, menuPosition, chapter.getChapterName());
+
+            // Mark the current selected chapter
+            if (menuPosition++ == selectedTabPosition) {
+                item.setChecked(true);
+            }
+        }
+
+        // Handle events
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                if (mViewPager == null) {
+                    return false;
+                }
+
+                int position = item.getOrder();
+                mViewPager.setCurrentItem(position);
+                return true;
+            }
+        });
+
+        // Display menu
+        popupMenu.show();
+    }
+
+    private class ChapterSelectionListener implements TabLayout.OnTabSelectedListener {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {}
+
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {}
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+            showChapterSelectionMenu(tab.view);
+        }
     }
 }
