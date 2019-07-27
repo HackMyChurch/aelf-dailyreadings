@@ -153,7 +153,6 @@ public class BibleBookFragment extends BibleFragment {
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
-        mTabLayout.setupWithViewPager(mViewPager);
 
         // Set tab mode based on chapter count
         if (mBibleChapterPagerAdapter.getCount() <= 3) {
@@ -161,11 +160,14 @@ public class BibleBookFragment extends BibleFragment {
             mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         }
 
+        // Setup the chapter selection menu
+        mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
+
         // Select requested chapter
         mViewPager.setCurrentItem(bibleChapterId);
 
-        // Setup the chapter selection menu
-        mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
+        // Populate the tabs
+        mTabLayout.setupWithViewPager(mViewPager);
 
         return view;
     }
@@ -231,10 +233,14 @@ public class BibleBookFragment extends BibleFragment {
 
     private class ChapterSelectionListener implements TabLayout.OnTabSelectedListener {
         @Override
-        public void onTabSelected(TabLayout.Tab tab) {}
+        public void onTabSelected(TabLayout.Tab tab) {
+            tab.setIcon(R.drawable.ic_drop_down);
+        }
 
         @Override
-        public void onTabUnselected(TabLayout.Tab tab) {}
+        public void onTabUnselected(TabLayout.Tab tab) {
+            tab.setIcon(null);
+        }
 
         @Override
         public void onTabReselected(TabLayout.Tab tab) {

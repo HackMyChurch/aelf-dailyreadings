@@ -35,7 +35,9 @@
         <item name="android:textColor">@color/light_aelf_lecture_background</item>
         <item name="tabTextColor">@color/light_aelf_lecture_background</item>
         <item name="tabIndicatorColor">@color/light_aelf_lecture_background</item>
+        <item name="tabIconTint">@color/light_aelf_lecture_background</item>
         <item name="tabRippleColor">@color/light_aelf_lecture_background_26</item>
+
     </style>
 
 </resources>

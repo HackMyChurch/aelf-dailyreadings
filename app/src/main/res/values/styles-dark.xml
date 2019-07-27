@@ -33,6 +33,7 @@
         <item name="android:textColor">@color/dark_aelf_accent</item>
         <item name="tabTextColor">@color/dark_aelf_accent</item>
         <item name="tabIndicatorColor">@color/dark_aelf_accent</item>
+        <item name="tabIconTint">@color/dark_aelf_accent</item>
     </style>
 
 </resources>
