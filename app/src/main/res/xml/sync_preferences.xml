@@ -60,12 +60,14 @@
         android:key="tester_preferencescreen"
         android:title="@string/pref_section_global_participate_title"
         tools:context=".SyncPrefActivity">
+        <PreferenceCategory android:title="@string/pref_section_participate_app_title" />
         <Preference
             android:title="@string/pref_participate_tester_title" >
             <intent
                 android:action="android.intent.action.VIEW"
                 android:data="https://play.google.com/apps/testing/co.epitre.aelf_lectures" />
         </Preference>
+        <PreferenceCategory android:title="@string/pref_section_participate_server_title" />
         <CheckBoxPreference
             android:title="@string/pref_participate_beta_title"
             android:summaryOn="@string/pref_contribute_beta_on"
@@ -80,6 +82,12 @@
             android:title="@string/pref_participate_server_title"
             android:inputType="textUri"
             android:key="pref_participate_server"/>
+        <PreferenceCategory android:title="@string/pref_section_participate_experiments_title" />
+        <CheckBoxPreference
+            android:title="@string/pref_participate_bible_v2_title"
+            android:summaryOn="@string/pref_participate_bible_v2_on"
+            android:summaryOff="@string/pref_participate_bible_v2_off"
+            android:key="pref_participate_bible_v2" android:defaultValue="false"/>
     </PreferenceScreen>
     <Preference
         android:title="@string/pref_participate_code_title" >

@@ -5,6 +5,9 @@ app/src/main/assets/bin/proguard.txt
 # Pre-Loaded lectures
 app/src/main/assets/preloaded-reading
 
+# Temporary files
+*.swp
+
 # Built application files
 *.apk
 *.ap_
@@ -19,6 +22,7 @@ app/src/main/assets/preloaded-reading
 bin/
 gen/
 out/
+tmp/
 
 # Gradle files
 .gradle/

@@ -1,0 +1,148 @@
+/* General theme */
+
+body {
+    margin: 24px;
+    font-family: sans-serif;
+    font-size: 15px;
+    font-weight: regular;
+}
+
+p {
+   line-height: 1.2;
+}
+
+/* Page title */
+
+h3 {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+/* Page title reference */
+
+h3 small i {
+    display: block;
+    float: right;
+    font-weight: normal;
+    margin-top: 5px;
+}
+
+
+/* Page subtitle */
+
+b i {
+	font-size: 15px;
+	display: block;
+	margin-top: -12px;
+	margin-bottom: 20px;
+}
+
+/* Citation */
+
+blockquote {
+	margin-right: 20px
+}
+
+blockquote p {
+	margin-top: 30px;
+}
+
+/* Citation reference */
+
+blockquote small i {
+    display: block;
+    text-align: right;
+    margin-top: -15px;
+    margin-right: 0;
+    padding-top: 0;
+}
+
+/* Navigation button */
+
+div.app-office-navigation {
+    margin-top: 20px;
+}
+
+.app-office-navigation a {
+    display: block;
+    text-align: center;
+    padding: 13px;
+    margin-top: 10px;
+    font-size: 17px;
+    text-decoration: none;
+    border: 1px solid;
+}
+
+/* Verse styling with optional line-wrap support */
+
+.verse {
+    display: block;
+    float: left;
+    width: 25px;
+    text-align: right;
+    margin-top: 4px;
+    margin-left: -30px;
+    font-size: 10px;
+}
+
+.line .verse {
+   margin-left: -30px;
+}
+
+.line-wrap .verse {
+   margin-left: -55px;
+}
+
+.line {
+   display: block;
+   margin-bottom: 5px;
+}
+
+.line:focus, div.antienne:focus {
+    padding-left: 2px;
+}
+
+.line-wrap:focus {
+    padding-left: 27px;
+}
+
+.line-wrap {
+   display: block;
+   padding-left: 25px;
+   text-indent: -25px;
+   margin-bottom: 1px;
+}
+
+/* Mark currently selected verse */
+
+:focus {
+    outline: none;
+    border-left-width: 2px;
+    border-left-style: solid;
+    margin-left: -4px;
+}
+
+/* Verse inflection */
+
+sup {
+   vertical-align: baseline;
+   position: relative;
+   top: -0.4em;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+/* Antiennes */
+
+.antienne-title {
+   font-style: italic;
+   font-weight: bold;
+}
+
+/* Workaround: hide images (unsupported) */
+
+img {
+   display: none;
+}

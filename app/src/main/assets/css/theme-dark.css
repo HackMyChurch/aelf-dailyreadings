@@ -1,0 +1,43 @@
+/* General theme */
+
+body {
+    background-color: rgba(19, 23, 31, 1);
+    color: rgba(239,233,222,0.87);
+}
+
+font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {
+    color: rgba(249, 120, 126, 1);
+}
+font[color='#000000'] {
+    color: rgba(239,233,222,0.87);
+}
+
+/* Navigation button */
+
+.app-office-navigation a {
+    color: rgba(239,233,222,0.87);
+    border-color: rgba(239,233,222,0.87);
+}
+
+.app-office-navigation a:active, .app-office-navigation a.active {
+    color: rgba(239,233,222,0.87);
+    background-color: rgba(19, 23, 31, 1);
+}
+
+/* Verse styling with optional line-wrap support */
+
+.verse {
+    color: rgba(249, 120, 126, 1);
+}
+
+/* Mark currently selected verse */
+
+:focus {
+    border-left-color: rgba(249, 120, 126, 1);
+}
+
+/* Antiennes */
+
+.antienne-title {
+   color: rgba(249, 120, 126, 1);
+}

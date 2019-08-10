@@ -4,6 +4,7 @@
 	<color name="light_aelf_primary">#13171F</color>
 	<color name="light_aelf_primary_dark">#1E2024</color>
 	<color name="light_aelf_lecture_background">#efe3ce</color>
+	<color name="light_aelf_lecture_background_26">#42efe3ce</color>
 	<color name="light_aelf_lecture_text">#5d451a</color>
 	<color name="light_aelf_accent">#bf2329</color>
 	<color name="light_aelf_accent_dark">#bf2329</color>

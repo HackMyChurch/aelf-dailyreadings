@@ -29,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
                 android:paddingBottom="4dp"
-                android:paddingTop="4dp"></androidx.viewpager.widget.PagerTabStrip>
+                android:paddingTop="4dp"/>
         </co.epitre.aelf_lectures.LectureViewPager>
     </androidx.appcompat.widget.LinearLayoutCompat>
 

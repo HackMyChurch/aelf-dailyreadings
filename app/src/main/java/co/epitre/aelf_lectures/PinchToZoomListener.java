@@ -9,16 +9,20 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
-public class PinchToZoomListener implements View.OnTouchListener {
+public class PinchToZoomListener implements View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener {
+    private static int MIN_ZOOM_LEVEL = 100;
+
     private ScaleGestureDetector mScaleDetector;
     private SharedPreferences preferences;
+    private int currentZoom;
 
 
     class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         private static final String TAG = "PinchListeners";
 
-        private int initialZoom;
-        private int newZoom;
+        // Start with min zoom level to prevent accidental zoom = 0
+        private int initialZoom = MIN_ZOOM_LEVEL;
+        private int newZoom = MIN_ZOOM_LEVEL;
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
@@ -28,8 +32,8 @@ public class PinchToZoomListener implements View.OnTouchListener {
 
             // Minimum zoom is 100%. This helps keep something at least a little readable
             // and intuitively reset to default zoom level.
-            if (newZoom < 100) {
-                newZoom = 100;
+            if (newZoom < MIN_ZOOM_LEVEL) {
+                newZoom = MIN_ZOOM_LEVEL;
             }
 
             // Apply zoom
@@ -69,6 +73,18 @@ public class PinchToZoomListener implements View.OnTouchListener {
         // Set initial zoom
         int initialZoom = this.onZoomStart();
         this.onZoomEnd(initialZoom);
+
+        // Register application wide zoom change listener
+        preferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        // Apply externally changed zoom
+        if(key.equals(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE)) {
+            int zoomLevel = preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
+            this.onZoomEnd(zoomLevel);
+        }
     }
 
     @Override
@@ -83,13 +99,25 @@ public class PinchToZoomListener implements View.OnTouchListener {
     }
 
     public void onZoomEnd(int zoomLevel) {
+        // Validate input: zoom must at least be 100
+        if (zoomLevel < MIN_ZOOM_LEVEL) {
+            zoomLevel = MIN_ZOOM_LEVEL;
+        }
+
         // Save new scale preference
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, zoomLevel);
-        editor.apply();
+        if (currentZoom != zoomLevel) {
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, zoomLevel);
+            editor.apply();
+        }
+        currentZoom = zoomLevel;
     }
 
     public void onZoom(int zoomLevel) {
         return;
+    }
+
+    public int getCurrentZoomLevel() {
+        return currentZoom;
     }
 }
