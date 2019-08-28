@@ -30,6 +30,9 @@ public class LecturesApplication extends Application {
         Log.i(TAG, "app start...");
         checkAppReplacingState();
 
+        // Load Sqlite lib
+        System.loadLibrary("sqliteX");
+
         // Get global manager instances
         instance = this;
         settings = PreferenceManager.getDefaultSharedPreferences(this);

@@ -5,7 +5,7 @@ android {
     buildToolsVersion '29.0.2'
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 29
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -36,6 +36,9 @@ dependencies {
 
     // Foundation
     implementation 'org.greenrobot:eventbus:3.1.1'
+
+    // Sqlite
+    implementation project(':sqlite-android-3290000')
 }
 
 task preLoadReadings(type: Exec) {
