@@ -2,13 +2,20 @@
 '''
 This scripts mirrors the Bible from AELF.org and post-processes it so that it
 becomes suitable for the application.
+
+The post-processing includes:
+- Keep only the bible markup, remove all AELF website specific markup
+- Index the pages so that they can be used for the application search engine
+
 Mirrored intermediate files are cached for best performance but not versionned
 in GIT. Final output is mirrored in GIT.
 '''
 
 import os
+import re
 import sys
 import glob
+import sqlite3
 import subprocess
 
 from bs4 import BeautifulSoup
@@ -25,8 +32,116 @@ ASSETS_FOLDER = "./app/src/main/assets"
 BIBLE_CACHE_FOLDER = os.path.join(CACHE_FOLDER, BIBLE_DOMAIN, BIBLE_PATH)
 BIBLE_DEST_FOLDER = os.path.join(ASSETS_FOLDER, BIBLE_PATH)
 
+BIBLE_DB = os.path.join(ASSETS_FOLDER, 'bible.db')
+
+BIBLE_BOOKS = {
+    'Ancien Testament': {
+        'Pentateuque': {
+            'Gn': {'title': 'La Genèse'},
+            'Ex': {'title': 'L\'Exode'},
+            'Lv': {'title': 'Le Lévitique'},
+            'Nb': {'title': 'Les Nombres'},
+            'Dt': {'title': 'Le Deutéronome'},
+        },
+        'Livres Historiques': {
+            'Jos': {'title': 'Le Livre de Josué'},
+            'Jg':  {'title': 'Le Livre des Juges'},
+            'Rt':  {'title': 'Le Livre de Ruth'},
+            '1S':  {'title': 'Premier Livre de Samuel'},
+            '2S':  {'title': 'Deuxième Livre de Samuel'},
+            '1R':  {'title': 'Premier Livre des Rois'},
+            '2R':  {'title': 'Deuxième Livre des Rois'},
+            '1Ch': {'title': 'Premier Livre des Chroniques'},
+            '2Ch': {'title': 'Deuxième Livre des Chroniques'},
+            'Esd': {'title': 'Le Livre d\'Esdras'},
+            'Ne':  {'title': 'Le Livre de Néhémie'},
+            'Tb':  {'title': 'Tobie'},
+            'Jdt': {'title': 'Judith'},
+            'Est': {'title': 'Esther'},
+            '1M':  {'title': 'Premier Livre des Martyrs d\'Israël'},
+            '2M':  {'title': 'Deuxième Livre des Martyrs d\'Israël'},
+        },
+        'Livres Poètiques et Sapientiaux': {
+            'Jb': {'title': 'Job'},
+            'Pr': {'title': 'Les Proverbes'},
+            'Qo': {'title': 'L\'Écclésiaste (Qohélet)'},
+            'Ct': {'title': 'Le Cantique des Cantiques'},
+            'Sg': {'title': 'Le Livre de la Sagesse'},
+            'Si': {'title': 'L\'Écclésiastique (Siracide)'},
+        },
+        'Livres Prophètiques': {
+            'Is':  {'title': 'Isaïe'},
+            'Jr':  {'title': 'Jérémie'},
+            'Lm':  {'title': 'Les Lamentations'},
+            'Ba':  {'title': 'Baruch'},
+            '1Jr': {'title': 'Lettre de Jérémie', 'path': 'XXX'},
+            'Ez':  {'title': 'Ézéchiel'},
+            'Dn':  {'title': 'Daniel'},
+            'Os':  {'title': 'Osée'},
+            'Jl':  {'title': 'Joël'},
+            'Am':  {'title': 'Amos'},
+            'Ab':  {'title': 'Abdias'},
+            'Jon': {'title': 'Jonas'},
+            'Mi':  {'title': 'Michée'},
+            'Na':  {'title': 'Nahum'},
+            'Ha':  {'title': 'Habaquq'},
+            'So':  {'title': 'Sophonie'},
+            'Ag':  {'title': 'Aggée'},
+            'Za':  {'title': 'Zacharie'},
+            'Ml':  {'title': 'Malachie'},
+        },
+    },
+    'Nouveau Testament': {
+        'Évangiles': {
+            'Mt': {'title': 'Évangile selon Saint Matthieu'},
+            'Mc': {'title': 'Évangile selon Saint Marc'},
+            'Lc': {'title': 'Évangile selon Saint Luc'},
+            'Jn': {'title': 'Évangile selon Saint Jean'},
+        },
+        'Actes': {
+            'Ap': {'title': 'Les Actes des Apôtres'},
+        },
+        'Épitres de Saint Paul': {
+            'Rm':  {'title': 'Aux Romains'},
+            '1Co': {'title': 'Première aux Corinthiens'},
+            '2Co': {'title': 'Deuxième aux Corinthiens'},
+            'Ga':  {'title': 'Aux Galates'},
+            'Ep':  {'title': 'Aux Éphésiens'},
+            'Ph':  {'title': 'Aux Philippiens'},
+            'Col': {'title': 'Aux Colossiens'},
+            '1Th': {'title': 'Première aux Théssaloniciens'},
+            '2Th': {'title': 'Deuxième aux Théssaloniciens'},
+            '1Tm': {'title': 'Première à Timothée'},
+            '2Tm': {'title': 'Deuxième à Timothée'},
+            'Tt':  {'title': 'À Tite'},
+            'Phm': {'title': 'À Philémon'},
+        },
+        'Épîtres Catholiques': {
+            'He':   {'title': 'Épître aux Hébreux'},
+            'Jc':   {'title': 'Épître de Saint Jacques'},
+            '1P':   {'title': 'Premier Épître de Saint Pierre'},
+            '2P':   {'title': 'Deuxième Épître de Saint Pierre'},
+            '1Jn':  {'title': 'Premier Épître de Saint Jean'},
+            '2Jn':  {'title': 'Deuxième Épître de Saint Jean'},
+            '3Jn':  {'title': 'Troisième Épître de Saint Jean'},
+            'Jude': {'title': 'Épître de Saint Jude'},
+        },
+        'Apocalypse': {
+            'Ap': {'title': 'L\'Apocalypse'},
+        },
+    },
+}
+
+BIBLE_PSALMS = {}
+for i in range(1, 151):
+    if i in [9, 113]:
+        BIBLE_PSALMS[f'Ps{i}A'] = {'title': f'Psaume {i}A'}
+        BIBLE_PSALMS[f'Ps{i}B'] = {'title': f'Psaume {i}B'}
+    else:
+        BIBLE_PSALMS[f'Ps{i}'] = {'title': f'Psaume {i}'}
+
 #
-# Main
+# Mirror
 #
 
 # Move to the project root
@@ -51,17 +166,33 @@ else:
             check=True,
     )
 
-# Post-process the Bible
-for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
+
+#
+# Prepare the index
+#
+
+# Destroy existing index
+if os.path.isfile(BIBLE_DB):
+    os.unlink(BIBLE_DB)
+
+# Create new index
+conn = sqlite3.connect(BIBLE_DB)
+cursor = conn.cursor()
+cursor.execute('''
+CREATE VIRTUAL TABLE search USING fts5(
+    book     UNINDEXED,
+    chapter  UNINDEXED,
+    title    UNINDEXED,
+    content,
+    tokenize = 'unicode61 remove_diacritics 2',
+);''')
+
+#
+# Process
+#
+
+def index_path(chapter_file_path, title, book_ref, chapter_ref):
     print("\u001b[KINFO: Processing %s..." % (chapter_file_path), end='\r')
-
-    # Extract book reference and chapter reference from path
-    book_ref, chapter_ref = chapter_file_path.rsplit('.', 1)[0].rsplit('/', 2)[1:]
-
-    # Rewrite the XXX book ref of Jeremy's letter to 1Jr. This is not strictly
-    # right but it is less suggestive...
-    if book_ref == 'XXX':
-        book_ref = '1Jr'
 
     # Parse the HTML
     with open(chapter_file_path) as f:
@@ -94,6 +225,44 @@ for chapter_file_path in glob.glob('%s/*/*.html' % BIBLE_CACHE_FOLDER):
     os.makedirs(dest_folder, exist_ok=True)
     with open(dest_file, 'w') as f:
         f.write(str(final_elem))
+
+    # Prepare the chapter for the index
+    for verse in final_elem.find_all(class_='verse'):
+        verse.extract()
+
+    chapter_text = ' '.join([verse.text for verse in final_elem.find_all(class_='line')])
+    chapter_text = chapter_text.replace('\r', ' ').replace('\n', ' ')
+    chapter_text = re.sub(r"\s+", ' ', chapter_text)
+
+    # Index
+    cursor.execute('''INSERT INTO search(book, chapter, title, content) VALUES(?, ?, ?, ?);''', (book_ref, chapter_ref, title, chapter_text))
+
+# Post-process the Bible books
+for part_title, part in BIBLE_BOOKS.items():
+    for section_title, section in part.items():
+        for book_ref, book in section.items():
+            book_path = book.get('path', book_ref)
+            book_title = book['title']
+            for chapter_file_path in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_ref}/*.html'):
+                chapter_ref = chapter_file_path.rsplit('/')[-1].split('.')[0]
+                chapter_title = f'{book_title}, Chapitre {chapter_ref}'
+                index_path(chapter_file_path, chapter_title, book_ref, chapter_ref)
+
+# Post-process the Bible psalms
+for psalm_ref, psalm in BIBLE_PSALMS.items():
+    book_ref = 'Ps'
+    chapter_ref = psalm_ref[2:]
+    chapter_file_path = f'{BIBLE_CACHE_FOLDER}/{book_ref}/{chapter_ref}.html'
+    chapter_title = psalm['title']
+    index_path(chapter_file_path, chapter_title, book_ref, chapter_ref)
+
+# Optimize the index
+print("\u001b[KINFO: Optimizing the index...", end='\r')
+cursor.execute('''INSERT INTO search(search) VALUES('optimize');''')
+
+# Apply all changes
+print("\u001b[KINFO: Saving the index...", end='\r')
+conn.commit()
 
 print('\u001b[K', end='\r')
 print("INFO: All done!")
