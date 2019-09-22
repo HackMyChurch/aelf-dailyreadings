@@ -26,7 +26,7 @@ do
     for OFFICE in $OFFICES
 	do
         READING="${OFFICE}_${DATE}.rss"
-        if [ ! -f "${BASE_DEST}/${READING}" ]
+        if [ ! -s "${BASE_DEST}/${READING}" ]
         then
             echo "Pre-loading ${OFFICE} for ${DATE}"
             wget -q "${BASE_URL}/${VERSION}/office/${OFFICE}/${DATE}" -O "${BASE_DEST}/${READING}"
