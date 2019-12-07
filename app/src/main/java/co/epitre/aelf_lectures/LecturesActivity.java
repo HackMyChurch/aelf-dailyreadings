@@ -4,6 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.NotificationManager;
+import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -300,12 +301,15 @@ public class LecturesActivity extends AppCompatActivity implements
             isMultiWindow = isInMultiWindowMode();
         }
 
-        // Get intent URI, if any
-        Uri uri = getIntent().getData();
+        // Load intent
+        Intent intent = getIntent();
+        Uri uri = intent.getData();
 
         // Finally, load inner fragment
         if (uri != null) {
             onLink(uri);
+        } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            onSearch();
         } else if (savedInstanceState != null) {
             restoreSection();
         } else {
@@ -647,6 +651,18 @@ public class LecturesActivity extends AppCompatActivity implements
                     sectionFragment.onLink(link);
                 }
             }
+        }
+
+        // All good
+        return true;
+    }
+
+    private boolean onSearch() {
+        // Search is only supported by the Bible
+        if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
+            setSection(new SectionBibleV2Fragment());
+        } else {
+            sectionFragment.onSearch();
         }
 
         // All good

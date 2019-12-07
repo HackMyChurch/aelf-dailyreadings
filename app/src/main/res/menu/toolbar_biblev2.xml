@@ -10,4 +10,11 @@
         android:icon="@drawable/ic_share_white"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/bible_search_title"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
+
 </menu>

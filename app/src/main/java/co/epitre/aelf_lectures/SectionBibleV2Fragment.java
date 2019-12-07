@@ -1,5 +1,7 @@
 package co.epitre.aelf_lectures;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -58,13 +61,16 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         // Get fragment manager
         mFragmentManager = getFragmentManager();
 
-        // Get intent link, if any
-        Uri uri = activity.getIntent().getData();
+        // Load intent
+        Intent intent = activity.getIntent();
+        Uri uri = intent.getData();
 
         // Load selected state
         if (uri != null) {
             // Load requested URL
             onLink(uri);
+        } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            onSearch();
         } else if (savedInstanceState != null) {
             // Restore previous state
             mCurrentBibleFragment = (BibleFragment)mFragmentManager.findFragmentById(R.id.bible_container);
@@ -105,6 +111,10 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         fragmentTransaction.commit();
     }
 
+    @Override
+    public void onSearch() {
+    }
+
     //
     // Option menu
     //
@@ -115,6 +125,18 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
         // Inflate the menu; this adds items to the action bar
         inflater.inflate(R.menu.toolbar_biblev2, menu);
+
+        // Associate searchable configuration with the SearchView
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
+        searchView.setSubmitButtonEnabled(true);
+        searchView.setMaxWidth(Integer.MAX_VALUE);
     }
 
     @Override

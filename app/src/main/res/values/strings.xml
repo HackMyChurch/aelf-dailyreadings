@@ -57,4 +57,8 @@
     <!-- Preferences -->
     <string name="mailto_dev">mailto:&app_support;?subject=Application &app_name; (version: &app_version;)</string>
 
+    <!-- Search engine -->
+    <string name="bible_search_hint">Rechercher un passage de la Bible</string>
+    <string name="bible_search_title">Rechercher</string>
+
 </resources>

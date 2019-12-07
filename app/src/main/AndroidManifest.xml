@@ -59,6 +59,16 @@
                 <data android:pathPrefix="/bible" />
             </intent-filter>
 
+            <!-- Declare the internal search engine -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+
+
         </activity>
         <activity
             android:name="co.epitre.aelf_lectures.SyncPrefActivity"
