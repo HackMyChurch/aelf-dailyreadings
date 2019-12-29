@@ -28,6 +28,8 @@ import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleFragment;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
+import co.epitre.aelf_lectures.bible.BibleSearchEngine;
+import co.epitre.aelf_lectures.bible.BibleSearchFragment;
 
 
 /**
@@ -51,6 +53,9 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+
+        // Init the search engine asynchronously
+        BibleSearchEngine.getInstance();
 
         // Load settings
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
@@ -97,6 +102,9 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         } else if (uri.getPath().equals("/bible")) {
             // To the menu fragment
             mCurrentBibleFragment = BibleMenuFragment.newInstance(uri);
+        } else if (uri.getPath().equals("/search")) {
+            // To the search fragment
+            mCurrentBibleFragment = BibleSearchFragment.newInstance();
         } else {
             // To the Bible fragment
             mCurrentBibleFragment = BibleBookFragment.newInstance(uri);
@@ -113,6 +121,8 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
     @Override
     public void onSearch() {
+        Uri uri = Uri.parse("https://www.aelf.org/search");
+        onLink(uri);
     }
 
     //
