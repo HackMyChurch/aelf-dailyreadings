@@ -114,7 +114,7 @@ public class BibleMenuFragment extends BibleFragment {
 
         // Return the route
         int position = mViewPager.getCurrentItem();
-        return mBibleMenuPagerAdapter.getRoute(position);
+        return "/bible"+mBibleMenuPagerAdapter.getRoute(position);
     }
 
     @Override

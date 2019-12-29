@@ -157,7 +157,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         if (mCurrentBibleFragment != null) {
             route = mCurrentBibleFragment.getRoute();
         }
-        return Uri.parse("https://www.aelf.org/bible"+route);
+        return Uri.parse("https://www.aelf.org"+route);
     }
 
     public String getTitle() {

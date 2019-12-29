@@ -179,7 +179,7 @@ public class BibleBookFragment extends BibleFragment {
         }
 
         int position = mViewPager.getCurrentItem();
-        return mBibleChapterPagerAdapter.getRoute(position);
+        return "/bible"+mBibleChapterPagerAdapter.getRoute(position);
     }
 
     @Override

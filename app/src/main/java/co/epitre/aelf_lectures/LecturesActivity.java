@@ -628,7 +628,7 @@ public class LecturesActivity extends AppCompatActivity implements
             }
         } else if (host.equals("www.aelf.org")) {
             // Route to the appropriate fragment
-            if (chunks.length >= 2 && chunks[1].equals("bible")) {
+            if (chunks.length >= 2 && (chunks[1].equals("bible") || chunks[1].equals("search"))) {
                 // Bible link
                 if (settings.getBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BIBLE_V2, false)) {
                     if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
