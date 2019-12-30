@@ -83,8 +83,13 @@ public class BibleSearchEngine {
             String filename = "bible.db";
             dbFile = new File(context.getCacheDir(), filename);
 
-            AssetManager assetManager = context.getAssets();
+            // Skip copy if already done to avoid I/Os
+            if (dbFile.exists()) {
+                return;
+            }
 
+            // Copy from assets
+            AssetManager assetManager = context.getAssets();
             try {
                 // Open source and destination
                 in = assetManager.open(filename);

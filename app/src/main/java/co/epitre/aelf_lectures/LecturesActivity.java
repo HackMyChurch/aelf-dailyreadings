@@ -18,6 +18,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
@@ -43,6 +44,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import java.io.File;
 import java.util.List;
 
 import co.epitre.aelf_lectures.data.AelfDate;
@@ -152,6 +154,9 @@ public class LecturesActivity extends AppCompatActivity implements
                 // Do not override setting...
                 editor.putBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
             }
+
+            // Purge cache on upgrade (get new Bible index if any, ...)
+            deleteCache();
         }
 
         // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
@@ -812,4 +817,32 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public void onDrawerStateChanged(int newState) {}
+
+    //
+    // Utils
+    //
+
+    public void deleteCache() {
+        try {
+            File dir = getCacheDir();
+            deleteDir(dir);
+        } catch (Exception e) {}
+    }
+
+    public boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        } else if(dir!= null && dir.isFile()) {
+            return dir.delete();
+        } else {
+            return false;
+        }
+    }
 }
