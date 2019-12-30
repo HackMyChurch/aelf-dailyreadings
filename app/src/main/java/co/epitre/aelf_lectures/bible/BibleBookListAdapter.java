@@ -3,6 +3,7 @@ package co.epitre.aelf_lectures.bible;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,12 +22,12 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
     public class OnBibleEntryClickEvent {
         public final int mBiblePartId;
         public final int mBibleBookId;
-        public final BibleBookEntryLayout mBibleBookEntryLayout;
+        public final LinearLayout mBibleListEntryLayout;
 
-        public OnBibleEntryClickEvent(int biblePartId, int bibleBookId, @NonNull BibleBookEntryLayout bibleBookEntryLayout) {
+        public OnBibleEntryClickEvent(int biblePartId, int bibleBookId, @NonNull LinearLayout bibleListEntryLayout) {
             this.mBiblePartId = biblePartId;
             this.mBibleBookId = bibleBookId;
-            this.mBibleBookEntryLayout = bibleBookEntryLayout;
+            this.mBibleListEntryLayout = bibleListEntryLayout;
         }
     }
 
@@ -118,12 +119,12 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
         }
 
         // Find the main view holder
-        BibleBookEntryLayout bibleBookEntryLayout = (BibleBookEntryLayout) v.getParent();
-        if (bibleBookEntryLayout == null) {
+        LinearLayout bibleListEntryLayout = (LinearLayout) v.getParent();
+        if (bibleListEntryLayout == null) {
             return;
         }
 
         // Forward event
-        EventBus.getDefault().post(new OnBibleEntryClickEvent(mBiblePartId, position, bibleBookEntryLayout));
+        EventBus.getDefault().post(new OnBibleEntryClickEvent(mBiblePartId, position, bibleListEntryLayout));
     }
 }

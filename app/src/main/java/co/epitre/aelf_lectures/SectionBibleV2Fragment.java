@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -20,7 +21,6 @@ import androidx.fragment.app.FragmentTransaction;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import co.epitre.aelf_lectures.bible.BibleBookEntryLayout;
 import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleFragment;
@@ -145,7 +145,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         return "Bible de la liturgie";
     }
 
-    public void openBook(int biblePartId, int bibleBookId, BibleBookEntryLayout bibleBookEntryLayout) {
+    public void openBook(int biblePartId, int bibleBookId, LinearLayout bibleListEntryLayout) {
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
@@ -185,7 +185,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
     @Subscribe
     public void onBibleEntryClick(BibleBookListAdapter.OnBibleEntryClickEvent event) {
-        openBook(event.mBiblePartId, event.mBibleBookId, event.mBibleBookEntryLayout);
+        openBook(event.mBiblePartId, event.mBibleBookId, event.mBibleListEntryLayout);
     }
 
     public boolean onShare() {
