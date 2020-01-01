@@ -5,11 +5,15 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +23,12 @@ import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 
 public class BibleSearchFragment extends BibleFragment implements BibleSearchResultAdapter.ItemClickListener {
+    /**
+     * Internal
+     */
+
+    private final static String BIBLE_SEARCH_QUERY = "bibleSearchQuery";
+
     /**
      * Global Views
      */
@@ -34,12 +44,13 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     BibleSearchResultAdapter mResultAdapter;
 
     public static BibleSearchFragment newInstance(Uri uri) {
-        String query = uri.getQueryParameter("query");
-        return new BibleSearchFragment(query);
-    }
+        BibleSearchFragment fragment = new BibleSearchFragment();
 
-    private BibleSearchFragment(String query) {
-        mQuery = query;
+        Bundle args = new Bundle();
+        args.putString(BIBLE_SEARCH_QUERY, uri.getQueryParameter("query"));
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
@@ -60,6 +71,9 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set section title
         actionBar.setTitle(getTitle());
 
+        // Get the query
+        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
+
         // Perform the search
         Cursor cursor = BibleSearchEngine.getInstance().search(mQuery);
 
@@ -75,13 +89,27 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        // Expand the search box
+        MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+        searchMenuItem.expandActionView();
+
+        // Initialize the search box with the query
+        SearchView searchView = (SearchView) searchMenuItem.getActionView();
+        searchView.setIconifiedByDefault(false);
+        searchView.setQuery(mQuery, false);
+    }
+
+    @Override
     public String getRoute() {
         return "/search";
     }
 
     @Override
     public String getTitle() {
-        return "Recherche « "+mQuery+" »";
+        return "Recherche";
     }
 
     private void updateListBottomMargin() {
