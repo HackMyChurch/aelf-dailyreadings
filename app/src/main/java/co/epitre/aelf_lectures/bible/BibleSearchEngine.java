@@ -50,6 +50,9 @@ public class BibleSearchEngine {
     public Cursor search(String query) {
         waitReady();
 
+        // Attempt to match exact search OR regular 'AND' search. This improves the score of exact matches
+        query = "\""+query+"\" OR "+query;
+
         // FIXME: to improve results, we could parse the query into words, add '*' to each and add AND clauses
         return db.query(
                 "search",
