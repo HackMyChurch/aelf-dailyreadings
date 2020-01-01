@@ -48,7 +48,6 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
      */
     FragmentManager mFragmentManager;
     SharedPreferences settings = null;
-    BibleFragment mCurrentBibleFragment;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -77,8 +76,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
             onSearch(intent.getStringExtra(SearchManager.QUERY));
         } else if (savedInstanceState != null) {
-            // Restore previous state
-            mCurrentBibleFragment = (BibleFragment)mFragmentManager.findFragmentById(R.id.bible_container);
+            // Nothing to do
         } else {
             // load default page
             onLink(null);
@@ -93,27 +91,28 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
             return;
         }
 
-        Fragment currentFragment = mCurrentBibleFragment;
+        Fragment currentBibleFragment = getCurrentBibleFragment();
+        Fragment newBibleFragment;
 
         // Route
         if (uri == null) {
             // To the menu fragment, first page
-            mCurrentBibleFragment = BibleMenuFragment.newInstance(0);
+            newBibleFragment = BibleMenuFragment.newInstance(0);
         } else if (uri.getPath().equals("/bible")) {
             // To the menu fragment
-            mCurrentBibleFragment = BibleMenuFragment.newInstance(uri);
+            newBibleFragment = BibleMenuFragment.newInstance(uri);
         } else if (uri.getPath().equals("/search")) {
             // To the search fragment
-            mCurrentBibleFragment = BibleSearchFragment.newInstance(uri);
+            newBibleFragment = BibleSearchFragment.newInstance(uri);
         } else {
             // To the Bible fragment
-            mCurrentBibleFragment = BibleBookFragment.newInstance(uri);
+            newBibleFragment = BibleBookFragment.newInstance(uri);
         }
 
         // Start selected fragment
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.bible_container, mCurrentBibleFragment);
-        if (currentFragment != null) {
+        fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
+        if (currentBibleFragment != null) {
             fragmentTransaction.addToBackStack(null);
         }
         fragmentTransaction.commit();
@@ -143,10 +142,19 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         }
 
         SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
-        searchView.setSubmitButtonEnabled(true);
         searchView.setMaxWidth(Integer.MAX_VALUE);
+
+        // Directly open the search fragment when the search button is pressed unless on the search page
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!(getCurrentBibleFragment() instanceof BibleSearchFragment)) {
+                    onSearch("");
+                }
+            }
+        });
     }
 
     @Override
@@ -158,21 +166,27 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         return super.onOptionsItemSelected(item);
     }
 
+    private BibleFragment getCurrentBibleFragment() {
+        return (BibleFragment) mFragmentManager.findFragmentById(R.id.bible_container);
+    }
+
     //
     // API
     //
 
     public Uri getUri() {
         String route = "";
-        if (mCurrentBibleFragment != null) {
-            route = mCurrentBibleFragment.getRoute();
+        BibleFragment currentBibleFragment = getCurrentBibleFragment();
+        if (currentBibleFragment != null) {
+            route = currentBibleFragment.getRoute();
         }
         return Uri.parse("https://www.aelf.org"+route);
     }
 
     public String getTitle() {
-        if (mCurrentBibleFragment != null) {
-            return mCurrentBibleFragment.getTitle();
+        BibleFragment currentBibleFragment = getCurrentBibleFragment();
+        if (currentBibleFragment != null) {
+            return currentBibleFragment.getTitle();
         }
         return "Bible de la liturgie";
     }
@@ -182,9 +196,9 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         if (activity == null) {
             return;
         }
-        mCurrentBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
+        BibleFragment newBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.bible_container, mCurrentBibleFragment);
+        fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }

@@ -192,6 +192,20 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
                 return true;
             }
         });
+
+        // Go back to the previous fragment when the search box is closed
+        searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                activity.onBackPressed();
+                return false;
+            }
+        });
     }
 
     @Override
