@@ -48,6 +48,12 @@ task preLoadReadings(type: Exec) {
 }
 preBuild.dependsOn preLoadReadings
 
+task downloadMarkJs(type: DownloadFile) {
+    sourceUrl = 'https://raw.githubusercontent.com/julmot/mark.js/8.11.1/dist/mark.min.js'
+    target = new File('./src/main/assets/js/mark.8.11.1.min.js')
+}
+preBuild.dependsOn downloadMarkJs
+
 //
 // Custom tasks
 //

@@ -30,6 +30,7 @@ public class BibleChapterFragment extends Fragment {
      */
     private static final String TAG = "BibleChapterFragment";
     public static final String ARG_TEXT_HTML = "chapter_text";
+    public static final String ARG_HIGHLIGHT = "highlight";
 
     /**
      * Views
@@ -42,12 +43,16 @@ public class BibleChapterFragment extends Fragment {
         // Build content
         StringBuilder htmlString = new StringBuilder();
         String body = getArguments().getString(ARG_TEXT_HTML);
+        String highlight = getArguments().getString(ARG_HIGHLIGHT, "");
 
         htmlString.append("<!DOCTYPE html><html><head>");
         htmlString.append("<link href=\"css/common.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
         htmlString.append("<link href=\"css/theme.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
+        htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</head><body>");
         htmlString.append(body);
+        htmlString.append("<script>var highlight='"+highlight+"';</script>\n");
+        htmlString.append("<script src=\"js/chapter.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</body></html>");
 
         // Build UI

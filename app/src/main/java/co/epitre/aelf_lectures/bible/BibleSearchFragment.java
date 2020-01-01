@@ -69,7 +69,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set up the RecyclerView
         mRecyclerView = view.findViewById(R.id.search_results);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor);
+        mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor, query);
         mResultAdapter.setClickListener(this);
         mRecyclerView.setAdapter(mResultAdapter);
         updateListBottomMargin();

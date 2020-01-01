@@ -41,3 +41,9 @@ font[color='#000000'] {
 .antienne-title {
    color: rgba(191, 35, 41, 1);
 }
+
+/* Highlight search keyword */
+
+mark {
+    color: rgba(93, 69, 26, 1);
+}

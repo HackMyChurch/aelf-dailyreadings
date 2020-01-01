@@ -9,10 +9,14 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
     private BibleBookEntry mBibleBookEntry;
+    private int mHighlightChapterId;
+    private String mHighlightQuery;
 
-    public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry) {
+    public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery) {
         super(fm);
         mBibleBookEntry = bibleBookEntry;
+        mHighlightChapterId = highlightChapterId;
+        mHighlightQuery = highlightQuery;
     }
 
     @NonNull
@@ -23,6 +27,9 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
 
         Bundle args = new Bundle();
         args.putString(BibleChapterFragment.ARG_TEXT_HTML, chapterText);
+        if (position == mHighlightChapterId) {
+            args.putString(BibleChapterFragment.ARG_HIGHLIGHT, mHighlightQuery);
+        }
         fragment.setArguments(args);
         return fragment;
     }

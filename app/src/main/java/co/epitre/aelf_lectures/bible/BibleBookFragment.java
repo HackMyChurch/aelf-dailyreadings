@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures.bible;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +27,7 @@ public class BibleBookFragment extends BibleFragment {
     private final static String BIBLE_PART_ID = "biblePartId";
     private final static String BIBLE_BOOK_ID = "bibleBookId";
     private final static String BIBLE_CHAPTER_ID = "bibleChapterId";
+    private final static String BIBLE_SEARCH_QUERY = "bibleSearchQuery";
 
     /**
      * Global Views
@@ -47,6 +49,7 @@ public class BibleBookFragment extends BibleFragment {
     public static BibleBookFragment newInstance(Uri uri) {
         String path = uri.getPath();
         String[] chunks = path.split("/");
+        String query = uri.getQueryParameter("query");
 
         int biblePartId = 0;
         int bibleBookId = 0;
@@ -99,7 +102,7 @@ public class BibleBookFragment extends BibleFragment {
             }
         }
 
-        return newInstance(biblePartId, bibleBookId, bibleChapterId);
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, query);
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId) {
@@ -107,12 +110,17 @@ public class BibleBookFragment extends BibleFragment {
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId) {
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, null);
+    }
+
+    public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query) {
         BibleBookFragment fragment = new BibleBookFragment();
 
         Bundle args = new Bundle();
         args.putInt(BIBLE_PART_ID, biblePartId);
         args.putInt(BIBLE_BOOK_ID, bibleBookId);
         args.putInt(BIBLE_CHAPTER_ID, bibleChapterId);
+        args.putString(BIBLE_SEARCH_QUERY, query);
         fragment.setArguments(args);
 
         return fragment;
@@ -137,6 +145,7 @@ public class BibleBookFragment extends BibleFragment {
         int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
         int bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
         int bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
+        String query = getArguments().getString(BIBLE_SEARCH_QUERY);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
         mBibleBookEntry = biblePart.getBibleBookEntries().get(bibleBookId);
 
@@ -149,7 +158,7 @@ public class BibleBookFragment extends BibleFragment {
         actionBar.setTitle(mBibleBookEntry.getBookName());
 
         // Setup the pager
-        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry);
+        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry, bibleChapterId, query);
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
@@ -179,7 +188,13 @@ public class BibleBookFragment extends BibleFragment {
         }
 
         int position = mViewPager.getCurrentItem();
-        return "/bible"+mBibleChapterPagerAdapter.getRoute(position);
+        String route = "/bible"+mBibleChapterPagerAdapter.getRoute(position);
+
+        if (position == getArguments().getInt(BIBLE_CHAPTER_ID, -1)) {
+            route += "?query=" + getArguments().getString(BIBLE_SEARCH_QUERY);
+        }
+
+        return route;
     }
 
     @Override

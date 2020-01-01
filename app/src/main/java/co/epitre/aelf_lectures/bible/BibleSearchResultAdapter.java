@@ -16,6 +16,7 @@ import co.epitre.aelf_lectures.R;
 public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchResultAdapter.ViewHolder> {
 
     private Cursor mCursor;
+    private String mQuery;
     private LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
@@ -25,9 +26,10 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
     int mColChapterIndex;
     int mColSnippetIndex;
 
-    BibleSearchResultAdapter(Context context, @NonNull Cursor cursor) {
+    BibleSearchResultAdapter(Context context, @NonNull Cursor cursor, @NonNull String query) {
         this.mInflater = LayoutInflater.from(context);
         this.mCursor = cursor;
+        this.mQuery = query;
 
         if (mCursor.getCount() > 0) {
             mCursor.moveToPosition(0);
@@ -55,7 +57,7 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
         String preview = mCursor.getString(this.mColSnippetIndex);
 
         String reference = ""+book+" "+chapter;
-        String link = "https://www.aelf.org/bible/"+book+"/"+chapter;
+        String link = "https://www.aelf.org/bible/"+book+"/"+chapter+"?query="+this.mQuery;
 
         if (book.equals("Ps")) {
             reference = "Ps"+chapter;

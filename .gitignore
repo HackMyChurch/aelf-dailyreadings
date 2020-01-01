@@ -5,6 +5,9 @@ app/src/main/assets/bin/proguard.txt
 # Pre-Loaded lectures
 app/src/main/assets/preloaded-reading
 
+# External dependency
+app/src/main/assets/js/mark.*.min.js
+
 # Temporary files
 *.swp
 

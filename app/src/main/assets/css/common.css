@@ -146,3 +146,12 @@ sup {
 img {
    display: none;
 }
+
+/* Highlight search keyword */
+
+mark {
+    background: transparent;
+    font-weight: bold;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+}
