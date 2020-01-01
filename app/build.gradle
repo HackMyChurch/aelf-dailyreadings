@@ -18,7 +18,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.txt'
         }
     }
-    productFlavors {
+    lintOptions {
+        checkReleaseBuilds false // Add this
+        abortOnError false
     }
 }
 
@@ -45,13 +47,6 @@ task preLoadReadings(type: Exec) {
     commandLine '../scripts/preload-readings.sh'
 }
 preBuild.dependsOn preLoadReadings
-
-android {
-    lintOptions {
-        checkReleaseBuilds false // Add this
-        abortOnError false
-    }
-}
 
 //
 // Custom tasks
