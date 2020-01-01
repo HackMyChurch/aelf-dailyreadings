@@ -19,8 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+
 
 public class BibleSearchFragment extends BibleFragment implements BibleSearchResultAdapter.ItemClickListener {
     /**
@@ -35,10 +40,14 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     protected ActionBar actionBar;
     protected NavigationView drawerView;
     protected LecturesActivity activity;
+    protected SearchView mSearchView;
 
     /**
      * Results
      */
+    private Semaphore mEditSearchSemaphore = new Semaphore(1);
+    private SearchRunnable mSearchRunnable;
+    private ExecutorService mSearchExecutorService = Executors.newSingleThreadExecutor();
     private String mQuery = "";
     RecyclerView mRecyclerView;
     BibleSearchResultAdapter mResultAdapter;
@@ -71,21 +80,83 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set section title
         actionBar.setTitle(getTitle());
 
-        // Get the query
-        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
-
-        // Perform the search
-        Cursor cursor = BibleSearchEngine.getInstance().search(mQuery);
-
         // Set up the RecyclerView
         mRecyclerView = view.findViewById(R.id.search_results);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor, mQuery);
-        mResultAdapter.setClickListener(this);
-        mRecyclerView.setAdapter(mResultAdapter);
+
+        // Perform the search
+        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
+        search(mQuery);
+
         updateListBottomMargin();
 
         return view;
+    }
+
+    private void search(String query) {
+        // Enqueue search job, overriding any pending search
+        mEditSearchSemaphore.acquireUninterruptibly();
+        if (mSearchRunnable == null) {
+            mSearchRunnable = new SearchRunnable(query);
+            mSearchExecutorService.submit(mSearchRunnable);
+        } else {
+            mSearchRunnable.setQuery(query);
+        }
+        mEditSearchSemaphore.release();
+    }
+
+    /**
+     * Search task. The search task can be edited until it is started.
+     */
+    class SearchRunnable implements Runnable {
+        private String mQuery;
+        private Semaphore mEditSemaphore;
+
+        SearchRunnable(String query) {
+            mQuery = query;
+            mEditSemaphore = new Semaphore(1);
+        }
+
+        boolean setQuery(String query) {
+            if (!mEditSemaphore.tryAcquire()) {
+                return false;
+            }
+            mQuery = query;
+            mEditSemaphore.release();
+            return true;
+        }
+
+        @Override
+        public void run() {
+            // This task can no longer be edited
+            mEditSearchSemaphore.acquireUninterruptibly();
+            mSearchRunnable = null;
+            mEditSearchSemaphore.release();
+            mEditSemaphore.acquireUninterruptibly();
+
+            // Perform the search
+            if (mQuery == null || mQuery.isEmpty()) {
+                // Skip search
+                mResultAdapter = null;
+            } else {
+                // Run real search
+                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery);
+                cursor.moveToPosition(0);
+
+                // Create the new adapter
+                mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor, mQuery);
+                mResultAdapter.setClickListener(BibleSearchFragment.this);
+            }
+
+            // Update the UI from the main thread
+            mRecyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mRecyclerView.swapAdapter(mResultAdapter, true);
+                    BibleSearchFragment.this.mQuery = mQuery;
+                }
+            });
+        }
     }
 
     @Override
@@ -97,9 +168,30 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         searchMenuItem.expandActionView();
 
         // Initialize the search box with the query
-        SearchView searchView = (SearchView) searchMenuItem.getActionView();
-        searchView.setIconifiedByDefault(false);
-        searchView.setQuery(mQuery, false);
+        mSearchView = (SearchView) searchMenuItem.getActionView();
+        mSearchView.setIconifiedByDefault(false);
+        mSearchView.setSubmitButtonEnabled(false);
+        mSearchView.setQuery(mQuery, false);
+
+        // Register search listener
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                search(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String query) {
+                // Send empty query to clear the results
+                if (query == null || query.isEmpty()) {
+                    search(query);
+                } else if (query.length() >= 3) {
+                    search(query+"*");
+                }
+                return true;
+            }
+        });
     }
 
     @Override
@@ -126,6 +218,21 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         params.bottomMargin = navigationBarHeight;
         mRecyclerView.setLayoutParams(params);
     }
+
+    //
+    // Lifecycle
+    //
+
+    @Override
+    public void onStop() {
+        // Save the current search query so that it is restored when moving back
+        super.onStop();
+        if (mSearchView != null) {
+            String query = mSearchView.getQuery().toString();
+            getArguments().putString(BIBLE_SEARCH_QUERY, query);
+        }
+    }
+
 
     //
     // Events
