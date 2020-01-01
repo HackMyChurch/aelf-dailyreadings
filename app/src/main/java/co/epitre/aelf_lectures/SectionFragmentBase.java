@@ -58,7 +58,7 @@ public abstract class SectionFragmentBase extends Fragment {
         // NOOP
     }
 
-    public void onSearch() {}
+    public void onSearch(String query) {}
 
     //
     // Option menu (TODO: move to base class + overload)

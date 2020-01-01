@@ -1,7 +1,5 @@
 package co.epitre.aelf_lectures.bible;
 
-import android.app.SearchManager;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -31,12 +29,17 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     /**
      * Results
      */
-    private String query = "";
+    private String mQuery = "";
     RecyclerView mRecyclerView;
     BibleSearchResultAdapter mResultAdapter;
 
-    public static BibleSearchFragment newInstance() {
-        return new BibleSearchFragment();
+    public static BibleSearchFragment newInstance(Uri uri) {
+        String query = uri.getQueryParameter("query");
+        return new BibleSearchFragment(query);
+    }
+
+    private BibleSearchFragment(String query) {
+        mQuery = query;
     }
 
     @Override
@@ -54,22 +57,16 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_bible_search, container, false);
 
-        // Get the search query
-        Intent intent = activity.getIntent();
-        if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            query = intent.getStringExtra(SearchManager.QUERY);
-        }
-
         // Set section title
         actionBar.setTitle(getTitle());
 
         // Perform the search
-        Cursor cursor = BibleSearchEngine.getInstance().search(query);
+        Cursor cursor = BibleSearchEngine.getInstance().search(mQuery);
 
         // Set up the RecyclerView
         mRecyclerView = view.findViewById(R.id.search_results);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor, query);
+        mResultAdapter = new BibleSearchResultAdapter(getContext(), cursor, mQuery);
         mResultAdapter.setClickListener(this);
         mRecyclerView.setAdapter(mResultAdapter);
         updateListBottomMargin();
@@ -84,7 +81,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
 
     @Override
     public String getTitle() {
-        return "Recherche « "+query+" »";
+        return "Recherche « "+mQuery+" »";
     }
 
     private void updateListBottomMargin() {

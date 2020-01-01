@@ -75,7 +75,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
             // Load requested URL
             onLink(uri);
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            onSearch();
+            onSearch(intent.getStringExtra(SearchManager.QUERY));
         } else if (savedInstanceState != null) {
             // Restore previous state
             mCurrentBibleFragment = (BibleFragment)mFragmentManager.findFragmentById(R.id.bible_container);
@@ -104,7 +104,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
             mCurrentBibleFragment = BibleMenuFragment.newInstance(uri);
         } else if (uri.getPath().equals("/search")) {
             // To the search fragment
-            mCurrentBibleFragment = BibleSearchFragment.newInstance();
+            mCurrentBibleFragment = BibleSearchFragment.newInstance(uri);
         } else {
             // To the Bible fragment
             mCurrentBibleFragment = BibleBookFragment.newInstance(uri);
@@ -120,8 +120,8 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
     }
 
     @Override
-    public void onSearch() {
-        Uri uri = Uri.parse("https://www.aelf.org/search");
+    public void onSearch(String query) {
+        Uri uri = Uri.parse("https://www.aelf.org/search?query="+query);
         onLink(uri);
     }
 

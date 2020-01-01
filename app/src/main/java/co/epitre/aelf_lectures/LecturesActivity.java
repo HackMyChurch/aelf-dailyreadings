@@ -306,15 +306,9 @@ public class LecturesActivity extends AppCompatActivity implements
             isMultiWindow = isInMultiWindowMode();
         }
 
-        // Load intent
-        Intent intent = getIntent();
-        Uri uri = intent.getData();
-
-        // Finally, load inner fragment
-        if (uri != null) {
-            onLink(uri);
-        } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            onSearch();
+        // Route the application
+        if (handleIntent(getIntent())) {
+            // Called from a search or link
         } else if (savedInstanceState != null) {
             restoreSection();
         } else {
@@ -323,6 +317,27 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Setup the (full) screen
         prepare_fullscreen();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+
+    private boolean handleIntent(Intent intent) {
+        Uri uri = intent.getData();
+
+        // Finally, load inner fragment
+        if (uri != null) {
+            onLink(uri);
+        } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            onSearch(intent.getStringExtra(SearchManager.QUERY));
+        } else {
+            return false;
+        }
+
+        return true;
     }
 
     private void restoreSection() {
@@ -662,12 +677,12 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    private boolean onSearch() {
+    private boolean onSearch(String query) {
         // Search is only supported by the Bible
         if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
             setSection(new SectionBibleV2Fragment());
         } else {
-            sectionFragment.onSearch();
+            sectionFragment.onSearch(query);
         }
 
         // All good
