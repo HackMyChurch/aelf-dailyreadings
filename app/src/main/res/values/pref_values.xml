@@ -86,9 +86,6 @@
     <string name="pref_participate_nocache_title">Désactiver le cache</string>
     <string name="pref_participate_server_title">Adresse du serveur</string>
     <string name="pref_section_participate_experiments_title">Fonction expérimentales</string>
-    <string name="pref_participate_bible_v2_title">Bible expérimentale.</string>
-    <string name="pref_participate_bible_v2_off">La version expérimentale de la Bible est désactivée.</string>
-    <string name="pref_participate_bible_v2_on">La version expérimentale de la Bible est activée</string>
     <string name="pref_participate_code_title">Contribuer au code</string>
 
     <string name="pref_section_contact_title">Garder le contact</string>

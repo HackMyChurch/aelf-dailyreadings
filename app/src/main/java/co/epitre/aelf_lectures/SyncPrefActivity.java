@@ -23,7 +23,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_PREF_SYNC_WIFI_ONLY = "pref_sync_wifi_only";
     public static final String KEY_PREF_PARTICIPATE_BETA = "pref_participate_beta";
     public static final String KEY_PREF_PARTICIPATE_NOCACHE = "pref_participate_nocache";
-    public static final String KEY_PREF_PARTICIPATE_BIBLE_V2 = "pref_participate_bible_v2";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
     public static final String KEY_APP_PREVIOUS_VERSION = "previous_version";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
@@ -31,7 +30,6 @@ public class SyncPrefActivity extends PreferenceActivity implements OnSharedPref
     public static final String KEY_APP_CACHE_MIN_VERSION= "min_cache_version";
     public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
-    public static final String KEY_BIBLE_LAST_PAGE = "bible_last_page";
 
 
     @SuppressWarnings("deprecation")

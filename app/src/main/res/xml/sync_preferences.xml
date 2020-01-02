@@ -82,12 +82,6 @@
             android:title="@string/pref_participate_server_title"
             android:inputType="textUri"
             android:key="pref_participate_server"/>
-        <PreferenceCategory android:title="@string/pref_section_participate_experiments_title" />
-        <CheckBoxPreference
-            android:title="@string/pref_participate_bible_v2_title"
-            android:summaryOn="@string/pref_participate_bible_v2_on"
-            android:summaryOff="@string/pref_participate_bible_v2_off"
-            android:key="pref_participate_bible_v2" android:defaultValue="false"/>
     </PreferenceScreen>
     <Preference
         android:title="@string/pref_participate_code_title" >
