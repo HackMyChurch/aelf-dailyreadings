@@ -18,7 +18,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.FileUtils;
 import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
@@ -571,8 +570,8 @@ public class LecturesActivity extends AppCompatActivity implements
             }
             return true;
         } else if (item.getItemId() == R.id.nav_bible) {
-            if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
-                setSection(new SectionBibleV2Fragment());
+            if (!(sectionFragment instanceof SectionBibleFragment)) {
+                setSection(new SectionBibleFragment());
             }
             return true;
         } else {
@@ -644,8 +643,8 @@ public class LecturesActivity extends AppCompatActivity implements
             // Route to the appropriate fragment
             if (chunks.length >= 2 && (chunks[1].equals("bible") || chunks[1].equals("search"))) {
                 // Bible link
-                if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
-                    setSection(new SectionBibleV2Fragment());
+                if (!(sectionFragment instanceof SectionBibleFragment)) {
+                    setSection(new SectionBibleFragment());
                 } else {
                     sectionFragment.onLink(link);
                 }
@@ -665,8 +664,8 @@ public class LecturesActivity extends AppCompatActivity implements
 
     private boolean onSearch(String query) {
         // Search is only supported by the Bible
-        if (!(sectionFragment instanceof SectionBibleV2Fragment)) {
-            setSection(new SectionBibleV2Fragment());
+        if (!(sectionFragment instanceof SectionBibleFragment)) {
+            setSection(new SectionBibleFragment());
         } else {
             sectionFragment.onSearch(query);
         }

@@ -13,7 +13,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -36,10 +35,10 @@ import co.epitre.aelf_lectures.bible.BibleSearchFragment;
  * Created by jean-tiare on 12/03/18.
  */
 
-public class SectionBibleV2Fragment extends SectionFragmentBase {
-    public static final String TAG = "SectionBibleV2Fragment";
+public class SectionBibleFragment extends SectionFragmentBase {
+    public static final String TAG = "SectionBibleFragment";
 
-    public SectionBibleV2Fragment(){
+    public SectionBibleFragment(){
         // Required empty public constructor
     }
 
@@ -60,7 +59,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
 
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_section_biblev2, container, false);
+        View view = inflater.inflate(R.layout.fragment_section_bible, container, false);
 
         // Get fragment manager
         mFragmentManager = getFragmentManager();
@@ -133,7 +132,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         super.onCreateOptionsMenu(menu, inflater);
 
         // Inflate the menu; this adds items to the action bar
-        inflater.inflate(R.menu.toolbar_biblev2, menu);
+        inflater.inflate(R.menu.toolbar_bible, menu);
 
         // Associate searchable configuration with the SearchView
         FragmentActivity activity = getActivity();
