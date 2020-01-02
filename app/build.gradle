@@ -43,11 +43,6 @@ dependencies {
     implementation project(':sqlite-android-3290000')
 }
 
-task preLoadReadings(type: Exec) {
-    commandLine '../scripts/preload-readings.sh'
-}
-preBuild.dependsOn preLoadReadings
-
 task downloadMarkJs(type: DownloadFile) {
     sourceUrl = 'https://raw.githubusercontent.com/julmot/mark.js/8.11.1/dist/mark.min.js'
     target = new File('./src/main/assets/js/mark.8.11.1.min.js')

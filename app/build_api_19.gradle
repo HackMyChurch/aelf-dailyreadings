@@ -36,13 +36,6 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
 }
 
-task preLoadReadings << {
-    exec {
-        executable '../scripts/preload-readings.sh'
-    }
-}
-preBuild.dependsOn preLoadReadings
-
 android {
     lintOptions {
         checkReleaseBuilds false // Add this

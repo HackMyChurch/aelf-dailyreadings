@@ -1,13 +1,8 @@
 package co.epitre.aelf_lectures.data;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -187,31 +182,6 @@ public final class LecturesController {
         return null;
     }
 
-    // Last resort: attempt to load the lecture from the static / built-in asset folder
-    public List<LectureItem> loadLecturesFromAssets(WHAT what, AelfDate when) {
-        String filename = "preloaded-reading/"+what.urlName()+"_"+when.toIsoString()+".rss";
-        InputStream in = null;
-
-        try {
-            in = ctx.getAssets().open(filename);
-            return AelfRssParser.parse(in);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
-        } finally {
-            if (in != null) try {
-                in.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
     public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
         List<LectureItem> lectures = api.getOffice(what.urlName(), when.toIsoString());
@@ -252,11 +222,6 @@ public final class LecturesController {
             // a fallback on the cache to avoid the big error message but still display a notification
             // If the cache considers the lecture as outdated, still return it. We are in error recovery now
             lectures = loadLecturesFromCache(what, when, true);
-        }
-
-        // Fallback: static asset
-        if (lectures == null) {
-            lectures = loadLecturesFromAssets(what, when);
         }
 
         return lectures;
