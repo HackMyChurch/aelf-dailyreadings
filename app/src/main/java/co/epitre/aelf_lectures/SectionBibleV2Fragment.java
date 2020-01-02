@@ -191,7 +191,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
         return "Bible de la liturgie";
     }
 
-    public void openBook(int biblePartId, int bibleBookId, LinearLayout bibleListEntryLayout) {
+    public void openBook(int biblePartId, int bibleBookId) {
         FragmentActivity activity = getActivity();
         if (activity == null) {
             return;
@@ -231,7 +231,7 @@ public class SectionBibleV2Fragment extends SectionFragmentBase {
 
     @Subscribe
     public void onBibleEntryClick(BibleBookListAdapter.OnBibleEntryClickEvent event) {
-        openBook(event.mBiblePartId, event.mBibleBookId, event.mBibleListEntryLayout);
+        openBook(event.mBiblePartId, event.mBibleBookId);
     }
 
     public boolean onShare() {

@@ -3,7 +3,6 @@ package co.epitre.aelf_lectures.bible;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,7 +12,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import co.epitre.aelf_lectures.R;
 
-public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdapter.ViewHolder> implements View.OnClickListener {
+public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdapter.ViewHolder> {
 
     /**
      * Event listeners
@@ -22,12 +21,10 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
     public class OnBibleEntryClickEvent {
         public final int mBiblePartId;
         public final int mBibleBookId;
-        public final LinearLayout mBibleListEntryLayout;
 
-        public OnBibleEntryClickEvent(int biblePartId, int bibleBookId, @NonNull LinearLayout bibleListEntryLayout) {
+        public OnBibleEntryClickEvent(int biblePartId, int bibleBookId) {
             this.mBiblePartId = biblePartId;
             this.mBibleBookId = bibleBookId;
-            this.mBibleListEntryLayout = bibleListEntryLayout;
         }
     }
 
@@ -65,7 +62,7 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
                 break;
         }
         View v = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
-        return new ViewHolder(v);
+        return new ViewHolder(v, bookEntryType);
     }
 
     @Override
@@ -76,12 +73,8 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
         TextView textView = holder.itemView.findViewById(R.id.title);
         textView.setText(bookEntry.getEntryName());
 
-        // Attach on click listener
-        View button = holder.itemView.findViewById(R.id.title_button);
-        if (button != null) {
-            button.setTag(R.id.title_button, position);
-            button.setOnClickListener(this);
-        }
+        // Register click data
+        holder.mPostition = position;
     }
 
     @Override
@@ -98,33 +91,20 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
         return mBiblePart.getBibleBookEntries().get(position).getType() == BibleBookEntryType.SECTION;
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        ViewHolder(@NonNull View itemView) {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        int mPostition = -1;
+
+        ViewHolder(@NonNull View itemView, BibleBookEntryType bookEntryType) {
             super(itemView);
-        }
-    }
-
-    //
-    // Events
-    //
-
-    @Override
-    public void onClick(View v) {
-        // Resolve position
-        int position;
-        try {
-            position = (Integer) v.getTag(R.id.title_button);
-        } catch (Exception e) {
-            return;
+            if (bookEntryType == BibleBookEntryType.BOOK) {
+                itemView.setOnClickListener(this);
+            }
         }
 
-        // Find the main view holder
-        LinearLayout bibleListEntryLayout = (LinearLayout) v.getParent();
-        if (bibleListEntryLayout == null) {
-            return;
+        @Override
+        public void onClick(View v) {
+            // Forward event
+            EventBus.getDefault().post(new OnBibleEntryClickEvent(mBiblePartId, mPostition));
         }
-
-        // Forward event
-        EventBus.getDefault().post(new OnBibleEntryClickEvent(mBiblePartId, position, bibleListEntryLayout));
     }
 }
