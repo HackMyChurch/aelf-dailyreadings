@@ -1,0 +1,30 @@
+=======
+Sqlite3
+=======
+
+This is the procedure to get / upgrade the SQLite source code
+
+Get the code
+------------
+
+```
+wget -O sqlite-android-dfed6feb2b1a71eb.zip 'http://www.sqlite.org/android/zip/SQLite+Android+Bindings.zip?uuid=dfed6feb2b1a71eb'
+unzip sqlite-android-dfed6feb2b1a71eb.zip
+```
+
+Vendor
+------
+
+```
+# Disable the undeeded extensions
+sed -iE '/DSQLITE_ENABLE_(RTREE|JSON1|FTS3)/d' SQLite_Android_Bindings/sqlite3/src/main/jni/sqlite/Android.mk
+
+# Copy files
+rm -rf sqlite3
+mv SQLite_Android_Bindings/sqlite3 ./
+rm -rf sqlite3/src/androidTest
+
+# Clean temporary files
+rm -rf sqlite-android-dfed6feb2b1a71eb.zip
+rm -rf SQLite_Android_Bindings
+```

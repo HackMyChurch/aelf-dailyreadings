@@ -1,1 +1,1 @@
-include ':app', ':sqlite-android-3290000'
+include ':app', ':sqlite3'

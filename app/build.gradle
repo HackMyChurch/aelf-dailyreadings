@@ -39,7 +39,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.1.1'
 
     // Sqlite
-    implementation project(':sqlite-android-3290000')
+    implementation project(path: ':sqlite3')
 }
 
 task downloadMarkJs(type: DownloadFile) {
