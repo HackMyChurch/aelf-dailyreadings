@@ -45,6 +45,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
     /**
      * Global managers / resources
      */
+    private boolean initialized = false;
     FragmentManager mFragmentManager;
     SharedPreferences settings = null;
 
@@ -61,15 +62,20 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_bible, container, false);
 
+        // Make sure to select the menu entry
+        drawerView.setCheckedItem(R.id.nav_bible);
+
         // Get fragment manager
-        mFragmentManager = getFragmentManager();
+        mFragmentManager = getChildFragmentManager();
 
         // Load intent
         Intent intent = activity.getIntent();
         Uri uri = intent.getData();
 
         // Load selected state
-        if (uri != null) {
+        if (initialized) {
+            // Coming from back button. Re-Attach fragment
+        } else if (uri != null) {
             // Load requested URL
             onLink(uri);
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -81,6 +87,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
             onLink(null);
         }
 
+        initialized = true;
         return view;
     }
 
@@ -90,10 +97,8 @@ public class SectionBibleFragment extends SectionFragmentBase {
             return;
         }
 
-        Fragment currentBibleFragment = getCurrentBibleFragment();
-        Fragment newBibleFragment;
-
         // Route
+        Fragment newBibleFragment;
         if (uri == null) {
             // To the menu fragment, first page
             newBibleFragment = BibleMenuFragment.newInstance(0);
@@ -111,7 +116,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Start selected fragment
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
-        if (currentBibleFragment != null) {
+        if (getCurrentBibleFragment() != null) {
             fragmentTransaction.addToBackStack(null);
         }
         fragmentTransaction.commit();
@@ -198,7 +203,9 @@ public class SectionBibleFragment extends SectionFragmentBase {
         BibleFragment newBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
-        fragmentTransaction.addToBackStack(null);
+        if (getCurrentBibleFragment() != null) {
+            fragmentTransaction.addToBackStack(null);
+        }
         fragmentTransaction.commit();
     }
 
@@ -222,6 +229,11 @@ public class SectionBibleFragment extends SectionFragmentBase {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // STUB
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return getChildFragmentManager().popBackStackImmediate();
     }
 
     //

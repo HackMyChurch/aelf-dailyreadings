@@ -16,6 +16,13 @@ public class WhatWhen {
     public boolean useCache = true;
     public String anchor = null;
 
+    public WhatWhen() {}
+
+    public WhatWhen(LecturesController.WHAT what, AelfDate when) {
+        this.what = what;
+        this.when = when;
+    }
+
     public String toTrackerName() {
         return what.urlName()+"."+when.dayBetween(new GregorianCalendar());
     }

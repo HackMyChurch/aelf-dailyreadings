@@ -154,7 +154,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
 
         // Are we trying to load an office but only pre-load mass ?
         if(
-                ww.what != LecturesController.WHAT.MESSE && ww.what != LecturesController.WHAT.METAS &&
+                ww.what != LecturesController.WHAT.MESSE && ww.what != LecturesController.WHAT.INFORMATIONS &&
                 !preference.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
         ) {
             return true;

@@ -60,6 +60,8 @@ public abstract class SectionFragmentBase extends Fragment {
 
     public void onSearch(String query) {}
 
+    public boolean onBackPressed() {return false;}
+
     //
     // Option menu (TODO: move to base class + overload)
     //
@@ -68,12 +70,5 @@ public abstract class SectionFragmentBase extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
-    }
-    /**
-     * Could handle back press.
-     * @return true if back press was handled
-     */
-    public boolean onBackPressed() {
-        return false;
     }
 }

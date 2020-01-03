@@ -32,7 +32,7 @@ public final class LecturesController {
         NONE    (5, R.id.nav_none,        "lectures_none"),
         VEPRES  (6, R.id.nav_vepres,      "lectures_vepres"),
         COMPLIES(7, R.id.nav_complies,    "lectures_complies"),
-        METAS   (8, R.id.nav_information, "lectures_metas");
+        INFORMATIONS (8, R.id.nav_information, "lectures_informations");
 
         private String name = "";
         private int position = 0; // FIXME: remove field
@@ -57,26 +57,12 @@ public final class LecturesController {
             if(this.position == 0) {
                 return "messes";
             }
-            if(this.position == 8) {
-                return "informations";
-            }
-            return this.name.split("_")[1];
-        }
-
-        public String aelfUrlName() {
-            // There is no specific page for the informations, link to the mass
-            if(this.position == 8) {
-                return "messe";
-            }
             return this.name.split("_")[1];
         }
 
         public String actionBarName() {
             if(this.position == 6) {
                 return "Vêpres";
-            }
-            if(this.position == 8) {
-                return "Informations";
             }
 
             String name = this.name.split("_")[1];
@@ -107,6 +93,10 @@ public final class LecturesController {
         }
 
         public String toString(){
+            if (this.position == 8) {
+                // Compat: avoid destroying the local cache after the name change
+                return "lectures_metas";
+            }
             return name;
         }
     }

@@ -1,6 +1,7 @@
 package co.epitre.aelf_lectures.bible;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -167,6 +168,11 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
 
         // Expand the search box
         MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+
+        if (searchMenuItem == null) {
+            return;
+        }
+
         searchMenuItem.expandActionView();
 
         // Initialize the search box with the query
@@ -270,6 +276,8 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
             return;
         }
 
-        mainActivity.onLectureLink(Uri.parse(link));
+        Uri uri = Uri.parse(link);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        mainActivity.onIntent(intent);
     }
 }

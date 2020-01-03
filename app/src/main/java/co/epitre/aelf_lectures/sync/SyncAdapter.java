@@ -88,7 +88,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     // Sync all readings for the day
     private void syncDay(AelfDate when, int max, SyncResult syncResult) throws InterruptedException {
-        syncReading(LecturesController.WHAT.METAS, when, syncResult);
+        syncReading(LecturesController.WHAT.INFORMATIONS, when, syncResult);
         while(max-- > 0) {
             LecturesController.WHAT what = LecturesController.WHAT.values()[max];
             syncReading(what, when, syncResult);

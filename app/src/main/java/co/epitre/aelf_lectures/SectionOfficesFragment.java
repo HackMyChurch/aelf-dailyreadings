@@ -55,7 +55,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     /**
      * Internal state
      */
-    WhatWhen whatwhen;
+    WhatWhen whatwhen = null;
     WhatWhen whatwhen_previous = null;
     private boolean isLoading = false;
     private boolean isSuccess = true;
@@ -92,12 +92,14 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         }
 
         // Select where to go from here
-        whatwhen = new WhatWhen();
-
         Uri uri = activity.getIntent().getData();
-        if (uri != null) {
+        if (whatwhen != null) {
+            // Coming from "back" button. Nothing to do.
+        } else if (uri != null) {
             parseIntentUri(uri);
         } else if (arguments != null) {
+            whatwhen = new WhatWhen();
+
             // Restore saved instance state. Especially useful on screen rotate on older phones
             whatwhen.what = LecturesController.WHAT.values()[arguments.getInt("what", 0)];
             whatwhen.position = arguments.getInt("position", 0);
@@ -111,6 +113,8 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 whatwhen.today = false;
             }
         } else {
+            whatwhen = new WhatWhen();
+
             // Load the lectures for today. Based on the anonymous statistics
             whatwhen.when = new AelfDate();
             whatwhen.today = true;
@@ -152,6 +156,9 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             }
         });
 
+        // Reset menu handle in case we come from the 'back' button
+        mMenu = null;
+
         // Load lecture
         loadLecture(whatwhen);
 
@@ -181,6 +188,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         String fragment = uri.getFragment();
 
         // Set default values
+        whatwhen = new WhatWhen();
         whatwhen.what = LecturesController.WHAT.MESSE;
         whatwhen.when = new AelfDate();
         whatwhen.today = true;
@@ -249,11 +257,14 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         LectureItem lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
-        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.aelfUrlName();
-        if (lecture.key != null) {
-            url += "#"+lecture.key;
-        }
+        return buildUri(whatwhen, lecture.key);
+    }
 
+    public static Uri buildUri(WhatWhen whatwhen, String key) {
+        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.urlName();
+        if (key != null) {
+            url += "#"+key;
+        }
         return Uri.parse(url);
     }
 
@@ -505,14 +516,10 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         if (whatwhen.when.isSameDay(date))
             return;
 
-        // Reset pager
-        this.whatwhen_previous = whatwhen.copy();
-        whatwhen.today = date.isToday();
-        whatwhen.when = date;
-        whatwhen.position = 0;
-        whatwhen.anchor = null;
-
-        loadLecture(whatwhen);
+        // Send the new URI to the activity
+        Uri uri = buildUri(new WhatWhen(whatwhen.what, date), null);
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        activity.onIntent(intent);
     }
 
     public void onLink(Uri link) {
@@ -579,22 +586,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 }
             }
         });
-    }
-
-    // Navigate to new office, keep the current date. Used to navigate from menu
-    public boolean loadLecture(LecturesController.WHAT what) {
-        if (what == null) {
-            return false;
-        }
-
-        whatwhen.what = what;
-        whatwhen.position = 0; // on what change, move to 1st
-        whatwhen.anchor = null;
-        whatwhen_previous = whatwhen.copy();
-
-        // Load
-        this.loadLecture(whatwhen);
-        return true;
     }
 
     public void loadLecture(WhatWhen whatwhen) {

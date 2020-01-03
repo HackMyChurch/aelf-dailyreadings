@@ -73,10 +73,6 @@ public class LectureFragment extends Fragment implements
         swipeLayout.setEnabled(!isZooming && hasNetwork && prefPullToRefreshEnabled);
     }
 
-    interface LectureLinkListener {
-        boolean onLectureLink(Uri link);
-    }
-
     public LectureFragment() {
     }
     
@@ -345,16 +341,8 @@ public class LectureFragment extends Fragment implements
 
                 if (host != null && host.equals("www.aelf.org") || url.startsWith("aelf:")) {
                     // If this is a request to AELF website, forward it to the main activity
-                    LectureLinkListener listener = null;
-                    try {
-                        listener = (LectureLinkListener) getActivity();
-                    } catch (ClassCastException e) {
-                        // Ignore. Means the activity does not implement the interface
-                    }
-
-                    if (listener != null) {
-                        listener.onLectureLink(uri);
-                    }
+                    LecturesActivity activity = (LecturesActivity) getActivity();
+                    activity.onIntent(new Intent(Intent.ACTION_VIEW, uri));
                 } else if (url.startsWith("mailto:")) {
                     Intent intent = new Intent(Intent.ACTION_SENDTO);
                     intent.setType("text/plain");

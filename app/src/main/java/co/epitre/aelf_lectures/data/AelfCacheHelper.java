@@ -270,7 +270,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if(oldVersion <= 1) {
             Log.i(TAG, "Upgrading DB from version 1");
-            createCache(db, LecturesController.WHAT.METAS);
+            createCache(db, LecturesController.WHAT.INFORMATIONS);
         }
 
         if(oldVersion <= 2) {

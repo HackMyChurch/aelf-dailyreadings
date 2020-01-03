@@ -44,15 +44,16 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import java.io.File;
-import java.util.List;
 
 import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
+import co.epitre.aelf_lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
+
+import static co.epitre.aelf_lectures.SectionOfficesFragment.buildUri;
 
 public class LecturesActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
-        LectureFragment.LectureLinkListener,
         DrawerLayout.DrawerListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -95,11 +96,6 @@ public class LecturesActivity extends AppCompatActivity implements
     private NavigationView drawerView;
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
-
-    /**
-     * Sections
-     */
-    SectionFragmentBase sectionFragment;
 
     /**
      * Theme
@@ -321,7 +317,12 @@ public class LecturesActivity extends AppCompatActivity implements
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        setIntent(intent);
         handleIntent(intent);
+    }
+
+    public void onIntent(Intent intent) {
+        onNewIntent(intent);
     }
 
     private boolean handleIntent(Intent intent) {
@@ -331,7 +332,7 @@ public class LecturesActivity extends AppCompatActivity implements
         if (uri != null) {
             onLink(uri);
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            onSearch(intent.getStringExtra(SearchManager.QUERY));
+            onSearch();
         } else {
             return false;
         }
@@ -339,17 +340,21 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
+    private SectionFragmentBase getCurrentSectionFragment() {
+        return (SectionFragmentBase) getSupportFragmentManager().findFragmentById(R.id.section_container);
+    }
+
     private void restoreSection() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        sectionFragment = (SectionFragmentBase)fragmentManager.findFragmentById(R.id.section_container);
-        sectionFragment.onRestore();
+        getCurrentSectionFragment().onRestore();
     }
 
     private void setSection(SectionFragmentBase fragment) {
-        sectionFragment = fragment;
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.section_container, sectionFragment);
+        fragmentTransaction.replace(R.id.section_container, fragment);
+        if (getCurrentSectionFragment() != null) {
+            fragmentTransaction.addToBackStack(null);
+        }
         fragmentTransaction.commit();
     }
 
@@ -537,7 +542,7 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public boolean onRefresh(String reason) {
-        return sectionFragment.onRefresh(reason);
+        return getCurrentSectionFragment().onRefresh(reason);
     }
 
     @Override
@@ -556,28 +561,19 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Route menu item
         WHAT what = WHAT.fromMenuId(item.getItemId());
+        Intent intent;
         if (what != null) {
-            SectionOfficesFragment sectionOfficeFragment;
-            try {
-                sectionOfficeFragment = (SectionOfficesFragment) sectionFragment;
-                sectionOfficeFragment.loadLecture(what);
-            } catch (ClassCastException|NullPointerException e) {
-                sectionOfficeFragment = new SectionOfficesFragment();
-                Bundle arguments = new Bundle();
-                arguments.putInt("what", what.getPosition());
-                sectionOfficeFragment.setArguments(arguments);
-                setSection(sectionOfficeFragment);
-            }
-            return true;
+            Uri uri = SectionOfficesFragment.buildUri(new WhatWhen(what, new AelfDate()), null);
+            intent = new Intent(Intent.ACTION_VIEW, uri);
         } else if (item.getItemId() == R.id.nav_bible) {
-            if (!(sectionFragment instanceof SectionBibleFragment)) {
-                setSection(new SectionBibleFragment());
-            }
-            return true;
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aelf.org/bible"));
         } else {
             // This is something else :)
             return false; // Do not select item as we do not know what this is...
         }
+
+        onNewIntent(intent);
+        return true;
     }
 
     @Override
@@ -609,6 +605,13 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onBackPressed() {
+        if (!getCurrentSectionFragment().onBackPressed()) {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         try {
             return super.dispatchTouchEvent(event);
@@ -616,11 +619,6 @@ public class LecturesActivity extends AppCompatActivity implements
             // Ignore: most likely caused because the app is loading and the pager view is not yet ready
         }
         return false; // Fallback: consider event as not consumed
-    }
-
-    @Override
-    public boolean onLectureLink(Uri link) {
-        return onLink(link);
     }
 
     private boolean onLink(Uri link) {
@@ -643,18 +641,10 @@ public class LecturesActivity extends AppCompatActivity implements
             // Route to the appropriate fragment
             if (chunks.length >= 2 && (chunks[1].equals("bible") || chunks[1].equals("search"))) {
                 // Bible link
-                if (!(sectionFragment instanceof SectionBibleFragment)) {
-                    setSection(new SectionBibleFragment());
-                } else {
-                    sectionFragment.onLink(link);
-                }
+                setSection(new SectionBibleFragment());
             } else if (chunks.length == 1 || chunks.length >= 2 && chunks[1].matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
                 // Home page or Office link
-                if (!(sectionFragment instanceof SectionOfficesFragment)) {
-                    setSection(new SectionOfficesFragment());
-                } else {
-                    sectionFragment.onLink(link);
-                }
+                setSection(new SectionOfficesFragment());
             }
         }
 
@@ -662,13 +652,9 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    private boolean onSearch(String query) {
+    private boolean onSearch() {
         // Search is only supported by the Bible
-        if (!(sectionFragment instanceof SectionBibleFragment)) {
-            setSection(new SectionBibleFragment());
-        } else {
-            sectionFragment.onSearch(query);
-        }
+        setSection(new SectionBibleFragment());
 
         // All good
         return true;
@@ -732,29 +718,6 @@ public class LecturesActivity extends AppCompatActivity implements
         // In this case, keep and return the dummy instance. We'll need to trigger manual sync
         accountManager.addAccountExplicitly(newAccount, null, null);
         return newAccount;
-    }
-    /**
-     * Back Button
-     */
-    @Override
-    public void onBackPressed() {
-
-        List fragmentList = getSupportFragmentManager().getFragments();
-
-        boolean handled = false;
-        for(Object f : fragmentList) {
-            if(f instanceof SectionFragmentBase) {
-                handled = ((SectionFragmentBase)f).onBackPressed();
-
-                if(handled) {
-                    break;
-                }
-            }
-        }
-
-        if(!handled) {
-            super.onBackPressed();
-        }
     }
 
     /*
