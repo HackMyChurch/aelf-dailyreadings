@@ -20,6 +20,9 @@
         <item name="tabstripStyle">@style/AelfTabStripLight</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_light</item>
         <item name="drawableButtonShape">@drawable/button_shape_light</item>
+
+        <!-- Animations -->
+        <item name="android:windowAnimationStyle">@style/windowCrossFade</item>
     </style>
 
     <!-- Application theme. -->

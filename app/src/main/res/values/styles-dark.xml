@@ -18,6 +18,9 @@
         <item name="tabstripStyle">@style/AelfTabStripDark</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_dark</item>
         <item name="drawableButtonShape">@drawable/button_shape_dark</item>
+
+        <!-- Animations -->
+        <item name="android:windowAnimationStyle">@style/windowCrossFade</item>
     </style>
 
     <!-- Application theme. -->

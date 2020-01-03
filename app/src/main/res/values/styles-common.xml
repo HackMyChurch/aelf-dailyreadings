@@ -10,4 +10,9 @@
         <item name="android:textColor">@color/white</item>
         <item name="colorPrimary">@color/white</item>
     </style>
+
+    <style name="windowCrossFade">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
 </resources>
