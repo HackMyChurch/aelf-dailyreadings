@@ -9,6 +9,7 @@
         android:id="@+id/search_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:focusableInTouchMode="true"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:paddingLeft="12dp"

@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible;
 
+import android.app.Activity;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.app.ActionBar;
@@ -177,7 +179,14 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
             @Override
             public boolean onQueryTextSubmit(String query) {
+                // Start the search asynchronously
                 search(query);
+
+                // Close keyboard
+                mRecyclerView.requestFocus();
+                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
+
                 return true;
             }
 
