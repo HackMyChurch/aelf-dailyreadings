@@ -73,25 +73,6 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         return keyFormatter.format(when.getTime());
     }
 
-    private void onSqliteError(SQLiteException e) {
-        if (
-            e instanceof SQLiteBindOrColumnIndexOutOfRangeException ||
-            e instanceof SQLiteConstraintException ||
-            e instanceof SQLiteDatabaseCorruptException ||
-            e instanceof SQLiteDatatypeMismatchException
-        ) {
-            // If a migration did not go well, the best we can do is drop the database and re-create
-            // it from scratch. This is hackish but should allow more or less graceful recoveries.
-            Log.e(TAG, "Critical database error. Droping + Re-creating", e);
-            close();
-            ctx.deleteDatabase(DB_NAME);
-        } else {
-            // Generic error. Close + re-open
-            Log.e(TAG, "Datable "+e.getClass().getName()+". Closing + re-opening", e);
-            close();
-        }
-    }
-
     // Retry code statement 3 times, recover from sqlite exceptions. Even if everything went well, close
     // the db in hope to mitigate concurrent access issues.
     private Object retry(Callable code) throws IOException {
@@ -101,7 +82,11 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                 return code.call();
             } catch (SQLiteException e) {
                 if (maxAttempts > 0) {
-                    onSqliteError(e);
+                    // If a migration did not go well, the best we can do is drop the database and re-create
+                    // it from scratch. This is hackish but should allow more or less graceful recoveries.
+                    Log.e(TAG, "Critical database error. Droping + Re-creating", e);
+                    close();
+                    ctx.deleteDatabase(DB_NAME);
                 } else {
                 }
             } catch (Exception e) {
