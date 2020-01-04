@@ -93,10 +93,6 @@ public final class LecturesController {
         }
 
         public String toString(){
-            if (this.position == 8) {
-                // Compat: avoid destroying the local cache after the name change
-                return "lectures_metas";
-            }
             return name;
         }
     }

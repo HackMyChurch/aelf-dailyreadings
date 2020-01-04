@@ -37,7 +37,7 @@ import android.util.Log;
 
 final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
     private static final String DB_NAME = "aelf_cache.db";
     private SharedPreferences preference = null;
     private Context ctx;
@@ -283,6 +283,19 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
                     db.execSQL("ALTER TABLE `" + what + "` ADD COLUMN create_version INTEGER;");
                     db.execSQL("UPDATE `" + what + "` SET create_date = '0000-00-00', create_version = 0;");
                 }
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+        if(oldVersion <= 3) {
+            Log.i(TAG, "Upgrading DB from version 3");
+            db.beginTransaction();
+            try {
+                db.execSQL("ALTER TABLE `lectures_metas` RENAME TO `"+LecturesController.WHAT.INFORMATIONS+"`");
                 db.setTransactionSuccessful();
             } catch (Exception e) {
                 throw e;
