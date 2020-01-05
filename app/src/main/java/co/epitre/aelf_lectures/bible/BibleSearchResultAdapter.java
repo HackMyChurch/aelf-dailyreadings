@@ -25,6 +25,7 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
     int mColTitleIndex;
     int mColChapterIndex;
     int mColSnippetIndex;
+    int mColSkippedIndex;
 
     BibleSearchResultAdapter(Context context, @NonNull Cursor cursor, @NonNull String query) {
         this.mInflater = LayoutInflater.from(context);
@@ -37,6 +38,7 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
             this.mColTitleIndex = mCursor.getColumnIndex("title");
             this.mColChapterIndex = mCursor.getColumnIndex("chapter");
             this.mColSnippetIndex = mCursor.getColumnIndex("snippet");
+            this.mColSkippedIndex = mCursor.getColumnIndex("skipped");
         }
     }
 
@@ -55,12 +57,17 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
         String title = mCursor.getString(this.mColTitleIndex);
         String chapter = mCursor.getString(this.mColChapterIndex);
         String preview = mCursor.getString(this.mColSnippetIndex);
+        String skipped = mCursor.getString(this.mColSkippedIndex);
 
         String reference = ""+book+" "+chapter;
         String link = "https://www.aelf.org/bible/"+book+"/"+chapter+"?query="+this.mQuery;
 
         if (book.equals("Ps")) {
-            reference = "Ps"+chapter;
+            reference = "Ps "+chapter;
+        }
+
+        if (!skipped.isEmpty()) {
+            preview += "<br/><br/><i>Terme manquant: <s>"+skipped+"</s></i>";
         }
 
         holder.titleTextView.setText(title);
