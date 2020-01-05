@@ -275,7 +275,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // Task switcher color for Android >= 21
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Bitmap appIcon = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+            Bitmap appIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
             String appName = getString(R.string.app_name);
             int appColor = getResources().getColor(R.color.dark_aelf_primary_dark);
             ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(appName, appIcon, appColor);
