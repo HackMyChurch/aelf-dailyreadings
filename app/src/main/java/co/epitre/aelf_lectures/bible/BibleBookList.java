@@ -78,7 +78,7 @@ public class BibleBookList {
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Évangile selon Saint Luc", "Lc"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Évangile selon Saint Jean", "Jn"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.SECTION, "Actes"))
-                        .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Les Actes des Apôtres", "Ap"))
+                        .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Les Actes des Apôtres", "Ac"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.SECTION, "Épitres de Saint Paul"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Aux Romains", "Rm"))
                         .addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Première aux Corinthiens", "1Co"))

@@ -99,7 +99,7 @@ BIBLE_BOOKS = {
             'Jn': {'title': 'Évangile selon Saint Jean'},
         },
         'Actes': {
-            'Ap': {'title': 'Les Actes des Apôtres'},
+            'Ac': {'title': 'Les Actes des Apôtres'},
         },
         'Épitres de Saint Paul': {
             'Rm':  {'title': 'Aux Romains'},
