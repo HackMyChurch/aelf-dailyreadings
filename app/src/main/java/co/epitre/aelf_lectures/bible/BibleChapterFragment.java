@@ -51,7 +51,7 @@ public class BibleChapterFragment extends Fragment {
         htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</head><body>");
         htmlString.append(body);
-        htmlString.append("<script>var highlight='"+highlight+"';</script>\n");
+        htmlString.append("<script>var highlight='"+highlight.replace("'", "")+"';</script>\n");
         htmlString.append("<script src=\"js/chapter.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</body></html>");
 

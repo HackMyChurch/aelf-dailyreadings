@@ -4,10 +4,11 @@ if (highlight) {
     instance.mark(highlight, {
         "accuracy": {
             "value": "exactly",
-            "limiters": ":;.,-–—‒_(){}[]!'\"+=".split(""),
+            "limiters": " : “’”:;.,-–—‒_(){}[]!'\"+=".split(""),
         },
         "ignoreJoiners": true,
         "acrossElements": true,
         "wildcards": "enabled",
+        "ignorePunctuation": "’-–—‒_".split(""),
     });
 }
