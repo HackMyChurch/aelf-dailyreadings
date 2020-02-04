@@ -26,7 +26,7 @@ android {
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.2.0-SNAPSHOT' // WARN: 1.2.0-alpha01 cause webview inflate crash on Android 5.0
+    implementation 'androidx.appcompat:appcompat:1.2.0-alpha02'
 
     // Material design
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -47,16 +47,6 @@ task downloadMarkJs(type: DownloadFile) {
     target = new File('./src/main/assets/js/mark.8.11.1.min.js')
 }
 preBuild.dependsOn downloadMarkJs
-
-//
-// FIXME: remove after androidx.appcompat:appcompat >= 1.2.0-alpha02 is release
-//
-
-repositories {
-    maven {
-        url 'https://ci.android.com/builds/submitted/6052626/androidx_snapshot/latest/repository/'
-    }
-}
 
 //
 // Custom tasks
