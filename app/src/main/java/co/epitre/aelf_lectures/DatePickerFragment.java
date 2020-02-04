@@ -86,10 +86,12 @@ public class DatePickerFragment extends DialogFragment
                     date.get(Calendar.DAY_OF_MONTH));
 
             // trigger listener
-            mListener.onCalendarDialogPicked(
-                    date.get(Calendar.YEAR),
-                    date.get(Calendar.MONTH),
-                    date.get(Calendar.DAY_OF_MONTH));
+            if(mListener != null) {
+                mListener.onCalendarDialogPicked(
+                        date.get(Calendar.YEAR),
+                        date.get(Calendar.MONTH),
+                        date.get(Calendar.DAY_OF_MONTH));
+            }
 
             // quit the dialog
             dialog.dismiss();
@@ -101,7 +103,7 @@ public class DatePickerFragment extends DialogFragment
     }
 
     public void onDateSet(DatePicker view, int year, int month, int day) {
-        if(!this.canceled) {
+        if(!this.canceled && mListener != null) {
             mListener.onCalendarDialogPicked(year, month, day);
         }
     }
