@@ -86,8 +86,14 @@ public class BibleChapterFragment extends Fragment {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
             if (url.equals("file:///android_asset/css/theme.css")) {
+                // Get the context
+                Context ctx = getContext();
+                if (ctx == null) {
+                    return null;
+                }
+
                 // Detect the current theme
-                boolean nightMode = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+                boolean nightMode = PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
                 String themeName = nightMode ? "dark":"light";
                 String cssPath = "css/theme-"+themeName+".css";
 
