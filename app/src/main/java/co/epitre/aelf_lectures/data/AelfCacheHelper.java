@@ -101,18 +101,10 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
 
 
-    synchronized void store(String what, String when, List<LectureItem> lectures) throws IOException {
+    synchronized void store(LecturesController.WHAT what, String when, List<LectureItem> lectures) throws IOException {
         final String key  = when;
         final String create_date = computeKey(new GregorianCalendar());
         final long create_version = preference.getInt("version", -1);
-
-        // Build table name
-        if (what.equals("messes")) {
-            what = "messe";
-        } else if (what.equals("informations")) {
-            what = "metas";
-        }
-        what = "lectures_"+what;
 
         // build blob
         final byte[] blob;
@@ -127,7 +119,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
         }
 
         // insert into the database
-        final String sql = String.format(DB_TABLE_SET, what);
+        final String sql = String.format(DB_TABLE_SET, what.toString());
         retry(new Callable() {
             @Override
             public Object call() throws Exception {

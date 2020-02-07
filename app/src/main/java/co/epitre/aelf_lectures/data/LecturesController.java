@@ -175,7 +175,7 @@ public final class LecturesController {
         // Cache lectures
         if(!looksLikeError(lectures)) {
             try {
-                cache.store(what.urlName(), when.toIsoString(), lectures);
+                cache.store(what, when.toIsoString(), lectures);
             } catch (IOException e) {
                 Log.e(TAG, "Failed to store lecture in cache", e);
             }
