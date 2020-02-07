@@ -59,7 +59,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
      */
     private static final String noNetworkErrorMessage = ""+
             "<h3>Aucune connexion Internet n’est disponible</h3>" +
-            "<p>L’office que vous ne demandez n’est pas disponible en mode hors-connexion. Pour le consulter, assurez-vous de disposer d’une connexion Internet de bonne qualité, de préférence en WiFi, puis ré-essayez.</p>" +
+            "<p>L’office que vous demandez n’est pas disponible en mode hors-connexion. Pour le consulter, assurez-vous de disposer d’une connexion Internet de bonne qualité, de préférence en WiFi, puis ré-essayez.</p>" +
             "<p><strong>Astuce&nbsp;:</strong> Une fois chargé avec succès, cet office sera automatiquement disponible en mode hors-connexion&nbsp;!</p>";
     private static final String connectionErrorMessage = ""+
             "<h3>Une erreur s'est glissée lors du chargement des lectures</h3>" +
