@@ -14,17 +14,13 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteBindOrColumnIndexOutOfRangeException;
-import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseCorruptException;
-import android.database.sqlite.SQLiteDatatypeMismatchException;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteStatement;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import org.sqlite.database.sqlite.SQLiteDatabase;
+import org.sqlite.database.sqlite.SQLiteException;
+import org.sqlite.database.sqlite.SQLiteOpenHelper;
+import org.sqlite.database.sqlite.SQLiteStatement;
 
 /**
  * Internal cache manager (SQLite). There is one table per office and one line per day.
@@ -56,7 +52,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     // TODO: prepare requests
 
     AelfCacheHelper(Context context) {
-        super(context, DB_NAME, null, DB_VERSION);
+        super(context, context.getDatabasePath(DB_NAME).getAbsolutePath(), null, DB_VERSION);
         preference = PreferenceManager.getDefaultSharedPreferences(context);
         ctx = context;
     }
