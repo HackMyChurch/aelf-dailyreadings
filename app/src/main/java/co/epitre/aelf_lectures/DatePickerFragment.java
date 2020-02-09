@@ -60,6 +60,9 @@ public class DatePickerFragment extends DialogFragment
         dialog.setCancelable(true);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);
         dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getString(R.string.button_today), this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            dialog.getDatePicker().setFirstDayOfWeek(Calendar.SUNDAY);
+        }
         return dialog;
     }
 
