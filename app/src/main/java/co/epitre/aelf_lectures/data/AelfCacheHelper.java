@@ -53,6 +53,7 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
 
     AelfCacheHelper(Context context) {
         super(context, context.getDatabasePath(DB_NAME).getAbsolutePath(), null, DB_VERSION);
+        context.getDatabasePath(DB_NAME).getParentFile().mkdirs();
         preference = PreferenceManager.getDefaultSharedPreferences(context);
         ctx = context;
     }
