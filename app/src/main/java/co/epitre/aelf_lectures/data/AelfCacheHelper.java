@@ -261,13 +261,41 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion == newVersion) {
-            return;
+        if(oldVersion <= 1) {
+            Log.i(TAG, "Upgrading DB from version 1");
+            createCache(db, LecturesController.WHAT.INFORMATIONS);
         }
 
-        Log.i(TAG, "Upgrading DB from version "+oldVersion+" to version "+newVersion+": Re-creating database");
-        close();
-        ctx.deleteDatabase(DB_NAME);
+        if(oldVersion <= 2) {
+            // Add create_date + create_version for finer grained invalidation
+            Log.i(TAG, "Upgrading DB from version 2");
+            db.beginTransaction();
+            try {
+                for (LecturesController.WHAT what: LecturesController.WHAT.values()) {
+                    db.execSQL("ALTER TABLE `" + what + "` ADD COLUMN create_date TEXT");
+                    db.execSQL("ALTER TABLE `" + what + "` ADD COLUMN create_version INTEGER;");
+                    db.execSQL("UPDATE `" + what + "` SET create_date = '0000-00-00', create_version = 0;");
+                }
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+        if(oldVersion <= 3) {
+            Log.i(TAG, "Upgrading DB from version 3");
+            db.beginTransaction();
+            try {
+                db.execSQL("ALTER TABLE `lectures_metas` RENAME TO `"+LecturesController.WHAT.INFORMATIONS+"`");
+                db.setTransactionSuccessful();
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                db.endTransaction();
+            }
+        }
     }
 
 }
