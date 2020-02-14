@@ -645,7 +645,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
                 setLoading(false);
                 Context context = getContext();
                 if(context != null) {
-                    Toast.makeText(context, "Oups... Impossible de rafraîchir.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Oups... Impossible de charger cet office.", Toast.LENGTH_SHORT).show();
                 }
                 break;
             case LOAD_DONE:
