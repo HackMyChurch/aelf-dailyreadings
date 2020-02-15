@@ -14,7 +14,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.fragment.app.Fragment;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,10 +62,6 @@ public class BibleChapterFragment extends Fragment {
         mWebSettings.setBuiltInZoomControls(false);
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setDomStorageEnabled(true);
-
-        // Disable swipe layout (only used by the lecture view)
-        SwipeRefreshLayout swipeLayout = rootView.findViewById(R.id.LectureSwipeRefresh);
-        swipeLayout.setEnabled(false);
 
         // Install theme and styling hooks
         mWebView.setWebViewClient(new ReadingWebViewClient());

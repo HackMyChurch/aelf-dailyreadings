@@ -12,7 +12,6 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_PREF_REGION = "pref_region";
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
-    public static final String KEY_PREF_DISP_PULL_TO_REFRESH = "pref_disp_pull_to_refresh";
     public static final String KEY_PREF_DISP_NIGHT_MODE = "pref_disp_night_mode";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";

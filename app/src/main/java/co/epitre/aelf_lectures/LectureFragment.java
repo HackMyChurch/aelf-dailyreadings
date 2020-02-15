@@ -10,8 +10,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -45,7 +43,6 @@ public class LectureFragment extends Fragment implements
     protected ViewGroup parent;
     protected WebView lectureView;
     protected WebSettings websettings;
-    private SwipeRefreshLayout swipeLayout;
 
     SharedPreferences preferences;
     NetworkStatusMonitor networkStatusMonitor = NetworkStatusMonitor.getInstance();
@@ -67,12 +64,6 @@ public class LectureFragment extends Fragment implements
                 hasNetwork = true;
                 break;
         }
-        refreshSwipeToRefreshEnabled();
-    }
-
-    private synchronized void refreshSwipeToRefreshEnabled() {
-        boolean prefPullToRefreshEnabled = preferences.getBoolean(SettingsActivity.KEY_PREF_DISP_PULL_TO_REFRESH, false);
-        swipeLayout.setEnabled(!isZooming && hasNetwork && prefPullToRefreshEnabled);
     }
 
     public LectureFragment() {
@@ -82,8 +73,6 @@ public class LectureFragment extends Fragment implements
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             this.refresh();
-        } else if (key.equals(SettingsActivity.KEY_PREF_DISP_PULL_TO_REFRESH)) {
-            this.refreshSwipeToRefreshEnabled();
         }
     }
     
@@ -290,7 +279,6 @@ public class LectureFragment extends Fragment implements
         // actual UI refresh
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         lectureView = (WebView) rootView.findViewById(R.id.LectureView);
-        swipeLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.LectureSwipeRefresh);
         websettings = lectureView.getSettings();
         websettings.setBuiltInZoomControls(false);
 
@@ -357,17 +345,6 @@ public class LectureFragment extends Fragment implements
             }
         });
 
-        // capture refresh events
-        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                FragmentActivity activity = getActivity();
-                LecturesActivity test  = (LecturesActivity) activity;
-                test.onRefresh("pull");
-                swipeLayout.setRefreshing(false); // we have our own spinner
-            }
-        });
-
         // accessibility: enable (best effort)
         websettings.setJavaScriptEnabled(true);
         try {
@@ -411,14 +388,12 @@ public class LectureFragment extends Fragment implements
         lectureView.setOnTouchListener(new PinchToZoomListener(context) {
             public int onZoomStart() {
                 isZooming = true;
-                refreshSwipeToRefreshEnabled();
                 return super.onZoomStart();
             }
 
             public void onZoomEnd(int zoomLevel) {
                 super.onZoomEnd(zoomLevel);
                 isZooming = false;
-                refreshSwipeToRefreshEnabled();
                 setCurrentZoom(zoomLevel);
             }
 
