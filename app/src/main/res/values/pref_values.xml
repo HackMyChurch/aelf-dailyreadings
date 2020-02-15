@@ -67,6 +67,7 @@
     <string name="pref_section_disp_title">Affichage</string>
     <string name="pref_disp_fullscreen_title">Plein écran</string>
     <string name="pref_disp_pull_to_refresh_title">Glisser pour rafraîchir</string>
+    <string name="pref_disp_text_zoom_title">Taille du texte</string>
     <string name="pref_disp_night_mode_title">Mode nuit</string>
 
     <string name="pref_section_sync_title">Mode hors connexion</string>

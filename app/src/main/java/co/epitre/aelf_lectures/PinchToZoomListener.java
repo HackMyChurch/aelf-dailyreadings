@@ -13,11 +13,23 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 public class PinchToZoomListener implements View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static int MIN_ZOOM_LEVEL = 100;
+    private static int MAX_ZOOM_LEVEL = 700;
 
     private ScaleGestureDetector mScaleDetector;
     private SharedPreferences preferences;
     private int currentZoom;
 
+    private static int cropZoom(int zoom) {
+        if (zoom < MIN_ZOOM_LEVEL) {
+            return MIN_ZOOM_LEVEL;
+        }
+
+        if (zoom > MAX_ZOOM_LEVEL) {
+            return MAX_ZOOM_LEVEL;
+        }
+
+        return zoom;
+    }
 
     class PinchListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
         private static final String TAG = "PinchListeners";
@@ -34,9 +46,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
             // Minimum zoom is 100%. This helps keep something at least a little readable
             // and intuitively reset to default zoom level.
-            if (newZoom < MIN_ZOOM_LEVEL) {
-                newZoom = MIN_ZOOM_LEVEL;
-            }
+            newZoom = cropZoom(newZoom);
 
             // Apply zoom
             Log.d(TAG, "pinch scaling factor: "+scale+"; new zoom: "+newZoom);
@@ -101,10 +111,8 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
     }
 
     public void onZoomEnd(int zoomLevel) {
-        // Validate input: zoom must at least be 100
-        if (zoomLevel < MIN_ZOOM_LEVEL) {
-            zoomLevel = MIN_ZOOM_LEVEL;
-        }
+        // Validate input: zoom must be between 100% and 700%
+        zoomLevel = cropZoom(zoomLevel);
 
         // Save new scale preference
         if (currentZoom != zoomLevel) {

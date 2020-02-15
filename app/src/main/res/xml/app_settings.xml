@@ -29,6 +29,13 @@
             android:summaryOff="@string/pref_disp_pull_to_refresh_off"
             android:summaryOn="@string/pref_disp_pull_to_refresh_on"
             android:title="@string/pref_disp_pull_to_refresh_title" />
+        <SeekBarPreference
+            android:defaultValue="100"
+            android:max="700"
+            app:min="100"
+            app:updatesContinuously="true"
+            android:key="pref_disp_font_size"
+            android:title="@string/pref_disp_text_zoom_title" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_section_sync_title">
