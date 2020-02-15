@@ -73,6 +73,8 @@ public class LectureFragment extends Fragment implements
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if(key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             this.refresh();
+        } else if (key.equals(SettingsActivity.KEY_PREF_DISP_PSALM_UNDERLINE)) {
+            loadText();
         }
     }
     
@@ -113,7 +115,7 @@ public class LectureFragment extends Fragment implements
 
     private String colorResourceToRgba(int colorAttr) {
         final TypedValue value = new TypedValue();
-        getContext().getTheme().resolveAttribute(colorAttr, value, true);
+        getActivity().getTheme().resolveAttribute(colorAttr, value, true);
         int color = value.data;
 
         float a = (color >> 24 & 0xff)/(float)255;
@@ -127,154 +129,6 @@ public class LectureFragment extends Fragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Context context = getActivity();
-
-        // compute view --> HTML
-        StringBuilder htmlString = new StringBuilder();
-        String body = getArguments().getString(ARG_TEXT_HTML);
-
-        String color_text_accent = colorResourceToRgba(R.attr.colorLectureAccent);
-        String color_text_bg = colorResourceToRgba(R.attr.colorLectureBackground);
-        String color_text_fg = colorResourceToRgba(R.attr.colorLectureText);
-
-        // Compute navigation bar height
-        Resources resources = getContext().getResources();
-        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        int navigationBarHeight = 0;
-        if (resourceId > 0) {
-            navigationBarHeight = (int)(resources.getDimensionPixelSize(resourceId) / getResources().getDisplayMetrics().density);
-        }
-
-        htmlString.append("<!DOCTYPE html>" +
-                "<html>" +
-                    "<head>" +
-                        "<meta charset=\"utf-8\">" +
-                        "<style type=\"text/css\">" +
-                        "body{" +
-                        "	margin:24px;" +
-                        "	margin-bottom:"+(24+navigationBarHeight)+"px;" +
-                        "	background-color: "+color_text_bg+";" +
-                        "   color: "+color_text_fg+";" +
-                        "   font-family: sans-serif;" +
-                        "	font-size: 15px;" + // regular body
-                        "	font-weight: regular;" +
-                        "}" +
-                        "h3 {" + // title
-                        "	font-size: 20px;" +
-                        "	font-weight: bold;" +
-                        "}" +
-                        "p {" +
-                        "   line-height: 1.2;"+
-                        "}" +
-                        "div.app-office-navigation {" +
-                        "    margin-top: 20px;" +
-                        "}" +
-                        ".app-office-navigation a {" +
-                        "    display: block;" +
-                        "    text-align: center;" +
-                        "    padding: 13px;" +
-                        "    margin-top: 10px;" +
-                        "   color: "+color_text_fg+";" +
-                        "	 font-size: 17px;" +
-                        "    text-decoration: none;" +
-                        "    border: 1px solid "+color_text_fg+";" +
-                        "}"+
-                        ".app-office-navigation a:active, .app-office-navigation a.active {" +
-                        "    color: "+color_text_fg+";" +
-                        "    background-color: "+color_text_bg+";" +
-                        "}"+
-                        "b i{" + // sub-title
-                        "	font-size: 15px;" +
-                        "	display: block;" +
-                        "	margin-top: -12px;" +
-                        "	margin-bottom: 20px;" +
-                        "}" +
-                        "blockquote {" +
-                        "	margin-right: 20px" +
-                        "}" +
-                        "blockquote p {" +
-                        "	margin-top: 30px;" +
-                        "}" +
-                        "h3 small i{" + // global reference
-                        "	display: block;" +
-                        "	float: right;" +
-                        "   font-weight: normal;" +
-                        "	margin-top: 5px;" +
-                        "}" +
-                        "blockquote small i{" + // citation reference
-                        "	display: block;" +
-                        "	text-align: right;" +
-                        "   margin-top: -15px;" +
-                        "	margin-right: 0;" +
-                        "   padding-top: 0;" +
-                        "}" +
-                        "font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
-                        "    color: "+color_text_accent+";" +
-                        "} " +
-                        "font[color='#000000'] {" + // regular text
-                        "    color: "+color_text_fg+";" +
-                        "} " +
-                        ".verse {" + // psaume verse number
-                        "	display: block;" +
-                        "   float: left;" +
-                        "   width: 25px;" +
-                        "   text-align: right;" +
-                        "   margin-top: 4px;" +
-                        "   margin-left: -30px;" +
-                        "	font-size: 10px;" +
-                        "   color: "+color_text_accent+";" +
-                        "}" +
-                        "sup {" + // inflections: do not affect line-height
-                        "   vertical-align: baseline;" +
-                        "   position: relative;" +
-                        "   top: -0.4em;" +
-                        "}" +
-                        ".underline {" +
-                        "    text-decoration: underline;" +
-                        "}" +
-                        // indent line when verse is too long to fit on the screen
-                        ".line .verse {" +
-                        "   margin-left: -30px;" +
-                        "}" +
-                        ".line-wrap .verse {" +
-                        "   margin-left: -55px;" +
-                        "}" +
-                        ".line {" +
-                        "   display: block;" +
-                        "   margin-bottom: 5px;" +
-                        "}" +
-                        // Highlight the current position in the lecture. This is hint for the user
-                        ":focus {" +
-                        "    outline: none;" +
-                        "    border-left: 2px "+color_text_accent+" solid;" +
-                        "    margin-left: -4px;" +
-                        "}" +
-                        ".line:focus, div.antienne:focus {" +
-                        "    padding-left: 2px;" +
-                        "}" +
-                        ".line-wrap:focus {" +
-                        "    padding-left: 27px;" +
-                        "}" +
-                        ".line-wrap {" +
-                        "   display: block;" +
-                        "   padding-left: 25px;" +
-                        "   text-indent: -25px;" +
-                        "   margin-bottom: 1px;" +
-                        "}" +
-                        "img {" +
-                        "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked
-                        "}" +
-                        ".antienne-title {" + // antienne
-                        "   color: "+color_text_accent+";" +
-                        "   font-style: italic;" +
-                        "   font-weight: bold;" +
-                        "} " +
-                        "</style>" +
-                    "</head>" +
-                    "<body>");
-        htmlString.append(body);
-        htmlString.append("</body></html>");
-
-        String reading = htmlString.toString();
 
         // actual UI refresh
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
@@ -345,6 +199,10 @@ public class LectureFragment extends Fragment implements
             }
         });
 
+        // register preference listener
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferences.registerOnSharedPreferenceChangeListener(this);
+
         // accessibility: enable (best effort)
         websettings.setJavaScriptEnabled(true);
         try {
@@ -353,22 +211,8 @@ public class LectureFragment extends Fragment implements
             Log.w(TAG, "Accessibility support is not available on this device");
         }
 
-        //accessibility: drop the underline attributes && line wrapper fixes, they break the screen readers
-        AccessibilityManager am = (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        if(am.isEnabled()) {
-            reading = reading.replaceAll("</?u>", "")
-                             // FIXME: what do people prefer ? Line by line or § by § ?
-                             .replaceAll("</line><line>", "<br aria-hidden=true />")
-                             .replaceAll("</?line>", "");
-        }
-
         // load content
-        lectureView.loadDataWithBaseURL("file:///android_asset/", reading, "text/html", "utf-8", null);
-        lectureView.setBackgroundColor(0x00000000);
-
-        // register listener
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.registerOnSharedPreferenceChangeListener(this);
+        this.loadText();
 
         // Refresh the zoom on layout change (screen split, rotation, ...)
         parent = (ViewGroup)lectureView.getParent();
@@ -404,6 +248,178 @@ public class LectureFragment extends Fragment implements
         });
 
         return rootView;
+    }
+
+    private void loadText() {
+        Context context = getActivity();
+        if (context == null) {
+            return;
+        }
+
+        // compute view --> HTML
+        StringBuilder htmlString = new StringBuilder();
+        String body = getArguments().getString(ARG_TEXT_HTML);
+
+        String color_text_accent = colorResourceToRgba(R.attr.colorLectureAccent);
+        String color_text_bg = colorResourceToRgba(R.attr.colorLectureBackground);
+        String color_text_fg = colorResourceToRgba(R.attr.colorLectureText);
+
+        // Compute navigation bar height
+        Resources resources = context.getResources();
+        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        int navigationBarHeight = 0;
+        if (resourceId > 0) {
+            navigationBarHeight = (int)(resources.getDimensionPixelSize(resourceId) / getResources().getDisplayMetrics().density);
+        }
+
+        htmlString.append("<!DOCTYPE html>" +
+                "<html>" +
+                "<head>" +
+                "<meta charset=\"utf-8\">" +
+                "<style type=\"text/css\">" +
+                "body{" +
+                "	margin:24px;" +
+                "	margin-bottom:"+(24+navigationBarHeight)+"px;" +
+                "	background-color: "+color_text_bg+";" +
+                "   color: "+color_text_fg+";" +
+                "   font-family: sans-serif;" +
+                "	font-size: 15px;" + // regular body
+                "	font-weight: regular;" +
+                "}" +
+                "h3 {" + // title
+                "	font-size: 20px;" +
+                "	font-weight: bold;" +
+                "}" +
+                "p {" +
+                "   line-height: 1.2;"+
+                "}" +
+                "div.app-office-navigation {" +
+                "    margin-top: 20px;" +
+                "}" +
+                ".app-office-navigation a {" +
+                "    display: block;" +
+                "    text-align: center;" +
+                "    padding: 13px;" +
+                "    margin-top: 10px;" +
+                "   color: "+color_text_fg+";" +
+                "	 font-size: 17px;" +
+                "    text-decoration: none;" +
+                "    border: 1px solid "+color_text_fg+";" +
+                "}"+
+                ".app-office-navigation a:active, .app-office-navigation a.active {" +
+                "    color: "+color_text_fg+";" +
+                "    background-color: "+color_text_bg+";" +
+                "}"+
+                "b i{" + // sub-title
+                "	font-size: 15px;" +
+                "	display: block;" +
+                "	margin-top: -12px;" +
+                "	margin-bottom: 20px;" +
+                "}" +
+                "blockquote {" +
+                "	margin-right: 20px" +
+                "}" +
+                "blockquote p {" +
+                "	margin-top: 30px;" +
+                "}" +
+                "h3 small i{" + // global reference
+                "	display: block;" +
+                "	float: right;" +
+                "   font-weight: normal;" +
+                "	margin-top: 5px;" +
+                "}" +
+                "blockquote small i{" + // citation reference
+                "	display: block;" +
+                "	text-align: right;" +
+                "   margin-top: -15px;" +
+                "	margin-right: 0;" +
+                "   padding-top: 0;" +
+                "}" +
+                "font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {" + // psaume refrain
+                "    color: "+color_text_accent+";" +
+                "} " +
+                "font[color='#000000'] {" + // regular text
+                "    color: "+color_text_fg+";" +
+                "} " +
+                ".verse {" + // psaume verse number
+                "	display: block;" +
+                "   float: left;" +
+                "   width: 25px;" +
+                "   text-align: right;" +
+                "   margin-top: 4px;" +
+                "   margin-left: -30px;" +
+                "	font-size: 10px;" +
+                "   color: "+color_text_accent+";" +
+                "}" +
+                "sup {" + // inflections: do not affect line-height
+                "   vertical-align: baseline;" +
+                "   position: relative;" +
+                "   top: -0.4em;" +
+                "}" +
+                ".underline {" +
+                "    text-decoration: underline;" +
+                "}" +
+                // indent line when verse is too long to fit on the screen
+                ".line .verse {" +
+                "   margin-left: -30px;" +
+                "}" +
+                ".line-wrap .verse {" +
+                "   margin-left: -55px;" +
+                "}" +
+                ".line {" +
+                "   display: block;" +
+                "   margin-bottom: 5px;" +
+                "}" +
+                // Highlight the current position in the lecture. This is hint for the user
+                ":focus {" +
+                "    outline: none;" +
+                "    border-left: 2px "+color_text_accent+" solid;" +
+                "    margin-left: -4px;" +
+                "}" +
+                ".line:focus, div.antienne:focus {" +
+                "    padding-left: 2px;" +
+                "}" +
+                ".line-wrap:focus {" +
+                "    padding-left: 27px;" +
+                "}" +
+                ".line-wrap {" +
+                "   display: block;" +
+                "   padding-left: 25px;" +
+                "   text-indent: -25px;" +
+                "   margin-bottom: 1px;" +
+                "}" +
+                "img {" +
+                "   display: none;" + // quick and dirty fix for spurious images. May need to be removed / hacked
+                "}" +
+                ".antienne-title {" + // antienne
+                "   color: "+color_text_accent+";" +
+                "   font-style: italic;" +
+                "   font-weight: bold;" +
+                "} " +
+                "</style>" +
+                "</head>" +
+                "<body>");
+        htmlString.append(body);
+        htmlString.append("</body></html>");
+
+        String reading = htmlString.toString();
+
+        // accessibility: drop the underline attributes && line wrapper fixes, they break the screen readers
+        String underlineMode = preferences.getString(SettingsActivity.KEY_PREF_DISP_PSALM_UNDERLINE, "auto");
+
+        boolean underline = underlineMode.equals("always");
+        if (underlineMode.equals("auto")) {
+            AccessibilityManager am = (AccessibilityManager) getActivity().getSystemService(Context.ACCESSIBILITY_SERVICE);
+            underline = !am.isEnabled();
+        }
+
+        if(!underline) {
+            reading = reading.replaceAll("</?u>", "");
+        }
+
+        // load content
+        lectureView.loadDataWithBaseURL("file:///android_asset/", reading, "text/html", "utf-8", null);
+        lectureView.setBackgroundColor(0x00000000);
     }
 
     @Override

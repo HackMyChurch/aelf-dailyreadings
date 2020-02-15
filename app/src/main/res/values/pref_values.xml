@@ -59,6 +59,19 @@
     </string-array>
     <string name="pref_region_def">romain</string>
 
+    <!-- Soulignement dans les psaumes -->
+    <string-array name="pref_disp_psalm_underline_title">
+        <item>Automatique (Quand les options d\'accessibilité Android ne sont pas activées)</item>
+        <item>Toujours souligner</item>
+        <item>Ne jamais souligner</item>
+    </string-array>
+    <string-array name="pref_disp_psalm_underline_values">
+        <item>auto</item>
+        <item>always</item>
+        <item>never</item>
+    </string-array>
+    <string name="pref_disp_psalm_underline_def">auto</string>
+
     <string name="pref_section_global_title">Preférences</string>
 
     <string name="pref_section_reading_title">Lectures</string>
@@ -67,6 +80,7 @@
     <string name="pref_section_disp_title">Affichage</string>
     <string name="pref_disp_fullscreen_title">Plein écran</string>
     <string name="pref_disp_text_zoom_title">Taille du texte</string>
+    <string name="pref_disp_psalm_underline_title">Souligner le changement de ton</string>
     <string name="pref_disp_night_mode_title">Mode nuit</string>
 
     <string name="pref_section_sync_title">Mode hors connexion</string>
