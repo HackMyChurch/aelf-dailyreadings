@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import co.epitre.aelf_lectures.SyncPrefActivity;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -109,7 +109,7 @@ public final class EpitreApi {
         int version = preference.getInt("version", -1);
 
         // Build URL
-        String region = preference.getString(SyncPrefActivity.KEY_PREF_REGION, "romain");
+        String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
         path = String.format(Locale.US, path, version, office, date, region);
 
         // Issue request

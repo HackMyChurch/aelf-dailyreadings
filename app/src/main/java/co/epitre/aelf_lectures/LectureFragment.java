@@ -25,6 +25,8 @@ import android.webkit.WebViewClient;
 
 import java.util.Locale;
 
+import co.epitre.aelf_lectures.settings.SettingsActivity;
+
 /**
  * "Lecture" renderer
  */
@@ -69,7 +71,7 @@ public class LectureFragment extends Fragment implements
     }
 
     private synchronized void refreshSwipeToRefreshEnabled() {
-        boolean prefPullToRefreshEnabled = preferences.getBoolean(SyncPrefActivity.KEY_PREF_DISP_PULL_TO_REFRESH, false);
+        boolean prefPullToRefreshEnabled = preferences.getBoolean(SettingsActivity.KEY_PREF_DISP_PULL_TO_REFRESH, false);
         swipeLayout.setEnabled(!isZooming && hasNetwork && prefPullToRefreshEnabled);
     }
 
@@ -78,9 +80,9 @@ public class LectureFragment extends Fragment implements
     
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if(key.equals(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE)) {
+        if(key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             this.refresh();
-        } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_PULL_TO_REFRESH)) {
+        } else if (key.equals(SettingsActivity.KEY_PREF_DISP_PULL_TO_REFRESH)) {
             this.refreshSwipeToRefreshEnabled();
         }
     }
@@ -93,7 +95,7 @@ public class LectureFragment extends Fragment implements
         }
 
         // load current zoom level
-        int zoom = preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
+        int zoom = preferences.getInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100);
         setCurrentZoom(zoom);
     }
 

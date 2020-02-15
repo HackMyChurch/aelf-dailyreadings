@@ -7,9 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.SyncPrefActivity;
 import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
@@ -137,7 +137,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // If this is not a manual sync and we are supposed to wait for a wifi network, wait for it
         boolean isManualSync = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
-        boolean wifiOnly = syncPref.getBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, true);
+        boolean wifiOnly = syncPref.getBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, true);
 
         if (wifiOnly && !isManualSync) {
             // Wait for wifi
@@ -165,9 +165,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String pConserv  = res.getString(R.string.pref_conserv_def);
 
         // read preferences
-        pLectures = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, pLectures);
-        pDuree    = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE,    pDuree);
-        pConserv  = syncPref.getString(SyncPrefActivity.KEY_PREF_SYNC_CONSERV,  pConserv);
+        pLectures = syncPref.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, pLectures);
+        pDuree    = syncPref.getString(SettingsActivity.KEY_PREF_SYNC_DUREE,    pDuree);
+        pConserv  = syncPref.getString(SettingsActivity.KEY_PREF_SYNC_CONSERV,  pConserv);
 
         Log.i(TAG, "Pref lectures="+pLectures);
         Log.i(TAG, "Pref durée="+pDuree);
@@ -237,9 +237,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
             SharedPreferences.Editor editor = syncStat.edit();
-            editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
+            editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
             if (errorName.equals("success")) {
-                editor.putLong(SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
+                editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
             }
             editor.commit();
         }
@@ -278,6 +278,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     public static long getLastSyncSuccessAgeHours(Context ctx) {
-        return getHoursSincePreference(ctx, SyncPrefActivity.KEY_APP_SYNC_LAST_SUCCESS);
+        return getHoursSincePreference(ctx, SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS);
     }
 }

@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import co.epitre.aelf_lectures.settings.SettingsActivity;
+
 public class PinchToZoomListener implements View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static int MIN_ZOOM_LEVEL = 100;
 
@@ -81,8 +83,8 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         // Apply externally changed zoom
-        if(key.equals(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE)) {
-            int zoomLevel = preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
+        if(key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
+            int zoomLevel = preferences.getInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100);
             this.onZoomEnd(zoomLevel);
         }
     }
@@ -95,7 +97,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
     public int onZoomStart() {
         // Get current scale preference
-        return preferences.getInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, 100);
+        return preferences.getInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100);
     }
 
     public void onZoomEnd(int zoomLevel) {
@@ -107,7 +109,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
         // Save new scale preference
         if (currentZoom != zoomLevel) {
             SharedPreferences.Editor editor = preferences.edit();
-            editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, zoomLevel);
+            editor.putInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, zoomLevel);
             editor.apply();
         }
         currentZoom = zoomLevel;

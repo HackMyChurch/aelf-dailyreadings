@@ -1,17 +1,17 @@
 package co.epitre.aelf_lectures.data;
 
-import java.io.IOException;
-import java.util.GregorianCalendar;
-import java.util.List;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import java.io.IOException;
+import java.util.GregorianCalendar;
+import java.util.List;
+
 import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.SyncPrefActivity;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
  * Public data controller --> load either from cache, either from network
@@ -145,8 +145,8 @@ public final class LecturesController {
         long minLoadVersion = -1;
 
         if (!allowColdCache) {
-            minLoadVersion = preference.getInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, -1);
-            minLoadDate = new AelfDate(preference.getLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, 0));
+            minLoadVersion = preference.getInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, -1);
+            minLoadDate = new AelfDate(preference.getLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, 0));
         }
 
         try {

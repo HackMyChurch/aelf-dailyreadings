@@ -18,6 +18,7 @@ import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
  * Created by jean-tiare on 22/05/17.
@@ -143,19 +144,19 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
         Resources res = ctx.getResources();
 
         // Is there a custom server ? Beta and no cache are non critical
-        if(!preference.getString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "").equals("")) {
+        if(!preference.getString(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER, "").equals("")) {
             return true;
         }
 
         // Are we syncing for a month ?
-        if(!preference.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, res.getString(R.string.pref_duree_def)).equals("mois")) {
+        if(!preference.getString(SettingsActivity.KEY_PREF_SYNC_DUREE, res.getString(R.string.pref_duree_def)).equals("mois")) {
             return true;
         }
 
         // Are we trying to load an office but only pre-load mass ?
         if(
                 ww.what != LecturesController.WHAT.MESSE && ww.what != LecturesController.WHAT.INFORMATIONS &&
-                !preference.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
+                !preference.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
         ) {
             return true;
         }

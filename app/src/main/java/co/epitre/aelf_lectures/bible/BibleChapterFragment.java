@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import co.epitre.aelf_lectures.PinchToZoomListener;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.SyncPrefActivity;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
 public class BibleChapterFragment extends Fragment {
@@ -93,7 +93,7 @@ public class BibleChapterFragment extends Fragment {
                 }
 
                 // Detect the current theme
-                boolean nightMode = PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+                boolean nightMode = PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
                 String themeName = nightMode ? "dark":"light";
                 String cssPath = "css/theme-"+themeName+".css";
 

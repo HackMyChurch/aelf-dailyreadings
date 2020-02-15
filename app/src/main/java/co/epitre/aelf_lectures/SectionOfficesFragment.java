@@ -4,13 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.core.content.ContextCompat;
-import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -38,6 +35,7 @@ import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import static co.epitre.aelf_lectures.data.WhatWhen.DATE_TODAY;
 
@@ -120,7 +118,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             whatwhen.today = true;
             whatwhen.position = 0;
 
-            if (settings.getString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
+            if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
                 whatwhen.what = LecturesController.WHAT.MESSE;
             } else {
                 long hour = whatwhen.when.get(Calendar.HOUR_OF_DAY);

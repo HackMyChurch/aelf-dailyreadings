@@ -11,7 +11,7 @@ import android.os.Process;
 
 import co.epitre.aelf_lectures.data.Validator;
 
-import static co.epitre.aelf_lectures.SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER;
+import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICIPATE_SERVER;
 
 
 // Attempt to fix crash on Android 4.4 when upgrading app

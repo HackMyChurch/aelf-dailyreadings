@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.ActivityManager;
 import android.app.NotificationManager;
-import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -48,9 +47,8 @@ import java.io.File;
 import co.epitre.aelf_lectures.data.AelfDate;
 import co.epitre.aelf_lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
-
-import static co.epitre.aelf_lectures.SectionOfficesFragment.buildUri;
 
 public class LecturesActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
@@ -106,7 +104,7 @@ public class LecturesActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         // Install theme before anything else
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-        nightMode = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+        nightMode = settings.getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
         this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
 
         // Restore state
@@ -127,16 +125,16 @@ public class LecturesActivity extends AppCompatActivity implements
         // load saved version, if any
         Resources res = getResources();
         settings.registerOnSharedPreferenceChangeListener(this);
-        savedVersion = settings.getInt(SyncPrefActivity.KEY_APP_VERSION, -1);
+        savedVersion = settings.getInt(SettingsActivity.KEY_APP_VERSION, -1);
 
 
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
             // update saved version
-            editor.putInt(SyncPrefActivity.KEY_APP_VERSION, currentVersion);
-            editor.putInt(SyncPrefActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
-            editor.putInt(SyncPrefActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
+            editor.putInt(SettingsActivity.KEY_APP_VERSION, currentVersion);
+            editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
+            editor.putInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
             do_manual_sync("upgrade");
         }
 
@@ -146,9 +144,9 @@ public class LecturesActivity extends AppCompatActivity implements
         // as a side effect, it is expected to reduce error rates as WiFi is generally more reliable.
         if(savedVersion > 0) {
             // This is an *upgrade*
-            if (!settings.contains(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
+            if (!settings.contains(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
                 // Do not override setting...
-                editor.putBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
+                editor.putBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
             }
 
             // Purge cache on upgrade (get new Bible index if any, ...)
@@ -156,7 +154,7 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
         // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
-        if (settings.getString(SyncPrefActivity.KEY_PREF_REGION, "").equals("")) {
+        if (settings.getString(SettingsActivity.KEY_PREF_REGION, "").equals("")) {
             // Get locale
             String locale = res.getConfiguration().locale.getCountry();
             String region = "romain";
@@ -175,12 +173,12 @@ public class LecturesActivity extends AppCompatActivity implements
                         region = "romain";
                     }
             }
-            editor.putString(SyncPrefActivity.KEY_PREF_REGION, region);
+            editor.putString(SettingsActivity.KEY_PREF_REGION, region);
         }
 
-        // migrate SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE from text to int
+        // migrate SettingsActivity.KEY_PREF_DISP_FONT_SIZE from text to int
         try {
-            String fontSize = settings.getString(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, "normal");
+            String fontSize = settings.getString(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, "normal");
             int zoom;
             switch (fontSize) {
                 case "big":
@@ -193,15 +191,15 @@ public class LecturesActivity extends AppCompatActivity implements
                     // small is deprecated. Treat as "normal".
                     zoom = 100;
             }
-            editor.putInt(SyncPrefActivity.KEY_PREF_DISP_FONT_SIZE, zoom);
+            editor.putInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, zoom);
         } catch (ClassCastException e) {
             // Ignore: already migrated :)
         }
 
-        // migrate SyncPrefActivity.KEY_PREF_SYNC_DUREE
-        String syncDuree = settings.getString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "mois");
+        // migrate SettingsActivity.KEY_PREF_SYNC_DUREE
+        String syncDuree = settings.getString(SettingsActivity.KEY_PREF_SYNC_DUREE, "mois");
         if (syncDuree.equals("auj") || syncDuree.equals("auj-dim")) {
-            editor.putString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "semaine");
+            editor.putString(SettingsActivity.KEY_PREF_SYNC_DUREE, "semaine");
         }
 
         editor.apply();
@@ -378,7 +376,7 @@ public class LecturesActivity extends AppCompatActivity implements
         boolean doFullScreen = isFullScreen && !isMultiWindow;
 
         // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
-        boolean hideStatusBar = settings.getBoolean(SyncPrefActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
+        boolean hideStatusBar = settings.getBoolean(SettingsActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
         // Detect orientation
         Display getOrient = getWindowManager().getDefaultDisplay();
@@ -500,7 +498,7 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public boolean onSyncPref() {
-        Intent intent = new Intent(this, SyncPrefActivity.class);
+        Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
         return true;
     }
@@ -513,7 +511,7 @@ public class LecturesActivity extends AppCompatActivity implements
         // Toggle the value
         nightMode = !nightMode;
         SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE, nightMode);
+        editor.putBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, nightMode);
         editor.apply();
         return true;
     }
@@ -522,14 +520,14 @@ public class LecturesActivity extends AppCompatActivity implements
         SharedPreferences.Editor editor = settings.edit();
 
         // Reset sync settings
-        editor.putString(SyncPrefActivity.KEY_PREF_SYNC_DUREE, "mois");
-        editor.putString(SyncPrefActivity.KEY_PREF_SYNC_LECTURES, "messe-offices");
-        editor.putBoolean(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
+        editor.putString(SettingsActivity.KEY_PREF_SYNC_DUREE, "mois");
+        editor.putString(SettingsActivity.KEY_PREF_SYNC_LECTURES, "messe-offices");
+        editor.putBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
 
         // Reset test settings
-        editor.putString(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER, "");
-        editor.putBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA, false);
-        editor.putBoolean(SyncPrefActivity.KEY_PREF_PARTICIPATE_NOCACHE, false);
+        editor.putString(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER, "");
+        editor.putBoolean(SettingsActivity.KEY_PREF_PARTICIPATE_BETA, false);
+        editor.putBoolean(SettingsActivity.KEY_PREF_PARTICIPATE_NOCACHE, false);
 
         // Make sure sync is enabled on device
         ContentResolver.setMasterSyncAutomatically(true);
@@ -665,18 +663,18 @@ public class LecturesActivity extends AppCompatActivity implements
     // FIXME: this should probably be in the application. Should also move the account managment there
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(SyncPrefActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
+        if (key.equals(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
             killPendingSyncs();
-        } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_SERVER)) {
+        } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
             killPendingSyncs();
-        } else if (key.equals(SyncPrefActivity.KEY_PREF_PARTICIPATE_BETA)) {
+        } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_BETA)) {
             killPendingSyncs();
-        } else if (key.equals(SyncPrefActivity.KEY_PREF_REGION)) {
+        } else if (key.equals(SettingsActivity.KEY_PREF_REGION)) {
             // Invalidate cache
             SharedPreferences.Editor editor = settings.edit();
-            editor.putLong(SyncPrefActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
+            editor.putLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
             editor.apply();
-        } else if (key.equals(SyncPrefActivity.KEY_PREF_DISP_NIGHT_MODE)) {
+        } else if (key.equals(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE)) {
             recreate();
         }
     }

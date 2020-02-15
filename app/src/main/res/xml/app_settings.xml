@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:title="@string/pref_section_global_title"
+    android:key="pref_sync"
+    tools:context=".SettingsActivity">
+    <PreferenceCategory android:title="@string/pref_section_reading_title">
+        <ListPreference
+            android:title="@string/pref_region_title"
+            android:dialogTitle="@string/pref_region_title"
+            android:entryValues="@array/pref_region_values"
+            android:entries="@array/pref_region_title"
+            android:key="pref_region"
+            android:defaultValue="@string/pref_region_def"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_section_disp_title">
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_disp_fullscreen"
+            android:summaryOff="@string/pref_disp_fullscreen_off"
+            android:summaryOn="@string/pref_disp_fullscreen_on"
+            android:title="@string/pref_disp_fullscreen_title" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="pref_disp_pull_to_refresh"
+            android:summaryOff="@string/pref_disp_pull_to_refresh_off"
+            android:summaryOn="@string/pref_disp_pull_to_refresh_on"
+            android:title="@string/pref_disp_pull_to_refresh_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_section_sync_title">
+        <ListPreference
+            android:title="@string/pref_lectures_title"
+            android:dialogTitle="@string/pref_lectures_title"
+            android:entryValues="@array/pref_lectures_values"
+            android:entries="@array/pref_lectures_names"
+            android:key="pref_sync_lectures"
+            android:defaultValue="@string/pref_lectures_def"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            android:title="@string/pref_duree_title"
+            android:dialogTitle="@string/pref_duree_title"
+            android:entryValues="@array/pref_duree_values"
+            android:entries="@array/pref_duree_names"
+            android:key="pref_sync_duree"
+            android:defaultValue="@string/pref_duree_def"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
+            android:title="@string/pref_conserv_title"
+            android:dialogTitle="Conserver les textes pendant"
+            android:entryValues="@array/pref_conserv_values"
+            android:entries="@array/pref_conserv_names"
+            android:key="pref_sync_conserv"
+            android:defaultValue="@string/pref_conserv_def"
+            app:useSimpleSummaryProvider="true" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_sync_wifi_only"
+            android:title="@string/pref_sync_wifi_only_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_section_participate_title">
+        <Preference
+            android:title="@string/pref_participate_rate_title" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="market://details?id=co.epitre.aelf_lectures" />
+        </Preference>
+
+        <Preference
+            android:key="tester_preferencescreen"
+            android:title="@string/pref_section_global_participate_title"
+            android:fragment="co.epitre.aelf_lectures.settings.TesterPrefFragment"
+            tools:context=".SettingsActivity">
+        </Preference>
+
+        <Preference
+            android:title="@string/pref_participate_code_title" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://github.com/HackMyChurch/aelf-dailyreadings" />
+        </Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_section_contact_title">
+        <Preference
+            android:title="@string/pref_contact_mail_title" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="@string/mailto_dev" />
+        </Preference>
+        <Preference
+            android:title="@string/pref_contact_twitter_title" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://twitter.com/AELF_officiel" />
+        </Preference>
+        <Preference
+            android:title="@string/pref_contact_mailing_title" >
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="http://www.aelf.org/mailing/create" />
+        </Preference>
+    </PreferenceCategory>
+</PreferenceScreen>
