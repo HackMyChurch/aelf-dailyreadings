@@ -1,26 +1,18 @@
 package co.epitre.aelf_lectures.bible;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import androidx.fragment.app.Fragment;
 
-import java.io.IOException;
-import java.io.InputStream;
-
+import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.PinchToZoomListener;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
+import co.epitre.aelf_lectures.components.ReadingWebViewClient;
 
 
 public class BibleChapterFragment extends Fragment {
@@ -64,7 +56,7 @@ public class BibleChapterFragment extends Fragment {
         mWebSettings.setDomStorageEnabled(true);
 
         // Install theme and styling hooks
-        mWebView.setWebViewClient(new ReadingWebViewClient());
+        mWebView.setWebViewClient(new ReadingWebViewClient((LecturesActivity) getActivity(), mWebView));
 
         // Install Zoom support
         mWebView.setOnTouchListener(new ReadingPinchToZoomListener());
@@ -74,56 +66,6 @@ public class BibleChapterFragment extends Fragment {
         mWebView.setBackgroundColor(0x00000000);
 
         return rootView;
-    }
-
-    private class ReadingWebViewClient extends WebViewClient {
-        // Route the virtual theme.css to the active theme css
-        @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-            if (url.equals("file:///android_asset/css/theme.css")) {
-                // Get the context
-                Context ctx = getContext();
-                if (ctx == null) {
-                    return null;
-                }
-
-                // Detect the current theme
-                boolean nightMode = PreferenceManager.getDefaultSharedPreferences(ctx).getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
-                String themeName = nightMode ? "dark":"light";
-                String cssPath = "css/theme-"+themeName+".css";
-
-                // Load the selected CSS
-                try {
-                    InputStream styleStream = getActivity().getAssets().open(cssPath);
-                    return new WebResourceResponse("text/css", "UTF-8", styleStream);
-                } catch (IOException e) {
-                    Log.e(TAG, "Failed to load "+themeName+" theme", e);
-                    return null;
-                }
-            }
-
-            return super.shouldInterceptRequest(view, url);
-        }
-
-        // Inject margin at the bottom to account for the navigation bar
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(mWebView, url);
-
-            Context context = getContext();
-            if (context == null) {
-                return;
-            }
-
-            Resources resources = context.getResources();
-            int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-            int navigationBarHeight = 0;
-            if (resourceId > 0) {
-                navigationBarHeight = (int)(resources.getDimension(resourceId) / getResources().getDisplayMetrics().density);
-            }
-
-            mWebView.loadUrl("javascript:(function(){document.body.style.marginBottom = '"+navigationBarHeight+"px';})()");
-        }
     }
 
     private class ReadingPinchToZoomListener extends PinchToZoomListener {
