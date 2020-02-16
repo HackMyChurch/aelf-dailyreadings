@@ -79,7 +79,18 @@
        			<category android:name="android.intent.category.DEFAULT" />
 		    </intent-filter>
         </activity>
-        
+
+        <!-- ContentProvider to expose files outside the application -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="co.epitre.aelf_lectures.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
         <!-- ContentProvider to store feed data.
 
         The "authorities" here are defined as part of a ContentProvider interface. It's used here

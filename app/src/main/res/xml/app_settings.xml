@@ -96,10 +96,8 @@
 
     <PreferenceCategory android:title="@string/pref_section_contact_title">
         <Preference
+            android:key="contact_dev"
             android:title="@string/pref_contact_mail_title" >
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="@string/mailto_dev" />
         </Preference>
         <Preference
             android:title="@string/pref_contact_twitter_title" >
