@@ -1,10 +1,16 @@
 package co.epitre.aelf_lectures.settings;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.text.Html;
 
 import androidx.core.content.FileProvider;
 import androidx.preference.Preference;
@@ -20,8 +26,22 @@ public class MainPrefFragment extends BasePrefFragment {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.app_settings, rootKey);
 
-        // Init font size summary
+        // Init summaries
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_DISP_FONT_SIZE);
+        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
+
+        // Request adding app to doze mode whitelist
+        Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    requestDozeModeExemption();
+                    return true;
+                }
+            });
+        } else {
+            getPreferenceScreen().removePreference(batterySyncPref);
+        }
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
@@ -34,11 +54,34 @@ public class MainPrefFragment extends BasePrefFragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // Update doze mode whitelist when coming back from the intent
+        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
+    }
+
+    @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
         // Set summary
         if (key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             SeekBarPreference pref = findPreference(key);
             pref.setSummary("Agrandissement du texte: " + pref.getValue() + "%");
+        } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_BATTERY)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
+                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
+                    batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
+                } else {
+                    batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
+                }
+            }
         }
 
         super.onSharedPreferenceChanged(sharedPreferences, key);
@@ -72,5 +115,41 @@ public class MainPrefFragment extends BasePrefFragment {
         emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         startActivity(Intent.createChooser(emailIntent , getString(R.string.mailto_dev)));
+    }
+
+    private void requestDozeModeExemption() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return;
+        }
+
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        new AlertDialog.Builder(context)
+                .setTitle("Synchronisation sur batterie")
+                .setMessage(Html.fromHtml(
+                        "Depuis la version 6.0, Android peut bloquer la synchronisation lorsque le téléphone est sur batterie pour économiser de l'énergie." +
+                                "<br/>" +
+                                "<br/>Si cela pose problème sur votre téléphone, suivez la procédure suivante dans l'écran qui va s'afficher:" +
+                                "<br/>" +
+                                "<br/>1. Affichez toutes les applications</li>" +
+                                "<br/>2. Cherchez l'application AELF</li>" +
+                                "<br/>3. Désactivez les 'optimisation de batterie'</li>"
+                ))
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        try {
+                            startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                        } catch (Exception e) {
+                            // EMPTY
+                        }
+                        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
     }
 }

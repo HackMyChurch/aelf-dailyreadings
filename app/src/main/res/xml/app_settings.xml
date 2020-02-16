@@ -69,6 +69,10 @@
             android:defaultValue="true"
             android:key="pref_sync_wifi_only"
             android:title="@string/pref_sync_wifi_only_title" />
+        <Preference
+            android:key="pref_sync_battery"
+            android:title="@string/pref_sync_battery_title" >
+        </Preference>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_section_participate_title">
