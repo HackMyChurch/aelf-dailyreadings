@@ -605,7 +605,8 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        if (!getCurrentSectionFragment().onBackPressed()) {
+        SectionFragmentBase fragment = getCurrentSectionFragment();
+        if (fragment == null || !fragment.onBackPressed()) {
             super.onBackPressed();
         }
     }
