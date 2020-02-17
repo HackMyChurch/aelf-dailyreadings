@@ -31,8 +31,8 @@ public class MainPrefFragment extends BasePrefFragment {
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
 
         // Request adding app to doze mode whitelist
-        Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
             batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     requestDozeModeExemption();
@@ -40,7 +40,7 @@ public class MainPrefFragment extends BasePrefFragment {
                 }
             });
         } else {
-            getPreferenceScreen().removePreference(batterySyncPref);
+            getPreferenceScreen().removePreferenceRecursively(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         }
 
         // Send mail + logs to dev

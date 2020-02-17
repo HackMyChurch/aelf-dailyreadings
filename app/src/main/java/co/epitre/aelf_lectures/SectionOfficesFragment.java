@@ -419,7 +419,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         if (whatwhen == null) {
             return true;
         }
-        
+
         whatwhen.useCache = false;
         whatwhen.anchor = null;
         if (mViewPager != null) {
