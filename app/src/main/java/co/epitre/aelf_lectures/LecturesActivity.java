@@ -1,11 +1,7 @@
 package co.epitre.aelf_lectures;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.ActivityManager;
-import android.app.NotificationManager;
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -69,17 +65,6 @@ public class LecturesActivity extends AppCompatActivity implements
      */
     SharedPreferences settings = null;
 
-    /**
-     * Sync account related vars
-     */
-    // The authority for the sync adapter's content provider
-    public static final String AUTHORITY = "co.epitre.aelf"; // DANGER: must be the same as the provider's in the manifest
-    // An account type, in the form of a domain name
-    public static final String ACCOUNT_TYPE = "epitre.co";
-    // The account name
-    public static final String ACCOUNT = "www.aelf.org";
-    // Sync interval in s. ~ 1 Day
-    public static final long SYNC_INTERVAL = 60L * 60L * 22L;
     // Instance fields
     Account mAccount;
 
@@ -135,7 +120,7 @@ public class LecturesActivity extends AppCompatActivity implements
             editor.putInt(SettingsActivity.KEY_APP_VERSION, currentVersion);
             editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
             editor.putInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
-            do_manual_sync("upgrade");
+            SyncAdapter.triggerSync(this);
         }
 
         // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
@@ -207,7 +192,7 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // create dummy account for our background sync engine
         try {
-            mAccount = CreateSyncAccount();
+            mAccount = SyncAdapter.getSyncAccount(this);
         } catch (SecurityException e) {
             // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
             Log.w(TAG, "Create/Get sync account was DENIED");
@@ -281,17 +266,15 @@ public class LecturesActivity extends AppCompatActivity implements
             setTaskDescription(taskDescription);
         }
 
-        // Turn on periodic toolbar_main caching
+        // Turn on periodic caching
         if (mAccount != null) {
-            ContentResolver.setIsSyncable(mAccount, AUTHORITY, 1);
-            ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
-            ContentResolver.addPeriodicSync(mAccount, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
+            SyncAdapter.configureSync(this);
 
             // If the account has not been synced in the last 48h OR never be synced at all, force sync
             long hours = SyncAdapter.getLastSyncSuccessAgeHours(this);
             if (hours >= 48 || hours < 0) {
                 Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
-                do_manual_sync("outdated");
+                SyncAdapter.triggerSync(this);
             }
         }
 
@@ -443,24 +426,6 @@ public class LecturesActivity extends AppCompatActivity implements
         decorView.setSystemUiVisibility(uiOptions);
     }
 
-    public boolean do_manual_sync(String reason) {
-        if (mAccount == null) {
-            Log.w(TAG, "Failed to run manual sync: we have no account...");
-            return false;
-        }
-
-        // Pass the settings flags by inserting them in a bundle
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        // start sync
-        ContentResolver.requestSync(mAccount, AUTHORITY, settingsBundle);
-
-        // done
-        return true;
-    }
-
     private void enterFullscreen() {
         isFullScreen = true;
         prepare_fullscreen();
@@ -504,7 +469,8 @@ public class LecturesActivity extends AppCompatActivity implements
     }
 
     public boolean onSyncDo() {
-        return do_manual_sync("manual");
+        SyncAdapter.triggerSync(this);
+        return true;
     }
 
     public boolean onToggleNightMode() {
@@ -530,8 +496,7 @@ public class LecturesActivity extends AppCompatActivity implements
         editor.putBoolean(SettingsActivity.KEY_PREF_PARTICIPATE_NOCACHE, false);
 
         // Make sure sync is enabled on device
-        ContentResolver.setMasterSyncAutomatically(true);
-        ContentResolver.setSyncAutomatically(mAccount, AUTHORITY, true);
+        SyncAdapter.configureSync(this);
 
         editor.apply();
 
@@ -665,11 +630,11 @@ public class LecturesActivity extends AppCompatActivity implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
-            killPendingSyncs();
+            SyncAdapter.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
-            killPendingSyncs();
+            SyncAdapter.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_BETA)) {
-            killPendingSyncs();
+            SyncAdapter.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_REGION)) {
             // Invalidate cache
             SharedPreferences.Editor editor = settings.edit();
@@ -678,46 +643,6 @@ public class LecturesActivity extends AppCompatActivity implements
         } else if (key.equals(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE)) {
             recreate();
         }
-    }
-
-    // If there is any sync in progress, terminate it. This allows the sync engine to pick up any
-    // important preference changes
-    // TODO: use some sort of signaling instead...
-    private void killPendingSyncs() {
-        // If the preference changed, cancel any running sync so that we either stop waiting for
-        // the wifi, either stop either the network
-
-        if (ContentResolver.getCurrentSyncs().isEmpty()) {
-            // There is no sync in progress
-            return;
-        }
-
-        // Cancel sync
-        ContentResolver.cancelSync(mAccount, AUTHORITY);
-
-        // Kill any background processes
-        ActivityManager am = (ActivityManager)getApplicationContext().getSystemService(ACTIVITY_SERVICE);
-        String packageName = getPackageName();
-        if (packageName != null && am != null) {
-            am.killBackgroundProcesses(packageName);
-        }
-
-        // Cleanup any notification
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.cancel(LecturesApplication.NOTIFICATION_SYNC_PROGRESS);
-    }
-
-    /**
-     * Create a new dummy account for the sync adapter
-     */
-    public Account CreateSyncAccount() {
-        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
-        AccountManager accountManager = (AccountManager) getSystemService(ACCOUNT_SERVICE);
-
-        // Create the account explicitly. If account creation fails, it means that it already exists.
-        // In this case, keep and return the dummy instance. We'll need to trigger manual sync
-        accountManager.addAccountExplicitly(newAccount, null, null);
-        return newAccount;
     }
 
     /*

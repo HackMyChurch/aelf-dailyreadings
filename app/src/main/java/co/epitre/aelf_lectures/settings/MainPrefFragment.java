@@ -22,6 +22,7 @@ import java.io.IOException;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.data.AelfCacheHelper;
+import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class MainPrefFragment extends BasePrefFragment {
     @Override
@@ -97,7 +98,8 @@ public class MainPrefFragment extends BasePrefFragment {
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
             long dbSize = AelfCacheHelper.getDatabaseSize(context);
             Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
-            dropCachePref.setSummary("Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize));
+            String summary = "Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize)+".";
+            dropCachePref.setSummary(summary);
         }
 
         super.onSharedPreferenceChanged(sharedPreferences, key);
@@ -180,10 +182,14 @@ public class MainPrefFragment extends BasePrefFragment {
                 .setMessage(Html.fromHtml(
                          "Si la synchronisation ne fonctionne pas, vous pouvez essayer de purger le cache." +
                                 "<br/>" +
-                                "<br>Purger le cache supprimera toutes les lectures « hors connexion » jusqu'à la prochaine synchronisation."
+                                "<br>Purger le cache supprimera toutes les lectures « hors connexion »." +
+                                " Une nouvelle synchronisation sera automatiquement démarrée mais peut prendre du temps suivant votre connexion Internet."
                 ))
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
+                        // Kill any running sync
+                        SyncAdapter.killPendingSyncs(context);
+
                         // Drop the database
                         try {
                             AelfCacheHelper.dropDatabase(context);
@@ -191,6 +197,9 @@ public class MainPrefFragment extends BasePrefFragment {
 
                         // Refresh the size
                         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+
+                        // Start a new background sync
+                        SyncAdapter.triggerSync(context);
                     }
                 })
                 .setNegativeButton(android.R.string.no, null)

@@ -12,7 +12,9 @@ import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.annotation.TargetApi;
+import android.app.ActivityManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -24,6 +26,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import static android.content.Context.ACCOUNT_SERVICE;
+import static android.content.Context.ACTIVITY_SERVICE;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
 
@@ -37,6 +42,18 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     NetworkStatusMonitor networkStatusMonitor;
 
     private static final long MAX_RUN_TIME = TimeUnit.MINUTES.toMillis(30);
+
+    /**
+     * Sync account related vars
+     */
+    // The authority for the sync adapter's content provider
+    public static final String AUTHORITY = "co.epitre.aelf"; // DANGER: must be the same as the provider's in the manifest
+    // An account type, in the form of a domain name
+    public static final String ACCOUNT_TYPE = "epitre.co";
+    // The account name
+    public static final String ACCOUNT = "www.aelf.org";
+    // Sync interval in s. ~ 1 Day
+    public static final long SYNC_INTERVAL = 60L * 60L * 22L;
 
     /**
      * Constructor. Obtains handle to content resolver for later use.
@@ -279,5 +296,67 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static long getLastSyncSuccessAgeHours(Context ctx) {
         return getHoursSincePreference(ctx, SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS);
+    }
+
+    public static Account getSyncAccount(Context ctx) {
+        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
+        AccountManager accountManager = (AccountManager) ctx.getSystemService(ACCOUNT_SERVICE);
+
+        // Create the account explicitly. If account creation fails, it means that it already exists.
+        // In this case, keep and return the dummy instance. We'll need to trigger manual sync
+        accountManager.addAccountExplicitly(newAccount, null, null);
+        return newAccount;
+    }
+
+    public static void configureSync(Context ctx) {
+        Account account = getSyncAccount(ctx);
+        if (account == null) {
+            return;
+        }
+
+        ContentResolver.setIsSyncable(account, AUTHORITY, 1);
+        ContentResolver.setSyncAutomatically(account, AUTHORITY, true);
+        ContentResolver.addPeriodicSync(account, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
+    }
+
+    public static void triggerSync(Context ctx) {
+        Account account = getSyncAccount(ctx);
+        if (account == null) {
+            return;
+        }
+
+        // Pass the settings flags by inserting them in a bundle
+        Bundle settingsBundle = new Bundle();
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
+        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+
+        // start sync
+        ContentResolver.requestSync(account, AUTHORITY, settingsBundle);
+    }
+
+    // If there is any sync in progress, terminate it. This allows the sync engine to pick up any
+    // important preference changes
+    // TODO: use some sort of signaling instead...
+    public static void killPendingSyncs(Context ctx) {
+        // Is there a sync in progress ?
+        if (ContentResolver.getCurrentSyncs().isEmpty()) {
+            // There is no sync in progress
+            return;
+        }
+
+        Account account = getSyncAccount(ctx);
+        if (account == null) {
+            return;
+        }
+
+        // Cancel sync
+        ContentResolver.cancelSync(account, AUTHORITY);
+
+        // Kill any background processes
+        ActivityManager am = (ActivityManager)ctx.getSystemService(ACTIVITY_SERVICE);
+        String packageName = ctx.getPackageName();
+        if (packageName != null && am != null) {
+            am.killBackgroundProcesses(packageName);
+        }
     }
 }
