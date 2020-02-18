@@ -89,6 +89,7 @@
     <string name="pref_conserv_title">Conserver les textes pendant</string>
     <string name="pref_sync_wifi_only_title">WiFi uniquement</string>
     <string name="pref_sync_battery_title">Activer la synchronisation sur batterie</string>
+    <string name="pref_sync_drop_cache_title">⚠️ Purger le cache</string>
 
     <string name="pref_section_participate_title">Contribuer</string>
     <string name="pref_participate_rate_title">Noter cette application</string>

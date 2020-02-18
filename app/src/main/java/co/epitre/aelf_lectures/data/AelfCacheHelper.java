@@ -35,7 +35,7 @@ import org.sqlite.database.sqlite.SQLiteStatement;
  * - which version of the application was used --> used for upgrade initiated invalidation
  */
 
-final class AelfCacheHelper extends SQLiteOpenHelper {
+public final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 4;
     private static final String DB_NAME = "aelf_cache.db";
@@ -65,6 +65,14 @@ final class AelfCacheHelper extends SQLiteOpenHelper {
     /**
      * Api
      */
+
+    public static void dropDatabase(Context context) {
+        context.getDatabasePath(DB_NAME).delete();
+    }
+
+    public static long getDatabaseSize(Context context) {
+        return context.getDatabasePath(DB_NAME).length();
+    }
 
     @SuppressLint("SimpleDateFormat")
     private String computeKey(GregorianCalendar when) {

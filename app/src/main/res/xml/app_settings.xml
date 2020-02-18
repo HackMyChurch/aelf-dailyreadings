@@ -73,6 +73,10 @@
             android:key="pref_sync_battery"
             android:title="@string/pref_sync_battery_title" >
         </Preference>
+        <Preference
+            android:key="pref_sync_drop_cache"
+            android:title="@string/pref_sync_drop_cache_title" >
+        </Preference>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_section_participate_title">

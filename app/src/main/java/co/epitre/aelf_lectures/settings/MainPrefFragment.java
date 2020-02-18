@@ -19,7 +19,9 @@ import androidx.preference.SeekBarPreference;
 import java.io.File;
 import java.io.IOException;
 
+import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.data.AelfCacheHelper;
 
 public class MainPrefFragment extends BasePrefFragment {
     @Override
@@ -29,6 +31,7 @@ public class MainPrefFragment extends BasePrefFragment {
         // Init summaries
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_DISP_FONT_SIZE);
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
+        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
 
         // Request adding app to doze mode whitelist
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -48,6 +51,15 @@ public class MainPrefFragment extends BasePrefFragment {
         contactDevPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 sendMailDev();
+                return true;
+            }
+        });
+
+        // Drop the cache
+        Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+        dropCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                dropCache();
                 return true;
             }
         });
@@ -82,6 +94,10 @@ public class MainPrefFragment extends BasePrefFragment {
                     batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
                 }
             }
+        } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
+            long dbSize = AelfCacheHelper.getDatabaseSize(context);
+            Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+            dropCachePref.setSummary("Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize));
         }
 
         super.onSharedPreferenceChanged(sharedPreferences, key);
@@ -150,6 +166,34 @@ public class MainPrefFragment extends BasePrefFragment {
                 })
                 .setNegativeButton(android.R.string.no, null)
                 .setIcon(android.R.drawable.ic_dialog_info)
+                .show();
+    }
+
+    private void dropCache() {
+        final Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        new AlertDialog.Builder(context)
+                .setTitle(getString(R.string.pref_sync_drop_cache_title))
+                .setMessage(Html.fromHtml(
+                         "Si la synchronisation ne fonctionne pas, vous pouvez essayer de purger le cache." +
+                                "<br/>" +
+                                "<br>Purger le cache supprimera toutes les lectures « hors connexion » jusqu'à la prochaine synchronisation."
+                ))
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Drop the database
+                        try {
+                            AelfCacheHelper.dropDatabase(context);
+                        } catch (Exception e) {}
+
+                        // Refresh the size
+                        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
                 .show();
     }
 }

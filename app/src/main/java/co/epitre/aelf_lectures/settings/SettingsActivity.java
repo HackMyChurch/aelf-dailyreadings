@@ -19,6 +19,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
     public static final String KEY_PREF_SYNC_WIFI_ONLY = "pref_sync_wifi_only";
     public static final String KEY_PREF_SYNC_BATTERY = "pref_sync_battery";
+    public static final String KEY_PREF_SYNC_DROP_CACHE = "pref_sync_drop_cache";
     public static final String KEY_PREF_PARTICIPATE_BETA = "pref_participate_beta";
     public static final String KEY_PREF_PARTICIPATE_NOCACHE = "pref_participate_nocache";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
