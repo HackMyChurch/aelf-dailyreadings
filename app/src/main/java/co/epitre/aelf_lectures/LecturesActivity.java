@@ -530,7 +530,7 @@ public class LecturesActivity extends AppCompatActivity implements
             Uri uri = SectionOfficesFragment.buildUri(new WhatWhen(what, new AelfDate()), null);
             intent = new Intent(Intent.ACTION_VIEW, uri);
         } else if (item.getItemId() == R.id.nav_bible) {
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aelf.org/bible"));
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aelf.org/bible/home"));
         } else {
             // This is something else :)
             return false; // Do not select item as we do not know what this is...

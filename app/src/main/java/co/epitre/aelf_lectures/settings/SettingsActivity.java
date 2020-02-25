@@ -30,6 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_APP_CACHE_MIN_VERSION = "min_cache_version";
     public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
+    public static final String KEY_BIBLE_LAST_PAGE = "bible_last_page";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

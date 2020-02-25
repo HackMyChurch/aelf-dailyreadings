@@ -29,6 +29,7 @@ import co.epitre.aelf_lectures.bible.BibleFragment;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
 import co.epitre.aelf_lectures.bible.BibleSearchEngine;
 import co.epitre.aelf_lectures.bible.BibleSearchFragment;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
 /**
@@ -46,6 +47,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
      * Global managers / resources
      */
     private boolean initialized = false;
+    private boolean fragmentLoaded = false;
     FragmentManager mFragmentManager;
     SharedPreferences settings = null;
 
@@ -76,8 +78,13 @@ public class SectionBibleFragment extends SectionFragmentBase {
         if (initialized) {
             // Coming from back button. Re-Attach fragment
         } else if (uri != null) {
-            // Load requested URL
-            onLink(uri);
+            if (uri.getPath().equals("/bible/home")) {
+                // Handle "Home": Load default or last visited page
+                onHome();
+            } else {
+                // Load requested URL
+                onLink(uri);
+            }
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
             onSearch(intent.getStringExtra(SearchManager.QUERY));
         } else if (savedInstanceState != null) {
@@ -89,6 +96,22 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
         initialized = true;
         return view;
+    }
+
+    private void onHome() {
+        // Inject a "home" page in the back stack
+        onLink(null);
+
+        // Load the last visited uri
+        String lastPage = settings.getString(SettingsActivity.KEY_BIBLE_LAST_PAGE, null);
+
+        // Should stay on the home ? do nothing.
+        if (lastPage == null || lastPage.equals(getUri().toString())) {
+            return;
+        }
+
+        // Restore last viewed page
+        onLink(Uri.parse(lastPage));
     }
 
     @Override
@@ -114,12 +137,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         }
 
         // Start selected fragment
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
-        if (getCurrentBibleFragment() != null) {
-            fragmentTransaction.addToBackStack(null);
-        }
-        fragmentTransaction.commit();
+        setFragment(newBibleFragment);
     }
 
     @Override
@@ -174,6 +192,16 @@ public class SectionBibleFragment extends SectionFragmentBase {
         return (BibleFragment) mFragmentManager.findFragmentById(R.id.bible_container);
     }
 
+    private void setFragment(Fragment newBibleFragment) {
+        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
+        if (fragmentLoaded) {
+            fragmentTransaction.addToBackStack(null);
+        }
+        fragmentTransaction.commit();
+        fragmentLoaded = true;
+    }
+
     //
     // API
     //
@@ -201,12 +229,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
             return;
         }
         BibleFragment newBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
-        FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.bible_container, newBibleFragment);
-        if (getCurrentBibleFragment() != null) {
-            fragmentTransaction.addToBackStack(null);
-        }
-        fragmentTransaction.commit();
+        setFragment(newBibleFragment);
     }
 
     //
@@ -217,6 +240,17 @@ public class SectionBibleFragment extends SectionFragmentBase {
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onPause() {
+        String lastPage = getUri().toString();
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(SettingsActivity.KEY_BIBLE_LAST_PAGE, lastPage);
+        editor.apply();
+
+        super.onPause();
     }
 
     @Override
@@ -233,7 +267,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
     @Override
     public boolean onBackPressed() {
-        return getChildFragmentManager().popBackStackImmediate();
+        return mFragmentManager.popBackStackImmediate();
     }
 
     //
