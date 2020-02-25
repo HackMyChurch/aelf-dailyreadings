@@ -114,7 +114,7 @@ public class MainPrefFragment extends BasePrefFragment {
         // Grab the logs
         File outputFile = new File(context.getExternalCacheDir(), "logcat.txt");
         try {
-            Runtime.getRuntime().exec("logcat -f " + outputFile.getAbsolutePath());
+            Runtime.getRuntime().exec("logcat -t 500 -f " + outputFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
