@@ -97,6 +97,11 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     }
 
     private void search(String query) {
+        // Add a wildcard to the last word if the query is long enough
+        if (query != null && query.length() >= 3) {
+            query = query + "*";
+        }
+
         // Enqueue search job, overriding any pending search
         mEditSearchSemaphore.acquireUninterruptibly();
         if (mSearchRunnable == null) {
@@ -198,12 +203,8 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
 
             @Override
             public boolean onQueryTextChange(String query) {
-                // Send empty query to clear the results
-                if (query == null || query.isEmpty()) {
-                    search(query);
-                } else if (query.length() >= 3) {
-                    search(query+"*");
-                }
+                // Start the search asynchronously
+                search(query);
                 return true;
             }
         });
