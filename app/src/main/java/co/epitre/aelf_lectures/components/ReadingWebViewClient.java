@@ -65,28 +65,6 @@ public class ReadingWebViewClient extends WebViewClient {
         return true;
     }
 
-    // Route the virtual theme.css to the active theme css
-    @Override
-    public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
-        if (url.equals("file:///android_asset/css/theme.css")) {
-            // Detect the current theme
-            boolean nightMode = PreferenceManager.getDefaultSharedPreferences(mActivity).getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
-            String themeName = nightMode ? "dark":"light";
-            String cssPath = "css/theme-"+themeName+".css";
-
-            // Load the selected CSS
-            try {
-                InputStream styleStream = mActivity.getAssets().open(cssPath);
-                return new WebResourceResponse("text/css", "UTF-8", styleStream);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to load "+themeName+" theme", e);
-                return null;
-            }
-        }
-
-        return super.shouldInterceptRequest(view, url);
-    }
-
     // Inject margin at the bottom to account for the navigation bar
     @Override
     public void onPageFinished(WebView view, String url) {

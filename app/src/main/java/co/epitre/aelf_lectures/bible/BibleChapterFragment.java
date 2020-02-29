@@ -15,7 +15,9 @@ public class BibleChapterFragment extends ReadingFragment {
 
         htmlString.append("<!DOCTYPE html><html><head>");
         htmlString.append("<link href=\"css/common.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
-        htmlString.append("<link href=\"css/theme.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
+        htmlString.append("<link href=\"");
+        htmlString.append(getThemeCss());
+        htmlString.append("\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
         htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</head><body>");
         htmlString.append(body);

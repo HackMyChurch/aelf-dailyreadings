@@ -1,7 +1,9 @@
 package co.epitre.aelf_lectures.components;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.PinchToZoomListener;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
 public abstract class ReadingFragment extends Fragment {
@@ -126,6 +129,21 @@ public abstract class ReadingFragment extends Fragment {
             super.onZoom(zoomLevel);
             setCurrentZoom(zoomLevel);
         }
+    }
+
+    /**
+     * Internal tools
+     */
+
+    protected String getThemeCss() {
+        Activity activity = getActivity();
+        if (activity == null) {
+            return null;
+        }
+
+        boolean nightMode = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
+        String themeName = nightMode ? "dark":"light";
+        return "css/theme-"+themeName+".css";
     }
 
     /**
