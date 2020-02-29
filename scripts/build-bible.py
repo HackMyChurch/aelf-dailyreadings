@@ -181,6 +181,7 @@ cursor = conn.cursor()
 cursor.execute('''
 CREATE VIRTUAL TABLE search USING fts5(
     book     UNINDEXED,
+    book_id  UNINDEXED,
     chapter  UNINDEXED,
     title    UNINDEXED,
     content,
@@ -188,10 +189,16 @@ CREATE VIRTUAL TABLE search USING fts5(
 );''')
 
 #
+# Global state
+#
+
+book_id = 0
+
+#
 # Process
 #
 
-def index_path(chapter_file_path, title, book_ref, chapter_ref):
+def index_path(chapter_file_path, title, book_ref, book_id, chapter_ref):
     print("\u001b[KINFO: Processing %s..." % (chapter_file_path), end='\r')
 
     # Parse the HTML
@@ -235,26 +242,28 @@ def index_path(chapter_file_path, title, book_ref, chapter_ref):
     chapter_text = re.sub(r"\s+", ' ', chapter_text)
 
     # Index
-    cursor.execute('''INSERT INTO search(book, chapter, title, content) VALUES(?, ?, ?, ?);''', (book_ref, chapter_ref, title, chapter_text))
+    cursor.execute('''INSERT INTO search(book, book_id, chapter, title, content) VALUES(?, ?, ?, ?, ?);''', (book_ref, book_id, chapter_ref, title, chapter_text))
 
 # Post-process the Bible books
 for part_title, part in BIBLE_BOOKS.items():
     for section_title, section in part.items():
         for book_ref, book in section.items():
+            book_id += 1
             book_path = book.get('path', book_ref)
             book_title = book['title']
             for chapter_file_path in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_ref}/*.html'):
                 chapter_ref = chapter_file_path.rsplit('/')[-1].split('.')[0]
                 chapter_title = f'{book_title}, Chapitre {chapter_ref}'
-                index_path(chapter_file_path, chapter_title, book_ref, chapter_ref)
+                index_path(chapter_file_path, chapter_title, book_ref, book_id, chapter_ref)
 
 # Post-process the Bible psalms
 for psalm_ref, psalm in BIBLE_PSALMS.items():
+    book_id += 1
     book_ref = 'Ps'
     chapter_ref = psalm_ref[2:]
     chapter_file_path = f'{BIBLE_CACHE_FOLDER}/{book_ref}/{chapter_ref}.html'
     chapter_title = psalm['title']
-    index_path(chapter_file_path, chapter_title, book_ref, chapter_ref)
+    index_path(chapter_file_path, chapter_title, book_ref, book_id, chapter_ref)
 
 # Optimize the index
 print("\u001b[KINFO: Optimizing the index...", end='\r')
