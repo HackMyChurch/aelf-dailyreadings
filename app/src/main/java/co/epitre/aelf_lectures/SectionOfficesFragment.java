@@ -54,7 +54,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
      * Internal state
      */
     WhatWhen whatwhen = null;
-    WhatWhen whatwhen_previous = null;
     private boolean isLoading = false;
     private boolean isSuccess = true;
     DownloadXmlTask currentRefresh = null;
@@ -150,7 +149,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                cancelLectureLoad(true);
+                cancelLectureLoad();
             }
         });
 
@@ -427,7 +426,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         } else {
             whatwhen.position = 0;
         }
-        this.whatwhen_previous = null;
         loadLecture(whatwhen);
         return true;
     }
@@ -592,7 +590,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
     public void loadLecture(WhatWhen whatwhen) {
         // Cancel any pending load
-        cancelLectureLoad(false);
+        cancelLectureLoad();
 
         // Refresh UI
         refreshUI(whatwhen);
@@ -609,7 +607,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         }
     }
 
-    public void cancelLectureLoad(boolean restore) {
+    public void cancelLectureLoad() {
         preventCancel.lock();
         try {
             currentRefresh.cancel(true);
@@ -621,16 +619,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             currentRefresh = null;
             setLoading(false); // FIXME: should be in the cancel code path in the task imho
             preventCancel.unlock();
-        }
-
-        // Restore readings
-        if (restore && whatwhen_previous != null) {
-            whatwhen = whatwhen_previous;
-            whatwhen_previous = null;
-            whatwhen.useCache = true; // Make it fast, we are restoring !
-
-            // Load lectures
-            loadLecture(whatwhen);
         }
     }
 
