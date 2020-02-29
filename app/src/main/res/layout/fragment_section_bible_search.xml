@@ -12,6 +12,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginRight="8dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
@@ -31,12 +32,18 @@
             android:text="Pertinence" />
     </RadioGroup>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_gravity="bottom"
+        android:background="?attr/dividerHorizontal"
+        android:padding="0dp"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_results"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:focusableInTouchMode="true"
-        android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:paddingLeft="12dp"
         android:paddingRight="12dp" />
