@@ -26,7 +26,6 @@
         <RadioButton
             style="@style/AelfSearchRadioButtons"
             android:id="@+id/radio_sort_relevance"
-            android:checked="true"
             android:layout_width="160dp"
             android:layout_height="32dp"
             android:text="Pertinence" />

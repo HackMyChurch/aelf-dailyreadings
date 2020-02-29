@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -36,6 +38,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
      */
 
     private final static String BIBLE_SEARCH_QUERY = "bibleSearchQuery";
+    private final static String BIBLE_SEARCH_SORT = "bibleSearchSort";
 
     /**
      * Global Views
@@ -61,6 +64,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
 
         Bundle args = new Bundle();
         args.putString(BIBLE_SEARCH_QUERY, uri.getQueryParameter("query"));
+        args.putString(BIBLE_SEARCH_SORT, uri.getQueryParameter("sort"));
         fragment.setArguments(args);
 
         return fragment;
@@ -84,7 +88,21 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set section title
         actionBar.setTitle(getTitle());
 
+        // Load the arguments from the URI
+        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
+        try {
+            mSort = BibleSearchEngine.Sort.valueOf(getArguments().getString(BIBLE_SEARCH_SORT));
+        } catch (IllegalArgumentException | NullPointerException e) {}
+
         // Setup the sort buttons
+        switch (mSort) {
+            case Relevance:
+                ((RadioButton) view.findViewById(R.id.radio_sort_relevance)).setChecked(true);
+                break;
+            case Bible:
+                ((RadioButton) view.findViewById(R.id.radio_sort_bible)).setChecked(true);
+                break;
+        }
         view.findViewById(R.id.radio_sort_bible).setOnClickListener(this);
         view.findViewById(R.id.radio_sort_relevance).setOnClickListener(this);
 
@@ -93,7 +111,6 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         // Perform the search
-        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
         search(mQuery);
 
         updateListBottomMargin();
@@ -102,6 +119,8 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     }
 
     private void search(String query) {
+        mQuery = query;
+
         // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
         if (query != null && query.length() >= 3 && !query.endsWith("*")) {
             query = query + "*";
@@ -174,7 +193,6 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
                 @Override
                 public void run() {
                     mRecyclerView.swapAdapter(mResultAdapter, true);
-                    BibleSearchFragment.this.mQuery = mQuery;
                 }
             });
         }
@@ -239,7 +257,11 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
 
     @Override
     public String getRoute() {
-        return "/search";
+        try {
+            return "/search?query="+URLEncoder.encode(mQuery, "utf8")+"&sort="+URLEncoder.encode(mSort.name(), "utf8");
+        } catch (UnsupportedEncodingException e) {
+            return "/search";
+        }
     }
 
     @Override
