@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.SearchView;
@@ -29,8 +30,7 @@ import java.util.concurrent.Semaphore;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 
-
-public class BibleSearchFragment extends BibleFragment implements BibleSearchResultAdapter.ItemClickListener {
+public class BibleSearchFragment extends BibleFragment implements BibleSearchResultAdapter.ItemClickListener, View.OnClickListener {
     /**
      * Internal
      */
@@ -52,6 +52,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     private SearchRunnable mSearchRunnable;
     private ExecutorService mSearchExecutorService = Executors.newSingleThreadExecutor();
     private String mQuery = "";
+    private BibleSearchEngine.Sort mSort = BibleSearchEngine.Sort.Relevance;
     RecyclerView mRecyclerView;
     BibleSearchResultAdapter mResultAdapter;
 
@@ -83,6 +84,10 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set section title
         actionBar.setTitle(getTitle());
 
+        // Setup the sort buttons
+        view.findViewById(R.id.radio_sort_bible).setOnClickListener(this);
+        view.findViewById(R.id.radio_sort_relevance).setOnClickListener(this);
+
         // Set up the RecyclerView
         mRecyclerView = view.findViewById(R.id.search_results);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -97,20 +102,25 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     }
 
     private void search(String query) {
-        // Add a wildcard to the last word if the query is long enough
-        if (query != null && query.length() >= 3) {
+        // Add a wildcard to the last word if the query is long enough and does not already end with a wildcard
+        if (query != null && query.length() >= 3 && !query.endsWith("*")) {
             query = query + "*";
         }
 
         // Enqueue search job, overriding any pending search
         mEditSearchSemaphore.acquireUninterruptibly();
         if (mSearchRunnable == null) {
-            mSearchRunnable = new SearchRunnable(query);
+            mSearchRunnable = new SearchRunnable(query, mSort);
             mSearchExecutorService.submit(mSearchRunnable);
         } else {
-            mSearchRunnable.setQuery(query);
+            mSearchRunnable.setQuery(query, mSort);
         }
         mEditSearchSemaphore.release();
+    }
+
+    private void setSort(BibleSearchEngine.Sort sort) {
+        mSort = sort;
+        search(mQuery);
     }
 
     /**
@@ -118,18 +128,21 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
      */
     class SearchRunnable implements Runnable {
         private String mQuery;
+        private BibleSearchEngine.Sort mSort;
         private Semaphore mEditSemaphore;
 
-        SearchRunnable(String query) {
+        SearchRunnable(String query, BibleSearchEngine.Sort sort) {
             mQuery = query;
+            mSort = sort;
             mEditSemaphore = new Semaphore(1);
         }
 
-        boolean setQuery(String query) {
+        boolean setQuery(String query, BibleSearchEngine.Sort sort) {
             if (!mEditSemaphore.tryAcquire()) {
                 return false;
             }
             mQuery = query;
+            mSort = sort;
             mEditSemaphore.release();
             return true;
         }
@@ -148,7 +161,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
                 mResultAdapter = null;
             } else {
                 // Run real search
-                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery, BibleSearchEngine.Sort.Auto);
+                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery, mSort);
                 cursor.moveToPosition(0);
 
                 // Create the new adapter
@@ -280,5 +293,21 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         Uri uri = Uri.parse(link);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         mainActivity.onIntent(intent);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.radio_sort_bible:
+                if (((RadioButton)view).isChecked()){
+                    setSort(BibleSearchEngine.Sort.Bible);
+                }
+                break;
+            case R.id.radio_sort_relevance:
+                if (((RadioButton)view).isChecked()){
+                    setSort(BibleSearchEngine.Sort.Relevance);
+                }
+                break;
+        }
     }
 }

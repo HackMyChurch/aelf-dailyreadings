@@ -15,4 +15,15 @@
         <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
         <item name="android:windowExitAnimation">@android:anim/fade_out</item>
     </style>
+
+    <style name="AelfSearchRadioButtons" parent="@style/Widget.AppCompat.CompoundButton.RadioButton">
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/radio_flat_selector</item>
+        <item name="android:button">@android:color/transparent</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingRight">16dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textColor">@color/radio_flat_text_selector</item>
+    </style>
 </resources>
