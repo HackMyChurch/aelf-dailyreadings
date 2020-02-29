@@ -48,6 +48,11 @@ public class BibleSearchEngine {
             "quel", "quelle", "quelles", "quoi"
     );
 
+    public enum Sort {
+        Relevance,
+        Bible,
+    }
+
     synchronized public static BibleSearchEngine getInstance() {
         if(instance == null) {
             instance = new BibleSearchEngine();
@@ -86,7 +91,7 @@ public class BibleSearchEngine {
         return false;
     }
 
-    public Cursor search(String search) {
+    public Cursor search(String search, Sort sort) {
         waitReady();
 
         // Filter joining characters
@@ -104,7 +109,7 @@ public class BibleSearchEngine {
         }
 
         // Try fast path (all terms)
-        Cursor cursor = searchFast(search, tokens);
+        Cursor cursor = searchFast(search, tokens, sort);
         if (cursor.getCount() > 0 || tokens.size() <= 1) {
             return cursor;
         }
@@ -115,10 +120,10 @@ public class BibleSearchEngine {
         }
 
         // Fallback on slow path (Variants with each token omitted once)
-        return searchSlow(search, tokens);
+        return searchSlow(search, tokens, sort);
     }
 
-    private Cursor searchFast(String search, List<String> tokens) {
+    private Cursor searchFast(String search, List<String> tokens, Sort sort) {
         // Build the query
         StringBuilder queryBuilder = new StringBuilder();
 
@@ -135,14 +140,15 @@ public class BibleSearchEngine {
         queryBuilder.append(" ) OR ");
         queryBuilder.append(TextUtils.join(" ", tokens));
         queryBuilder.append("'");
-        queryBuilder.append(" ORDER BY rank LIMIT 50;");
+        queryBuilder.append(orderByLimit(sort));
+        queryBuilder.append(";");
 
         // Launch the query
         //Log.i(TAG, "search: "+queryBuilder.toString());
         return db.rawQuery(queryBuilder.toString(), null);
     }
 
-    private Cursor searchSlow(String search, List<String> tokens) {
+    private Cursor searchSlow(String search, List<String> tokens, Sort sort) {
         // Build the query
         StringBuilder queryBuilder = new StringBuilder();
 
@@ -194,12 +200,25 @@ public class BibleSearchEngine {
         }
 
         // Query trailer
-        queryBuilder.append(" ORDER BY rank");
-        queryBuilder.append(") GROUP BY title ORDER BY rank LIMIT 50;");
+        queryBuilder.append(orderByLimit(sort));
+        queryBuilder.append(")");
+        queryBuilder.append(orderByLimit(sort));
+        queryBuilder.append(";");
 
         // Launch the query
         //Log.i(TAG, "search: "+queryBuilder.toString());
         return db.rawQuery(queryBuilder.toString(), null);
+    }
+
+    private String orderByLimit(Sort sort) {
+        switch (sort) {
+            case Bible:
+                return " ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER)";
+            case Relevance:
+                return " ORDER BY rank LIMIT 50";
+            default:
+                return " ";
+        }
     }
 
     class InitThread extends Thread {

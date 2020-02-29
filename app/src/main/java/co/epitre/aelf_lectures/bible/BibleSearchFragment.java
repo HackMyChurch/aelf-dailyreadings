@@ -148,7 +148,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
                 mResultAdapter = null;
             } else {
                 // Run real search
-                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery);
+                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery, BibleSearchEngine.Sort.Auto);
                 cursor.moveToPosition(0);
 
                 // Create the new adapter
