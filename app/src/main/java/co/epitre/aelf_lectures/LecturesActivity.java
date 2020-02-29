@@ -527,7 +527,7 @@ public class LecturesActivity extends AppCompatActivity implements
         WHAT what = WHAT.fromMenuId(item.getItemId());
         Intent intent;
         if (what != null) {
-            Uri uri = SectionOfficesFragment.buildUri(new WhatWhen(what, new AelfDate()), null);
+            Uri uri = SectionOfficesFragment.buildUri(what);
             intent = new Intent(Intent.ACTION_VIEW, uri);
         } else if (item.getItemId() == R.id.nav_bible) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aelf.org/bible/home"));

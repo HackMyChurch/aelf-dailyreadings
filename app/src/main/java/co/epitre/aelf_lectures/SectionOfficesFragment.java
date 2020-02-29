@@ -51,6 +51,11 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     public static final String TAG = "SectionOfficesFragment";
 
     /**
+     * Shared internal state
+     */
+    private static AelfDate defaultDate = new AelfDate();
+
+    /**
      * Internal state
      */
     WhatWhen whatwhen = null;
@@ -112,8 +117,8 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         } else {
             whatwhen = new WhatWhen();
 
-            // Load the lectures for today. Based on the anonymous statistics
-            whatwhen.when = new AelfDate();
+            // Load the lectures for the default date (defaults to today). Based on the anonymous statistics
+            whatwhen.when = defaultDate;
             whatwhen.today = true;
             whatwhen.position = 0;
 
@@ -254,11 +259,15 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         LectureItem lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
-        return buildUri(whatwhen, lecture.key);
+        return buildUri(whatwhen.what, whatwhen.when, lecture.key);
     }
 
-    public static Uri buildUri(WhatWhen whatwhen, String key) {
-        String url = "http://www.aelf.org/"+whatwhen.when.toIsoString()+"/romain/"+whatwhen.what.urlName();
+    public static Uri buildUri(LecturesController.WHAT what) {
+        return buildUri(what, defaultDate, null);
+    }
+
+    public static Uri buildUri(LecturesController.WHAT what, AelfDate when, String key) {
+        String url = "http://www.aelf.org/"+when.toIsoString()+"/romain/"+what.urlName();
         if (key != null) {
             url += "#"+key;
         }
@@ -517,7 +526,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             return;
 
         // Send the new URI to the activity
-        Uri uri = buildUri(new WhatWhen(whatwhen.what, date), null);
+        Uri uri = buildUri(whatwhen.what, date, null);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         activity.onIntent(intent);
     }
@@ -594,6 +603,9 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
         // Refresh UI
         refreshUI(whatwhen);
+
+        // Set the new date as the default (manual action)
+        defaultDate = whatwhen.when;
 
         // Start Loading
         preventCancel.lock();
