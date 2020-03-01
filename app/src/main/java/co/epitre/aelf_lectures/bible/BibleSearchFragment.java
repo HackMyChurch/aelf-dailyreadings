@@ -16,6 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -88,10 +89,16 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         // Set section title
         actionBar.setTitle(getTitle());
 
-        // Load the arguments from the URI
-        mQuery = getArguments().getString(BIBLE_SEARCH_QUERY);
+        // Get state source
+        Bundle args = getArguments();
+        if (savedInstanceState != null) {
+            args = savedInstanceState;
+        }
+
+        // Load the arguments
+        mQuery = args.getString(BIBLE_SEARCH_QUERY);
         try {
-            mSort = BibleSearchEngine.Sort.valueOf(getArguments().getString(BIBLE_SEARCH_SORT));
+            mSort = BibleSearchEngine.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
         } catch (IllegalArgumentException | NullPointerException e) {}
 
         // Setup the sort buttons
@@ -298,6 +305,13 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         }
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(BIBLE_SEARCH_QUERY, mQuery);
+        outState.putString(BIBLE_SEARCH_SORT, mSort.name());
+    }
 
     //
     // Events
