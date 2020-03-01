@@ -284,10 +284,10 @@ public class LecturesActivity extends AppCompatActivity implements
         }
 
         // Route the application
-        if (handleIntent(getIntent())) {
+        if (savedInstanceState != null) {
+            // Nothing to do
+        } else if (handleIntent(getIntent())) {
             // Called from a search or link
-        } else if (savedInstanceState != null) {
-            restoreSection();
         } else {
             setSection(new SectionOfficesFragment());
         }
