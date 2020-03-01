@@ -55,6 +55,7 @@ public class BibleSearchFragment extends BibleFragment implements
     /**
      * Results
      */
+    private boolean initialized = false;
     private Semaphore mEditSearchSemaphore = new Semaphore(1);
     private SearchRunnable mSearchRunnable;
     private ExecutorService mSearchExecutorService = Executors.newSingleThreadExecutor();
@@ -92,26 +93,32 @@ public class BibleSearchFragment extends BibleFragment implements
         // Set section title
         actionBar.setTitle(getTitle());
 
-        // Get state source
-        Bundle args = getArguments();
-        if (savedInstanceState != null) {
-            args = savedInstanceState;
-        }
+        // Load selected state
+        if (initialized) {
+            // Coming from back button.
+        } else {
+            // Get state source
+            Bundle args = getArguments();
+            if (savedInstanceState != null) {
+                args = savedInstanceState;
+            }
 
-        // Load the arguments
-        mQuery = args.getString(BIBLE_SEARCH_QUERY);
-        try {
-            mSort = BibleSearchEngine.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
-        } catch (IllegalArgumentException | NullPointerException e) {}
+            // Load the argument
+            mQuery = args.getString(BIBLE_SEARCH_QUERY);
+            try {
+                mSort = BibleSearchEngine.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
+            } catch (IllegalArgumentException | NullPointerException e) {
+            }
 
-        // Setup the sort buttons
-        switch (mSort) {
-            case Relevance:
-                ((RadioButton) view.findViewById(R.id.radio_sort_relevance)).setChecked(true);
-                break;
-            case Bible:
-                ((RadioButton) view.findViewById(R.id.radio_sort_bible)).setChecked(true);
-                break;
+            // Setup the sort buttons
+            switch (mSort) {
+                case Relevance:
+                    ((RadioButton) view.findViewById(R.id.radio_sort_relevance)).setChecked(true);
+                    break;
+                case Bible:
+                    ((RadioButton) view.findViewById(R.id.radio_sort_bible)).setChecked(true);
+                    break;
+            }
         }
         view.findViewById(R.id.radio_sort_bible).setOnClickListener(this);
         view.findViewById(R.id.radio_sort_relevance).setOnClickListener(this);
@@ -125,6 +132,7 @@ public class BibleSearchFragment extends BibleFragment implements
 
         updateListBottomMargin();
 
+        initialized = true;
         return view;
     }
 
@@ -317,10 +325,6 @@ public class BibleSearchFragment extends BibleFragment implements
         if (mSearchView != null) {
             // Un-register our listener to avoid messing with the state when in background
             mSearchView.setOnQueryTextListener(null);
-
-            // Save the current search query so that it is restored when moving back
-            String query = mSearchView.getQuery().toString();
-            getArguments().putString(BIBLE_SEARCH_QUERY, query);
         }
     }
 
