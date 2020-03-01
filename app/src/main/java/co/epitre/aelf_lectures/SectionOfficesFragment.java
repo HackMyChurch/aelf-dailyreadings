@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
@@ -36,8 +38,6 @@ import co.epitre.aelf_lectures.data.LectureItem;
 import co.epitre.aelf_lectures.data.LecturesController;
 import co.epitre.aelf_lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
-
-import static co.epitre.aelf_lectures.data.WhatWhen.DATE_TODAY;
 
 /**
  * Created by jean-tiare on 05/12/17.
@@ -79,47 +79,38 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     // This is called number of screen rotate + 1. The last time with a null argument :/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // TODO: pass routing argument instead of loading intent
-
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Load settings
         Resources res = getResources();
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());
 
-        // Load arguments, if any
-        Bundle arguments = getArguments();
-        if (arguments == null && canRestoreState(savedInstanceState)) {
-            arguments = savedInstanceState;
-        }
-
         // Select where to go from here
         Uri uri = activity.getIntent().getData();
         if (whatwhen != null) {
             // Coming from "back" button. Nothing to do.
-        } else if (uri != null) {
-            parseIntentUri(uri);
-        } else if (arguments != null) {
+        } else if (savedInstanceState != null) {
             whatwhen = new WhatWhen();
 
             // Restore saved instance state. Especially useful on screen rotate on older phones
-            whatwhen.what = LecturesController.WHAT.values()[arguments.getInt("what", 0)];
-            whatwhen.position = arguments.getInt("position", 0);
+            whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what", 0)];
+            whatwhen.position = savedInstanceState.getInt("position", 0);
 
-            long timestamp = arguments.getLong("when", DATE_TODAY);
-            if (timestamp == DATE_TODAY) {
+            long timestamp = savedInstanceState.getLong("when", 0);
+            if (timestamp == 0) {
+                Log.e(TAG, "onCreateView: RESTORING TODAY");
                 whatwhen.when = new AelfDate();
-                whatwhen.today = true;
             } else {
+                Log.e(TAG, "onCreateView: restore date");
                 whatwhen.when = new AelfDate(timestamp);
-                whatwhen.today = false;
             }
+        } else if (uri != null) {
+            parseIntentUri(uri);
         } else {
             whatwhen = new WhatWhen();
 
             // Load the lectures for the default date (defaults to today). Based on the anonymous statistics
             whatwhen.when = defaultDate;
-            whatwhen.today = true;
             whatwhen.position = 0;
 
             if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
@@ -193,7 +184,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         whatwhen = new WhatWhen();
         whatwhen.what = LecturesController.WHAT.MESSE;
         whatwhen.when = new AelfDate();
-        whatwhen.today = true;
         whatwhen.position = 0; // 1st lecture of the office
 
         if (host.equals("www.aelf.org")) {
@@ -297,52 +287,18 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
     }
 
-    private boolean canRestoreState(Bundle savedInstanceState) {
-        // We cant restore the state if
-        // - null
-        // - today AND more than an hour old
-        // The rational is, when praying on a day to day basis, you want to support short pauses and
-        // screen rotation but still open automatically on the most probable office, among the most
-        // often prayed. On the other hand, if the date was explicitely chosen to a specific one like
-        // when preparing the mass for the following sunday, we want to re-open it so that the user
-        // does not have to search for it.
-        if (savedInstanceState == null) {
-            return false;
-        }
-
-        long whenTimestamp = savedInstanceState.getLong("when", DATE_TODAY);
-        long lastUpdateTimestamp = savedInstanceState.getLong("last-update", 0);
-        boolean wasToday = (whenTimestamp == DATE_TODAY);
-
-        // Not today ? Keep it!
-        if (!wasToday) {
-            return true;
-        }
-
-        // Less than 1 hour old ? Keep it
-        if ((System.currentTimeMillis() - lastUpdateTimestamp) < 1*3600*1000) {
-            return true;
-        }
-
-        return false;
-    }
-
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        if (outState == null) return;
 
         int position = 0; // first slide by default
         int what = 0; // "Messe" by default
-        long when = DATE_TODAY;
+        long when = 0;
 
         if (whatwhen != null) {
             if (whatwhen.what != null) what = whatwhen.what.getPosition();
             if (mViewPager != null) position = mViewPager.getCurrentItem();
-            if (whatwhen.when != null && !whatwhen.today && !whatwhen.when.isToday()) {
-                when = whatwhen.when.getTimeInMillis();
-            }
+            if (whatwhen.when != null) when = whatwhen.when.getTimeInMillis();
         }
 
         outState.putInt("what", what);
@@ -471,7 +427,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Build the subject and message
         String message;
         String subject;
-        if (whatwhen.what == LecturesController.WHAT.MESSE && whatwhen.today) {
+        if (whatwhen.what == LecturesController.WHAT.MESSE && whatwhen.when.isToday()) {
             // If this is Today's mass, let's be concise
             if (lecture.title != null) {
                 message = lecture.title;
@@ -483,7 +439,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             message = lecture.shortTitle+" "+whatwhen.what.prettyName();
 
             // Append date if not today
-            if (!whatwhen.today) {
+            if (!whatwhen.when.isToday()) {
                 message += " " + prettyDate;
             }
 
@@ -503,7 +459,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
         // Generate the subject, let's be concise
         subject = lecture.shortTitle+" "+whatwhen.what.prettyName();
-        if (!whatwhen.today) {
+        if (!whatwhen.when.isToday()) {
             subject += " " + prettyDate;
         }
 

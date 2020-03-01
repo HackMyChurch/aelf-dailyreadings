@@ -7,11 +7,8 @@ import java.util.GregorianCalendar;
  */
 
 public class WhatWhen {
-    public static final long DATE_TODAY = 0;
-
     public LecturesController.WHAT what;
     public AelfDate when;
-    public boolean today;
     public int position;
     public boolean useCache = true;
     public String anchor = null;
@@ -35,7 +32,6 @@ public class WhatWhen {
         WhatWhen c = new WhatWhen();
         c.what = what;
         c.when = when;
-        c.today = today;
         c.position = position;
         c.useCache = useCache;
         c.anchor = anchor;
