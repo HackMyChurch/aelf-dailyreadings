@@ -33,7 +33,10 @@ import java.util.concurrent.Semaphore;
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 
-public class BibleSearchFragment extends BibleFragment implements BibleSearchResultAdapter.ItemClickListener, View.OnClickListener {
+public class BibleSearchFragment extends BibleFragment implements
+        BibleSearchResultAdapter.ItemClickListener,
+        SearchView.OnQueryTextListener,
+        View.OnClickListener {
     /**
      * Internal
      */
@@ -225,27 +228,7 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
         mSearchView.setQuery(mQuery, false);
 
         // Register search listener
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // Start the search asynchronously
-                search(query);
-
-                // Close keyboard
-                mRecyclerView.requestFocus();
-                InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
-
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String query) {
-                // Start the search asynchronously
-                search(query);
-                return true;
-            }
-        });
+        mSearchView.setOnQueryTextListener(this);
 
         // Go back to the previous fragment when the search box is closed
         searchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
@@ -292,14 +275,50 @@ public class BibleSearchFragment extends BibleFragment implements BibleSearchRes
     }
 
     //
+    // SearchView listener
+    //
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        // Start the search asynchronously
+        search(query);
+
+        // Close keyboard
+        mRecyclerView.requestFocus();
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
+
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String query) {
+        // Start the search asynchronously
+        search(query);
+        return true;
+    }
+
+    //
     // Lifecycle
     //
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if (mSearchView != null) {
+            // Re-register our listener
+            mSearchView.setOnQueryTextListener(this);
+        }
+    }
+
+    @Override
     public void onStop() {
-        // Save the current search query so that it is restored when moving back
         super.onStop();
         if (mSearchView != null) {
+            // Un-register our listener to avoid messing with the state when in background
+            mSearchView.setOnQueryTextListener(null);
+
+            // Save the current search query so that it is restored when moving back
             String query = mSearchView.getQuery().toString();
             getArguments().putString(BIBLE_SEARCH_QUERY, query);
         }
