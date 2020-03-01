@@ -77,6 +77,8 @@ public class SectionBibleFragment extends SectionFragmentBase {
         // Load selected state
         if (initialized) {
             // Coming from back button. Re-Attach fragment
+        } else if (savedInstanceState != null) {
+            // Nothing to do
         } else if (uri != null) {
             if (uri.getPath().equals("/bible/home")) {
                 // Handle "Home": Load default or last visited page
@@ -87,8 +89,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
             }
         } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
             onSearch(intent.getStringExtra(SearchManager.QUERY));
-        } else if (savedInstanceState != null) {
-            // Nothing to do
         } else {
             // load default page
             onLink(null);
