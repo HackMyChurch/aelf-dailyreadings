@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 
 import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.util.TypedValue;
@@ -630,12 +629,8 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             try {
                 // 1 slide fragment <==> 1 lecture
                 lecturesPagerAdapter = new LecturePagerAdapter(activity.getSupportFragmentManager(), lectures);
-                FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-
                 mViewPager.setAdapter(lecturesPagerAdapter);
                 mViewPager.setCurrentItem(whatwhen.position);
-
-                transaction.commit();
                 setLoading(false);
             } catch (IllegalStateException e) {
                 // Fragment manager has gone away, will reload anyway so silently give up
