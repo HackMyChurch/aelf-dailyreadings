@@ -269,13 +269,6 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     //
 
     @Override
-    public void onRestore() {
-        if (whatwhen != null) {
-            refreshUI(whatwhen);
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         networkStatusMonitor.registerNetworkStatusChangeListener(this);
