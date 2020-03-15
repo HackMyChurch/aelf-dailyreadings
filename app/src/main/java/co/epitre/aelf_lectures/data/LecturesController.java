@@ -53,10 +53,14 @@ public final class LecturesController {
             return null;
         }
 
-        public String urlName() {
+        public String apiName() {
             if(this.position == 0) {
                 return "messes";
             }
+            return this.urlName();
+        }
+
+        public String urlName() {
             return this.name.split("_")[1];
         }
 
@@ -170,7 +174,7 @@ public final class LecturesController {
 
     public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
-        List<LectureItem> lectures = api.getOffice(what.urlName(), when.toIsoString());
+        List<LectureItem> lectures = api.getOffice(what.apiName(), when.toIsoString());
 
         // Cache lectures
         if(!looksLikeError(lectures)) {
