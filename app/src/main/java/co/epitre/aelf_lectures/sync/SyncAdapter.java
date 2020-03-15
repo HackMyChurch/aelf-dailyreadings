@@ -304,7 +304,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // Create the account explicitly. If account creation fails, it means that it already exists.
         // In this case, keep and return the dummy instance. We'll need to trigger manual sync
-        accountManager.addAccountExplicitly(newAccount, null, null);
+        try {
+            accountManager.addAccountExplicitly(newAccount, null, null);
+        } catch (SecurityException e) {
+            // This should not fail BUT, there are reports on Android 6.0
+            Log.e(TAG, "getSyncAccount: SecurityException while creating account", e);
+        }
         return newAccount;
     }
 
