@@ -140,11 +140,17 @@ public class NetworkStatusMonitor extends BroadcastReceiver {
     }
 
     public boolean isNetworkAvailable() {
+        if (this.connectivityManager == null) {
+            return false;
+        }
         NetworkInfo activeNetwork = this.connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
     public boolean isWifiAvailable() {
+        if (this.connectivityManager == null) {
+            return false;
+        }
         NetworkInfo activeNetwork = this.connectivityManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
     }
