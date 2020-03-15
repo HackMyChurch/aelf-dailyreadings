@@ -7,6 +7,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import java.util.List;
+
 public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
     private BibleBookEntry mBibleBookEntry;
     private int mHighlightChapterId;
@@ -34,13 +36,41 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
         return fragment;
     }
 
+    private BibleBookChapter getChapter(int position) {
+        List<BibleBookChapter> chapters = mBibleBookEntry.getChapters();
+
+        // Handle empty state
+        if (chapters.isEmpty()) {
+            return null;
+        }
+
+        // Clamp position
+        if (position < 0) {
+            position = 0;
+        }
+        if (position >= chapters.size()) {
+            position = chapters.size() - 1;
+        }
+
+        // Grab the chapter
+        return chapters.get(position);
+    }
+
     @Override
     public CharSequence getPageTitle(int position) {
-        return mBibleBookEntry.getChapters().get(position).getChapterName();
+        BibleBookChapter chapter = getChapter(position);
+        if (chapter == null) {
+            return "";
+        }
+        return chapter.getChapterName();
     }
 
     public String getRoute(int position) {
-        return mBibleBookEntry.getChapters().get(position).getRoute();
+        BibleBookChapter chapter = getChapter(position);
+        if (chapter == null) {
+            return "";
+        }
+        return chapter.getRoute();
     }
 
     @Override
