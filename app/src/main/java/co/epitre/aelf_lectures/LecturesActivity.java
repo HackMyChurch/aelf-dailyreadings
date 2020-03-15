@@ -296,6 +296,12 @@ public class LecturesActivity extends AppCompatActivity implements
         prepare_fullscreen();
     }
 
+    public void setHomeButtonEnabled(boolean enabled, View.OnClickListener onToolbarNavigationClickListener) {
+        drawerToggle.setDrawerIndicatorEnabled(!enabled);
+        drawerToggle.setToolbarNavigationClickListener(onToolbarNavigationClickListener);
+        drawerToggle.syncState();
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);

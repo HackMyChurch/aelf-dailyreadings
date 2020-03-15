@@ -261,4 +261,35 @@ public class BibleBookFragment extends BibleFragment {
             showChapterSelectionMenu(tab.view);
         }
     }
+
+    //
+    // Lifecycle
+    //
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Enable "home" button to get back to the menu
+        if (activity != null) {
+            activity.setHomeButtonEnabled(true, new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (activity != null) {
+                        activity.onBackPressed();
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Reset the home button state
+        if (activity != null) {
+            activity.setHomeButtonEnabled(false, null);
+        }
+    }
 }
