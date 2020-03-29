@@ -108,8 +108,8 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         } else {
             whatwhen = new WhatWhen();
 
-            // Load the lectures for the default date (defaults to today). Based on the anonymous statistics
-            whatwhen.when = defaultDate;
+            // Load the lectures for now.
+            whatwhen.when = new AelfDate();
             whatwhen.position = 0;
 
             if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
