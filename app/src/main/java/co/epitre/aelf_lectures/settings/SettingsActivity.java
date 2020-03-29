@@ -25,6 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
     public static final String KEY_CONTACT_DEV = "contact_dev";
     public static final String KEY_APP_PREVIOUS_VERSION = "previous_version";
+    public static final String KEY_APP_SYNC_LAST_STOP = "app_sync_last_stop";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
     public static final String KEY_APP_SYNC_LAST_SUCCESS = "app_sync_last_success";
     public static final String KEY_APP_CACHE_MIN_VERSION = "min_cache_version";

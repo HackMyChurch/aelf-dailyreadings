@@ -296,6 +296,18 @@ public class LecturesActivity extends AppCompatActivity implements
         prepare_fullscreen();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        lastStopRestartIfNeeded();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        lastStopRecord();
+    }
+
     public void setHomeButtonEnabled(boolean enabled, View.OnClickListener onToolbarNavigationClickListener) {
         drawerToggle.setDrawerIndicatorEnabled(!enabled);
         drawerToggle.setToolbarNavigationClickListener(onToolbarNavigationClickListener);
@@ -324,6 +336,9 @@ public class LecturesActivity extends AppCompatActivity implements
         } else {
             return false;
         }
+
+        // Reset the "pause" timer so we don't reset after handling the intent
+        lastStopReset();
 
         return true;
     }
@@ -676,6 +691,42 @@ public class LecturesActivity extends AppCompatActivity implements
 
     @Override
     public void onDrawerStateChanged(int newState) {}
+
+    //
+    // Last pause helpers (restart if paused for too long)
+    //
+
+    private void lastStopReset() {
+        SharedPreferences.Editor editor = settings.edit();
+        editor.remove(SettingsActivity.KEY_APP_SYNC_LAST_STOP);
+        editor.apply();
+    }
+
+    private void lastStopRecord() {
+        long currentTimeMillis = System.currentTimeMillis();
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_STOP, currentTimeMillis);
+        editor.apply();
+    }
+
+    private void lastStopRestartIfNeeded() {
+        // Check last pause time
+        long currentTimeMillis = System.currentTimeMillis();
+        long lastStopTimeMillis = settings.getLong(SettingsActivity.KEY_APP_SYNC_LAST_STOP, -1);
+        if (lastStopTimeMillis < 0) {
+            return;
+        }
+
+        // If the app was paused for more than 30min --> restart (the most important state is saved as preferences)
+        long pauseDurationMinutes = (currentTimeMillis - lastStopTimeMillis) / 1000 / 60;
+        if (pauseDurationMinutes > 60) {
+            Log.i(TAG, "onResume: The application has been paused for "+pauseDurationMinutes+" seconds. Restarting.");
+            Intent intent = new Intent(this, this.getClass());
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            lastStopReset();
+            startActivity(intent);
+        }
+    }
 
     //
     // Utils
