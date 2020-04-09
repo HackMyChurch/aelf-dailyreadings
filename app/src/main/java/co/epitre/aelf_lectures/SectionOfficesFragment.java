@@ -277,6 +277,10 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     public void onPause() {
         super.onPause();
         networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
+        if (mViewPager != null) {
+            whatwhen.anchor = null;
+            whatwhen.position = mViewPager.getCurrentItem();
+        }
     }
 
     @Override
