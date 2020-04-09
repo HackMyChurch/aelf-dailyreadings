@@ -24,9 +24,15 @@ h3 small i {
     display: block;
     float: right;
     font-weight: normal;
-    margin-top: 5px;
 }
 
+small i a {
+    color: unset;
+}
+
+small i a:after {
+    content: " ⎘";
+}
 
 /* Page subtitle */
 

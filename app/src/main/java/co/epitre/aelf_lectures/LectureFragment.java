@@ -62,6 +62,7 @@ public class LectureFragment extends ReadingFragment implements
         htmlString.append("</head>");
         htmlString.append("<body>");
         htmlString.append(body);
+        htmlString.append("<script src=\"js/lecture.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</body></html>");
 
         String reading = htmlString.toString();
