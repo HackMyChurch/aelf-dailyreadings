@@ -47,3 +47,9 @@ font[color='#000000'] {
 mark {
     color: rgba(239,233,222,0.87);
 }
+
+/* Highlight reference verse */
+
+.highlight {
+    background-color: rgba(249, 120, 126, .2);
+}

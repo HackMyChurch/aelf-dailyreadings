@@ -27,6 +27,8 @@ public abstract class ReadingFragment extends Fragment {
      */
     public static final String ARG_TEXT_HTML = "chapter_text";
     public static final String ARG_HIGHLIGHT = "highlight";
+    public static final String ARG_REFERENCE = "reference";
+    public static final String ARG_CHAPTER = "chapter";
 
     /**
      * Views

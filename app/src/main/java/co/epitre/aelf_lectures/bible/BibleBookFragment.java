@@ -27,6 +27,7 @@ public class BibleBookFragment extends BibleFragment {
     private final static String BIBLE_BOOK_ID = "bibleBookId";
     private final static String BIBLE_CHAPTER_ID = "bibleChapterId";
     private final static String BIBLE_SEARCH_QUERY = "bibleSearchQuery";
+    private final static String BIBLE_REFERENCE = "bibleReference";
 
     /**
      * Global Views
@@ -49,6 +50,7 @@ public class BibleBookFragment extends BibleFragment {
         String path = uri.getPath();
         String[] chunks = path.split("/");
         String query = uri.getQueryParameter("query");
+        String reference = uri.getQueryParameter("reference");
 
         int biblePartId = 0;
         int bibleBookId = 0;
@@ -101,7 +103,7 @@ public class BibleBookFragment extends BibleFragment {
             }
         }
 
-        return newInstance(biblePartId, bibleBookId, bibleChapterId, query);
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, query, reference);
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId) {
@@ -109,10 +111,10 @@ public class BibleBookFragment extends BibleFragment {
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId) {
-        return newInstance(biblePartId, bibleBookId, bibleChapterId, null);
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, null, null);
     }
 
-    public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query) {
+    public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query, String reference) {
         BibleBookFragment fragment = new BibleBookFragment();
 
         Bundle args = new Bundle();
@@ -120,6 +122,7 @@ public class BibleBookFragment extends BibleFragment {
         args.putInt(BIBLE_BOOK_ID, bibleBookId);
         args.putInt(BIBLE_CHAPTER_ID, bibleChapterId);
         args.putString(BIBLE_SEARCH_QUERY, query);
+        args.putString(BIBLE_REFERENCE, reference);
         fragment.setArguments(args);
 
         return fragment;
@@ -145,6 +148,7 @@ public class BibleBookFragment extends BibleFragment {
         int bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
         int bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
         String query = getArguments().getString(BIBLE_SEARCH_QUERY);
+        String reference = getArguments().getString(BIBLE_REFERENCE);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
         mBibleBookEntry = biblePart.getBibleBookEntries().get(bibleBookId);
 
@@ -157,7 +161,7 @@ public class BibleBookFragment extends BibleFragment {
         actionBar.setTitle(mBibleBookEntry.getBookName());
 
         // Setup the pager
-        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry, bibleChapterId, query);
+        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry, bibleChapterId, query, reference);
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
@@ -186,11 +190,20 @@ public class BibleBookFragment extends BibleFragment {
             return null;
         }
 
+        String separator = "?";
+
         int position = mViewPager.getCurrentItem();
         String route = "/bible"+mBibleChapterPagerAdapter.getRoute(position);
 
         if (position == getArguments().getInt(BIBLE_CHAPTER_ID, -1)) {
-            route += "?query=" + getArguments().getString(BIBLE_SEARCH_QUERY);
+            route += separator+"query=" + getArguments().getString(BIBLE_SEARCH_QUERY);
+            separator = "&";
+        }
+
+        String reference = getArguments().getString(BIBLE_SEARCH_QUERY);
+        if (reference != null) {
+            route += separator+"reference=" + reference;
+            separator = "&";
         }
 
         return route;

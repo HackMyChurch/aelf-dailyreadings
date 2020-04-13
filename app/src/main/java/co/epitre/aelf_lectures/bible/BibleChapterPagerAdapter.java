@@ -13,25 +13,29 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
     private BibleBookEntry mBibleBookEntry;
     private int mHighlightChapterId;
     private String mHighlightQuery;
+    private String mReference;
 
-    public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery) {
+    public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery, String reference) {
         super(fm);
         mBibleBookEntry = bibleBookEntry;
         mHighlightChapterId = highlightChapterId;
         mHighlightQuery = highlightQuery;
+        mReference = reference;
     }
 
     @NonNull
     @Override
     public Fragment getItem(int position) {
-        String chapterText = mBibleBookEntry.getChapter(position).getContent();
+        BibleBookChapter chapter = mBibleBookEntry.getChapter(position);
         Fragment fragment = new BibleChapterFragment();
 
         Bundle args = new Bundle();
-        args.putString(BibleChapterFragment.ARG_TEXT_HTML, chapterText);
+        args.putString(BibleChapterFragment.ARG_TEXT_HTML, chapter.getContent());
         if (position == mHighlightChapterId) {
             args.putString(BibleChapterFragment.ARG_HIGHLIGHT, mHighlightQuery);
         }
+        args.putString(BibleChapterFragment.ARG_CHAPTER, chapter.getChapterRef());
+        args.putString(BibleChapterFragment.ARG_REFERENCE, mReference);
         fragment.setArguments(args);
         return fragment;
     }
