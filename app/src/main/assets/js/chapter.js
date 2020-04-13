@@ -239,6 +239,7 @@ function highlight_range(verse_start, verse_end) {
 function highlight_reference_for_chapter(reference, chapter) {
     var reference_ranges = parse_reference(reference);
     var chapter_ranges = [];
+    var first_verse_id = Infinity;
 
     for (var i = 0; i < reference_ranges.length; i++) {
         var reference_range = reference_ranges[i];
@@ -254,26 +255,40 @@ function highlight_reference_for_chapter(reference, chapter) {
         if (compare_start == 0 && compare_end == 0) {
             // Full range is in chapter
             highlight_range(reference_range['verse_start'], reference_range['verse_end']);
+            if (first_verse_id > reference_range['verse_start']) {
+                first_verse_id = reference_range['verse_start'];
+            }
             continue;
         }
 
         if (compare_start > 0 && compare_end < 0) {
             // Chapter is fully contained in range
             highlight_range(0, Infinity);
+            first_verse_id = 0;
             continue;
         }
 
         if (compare_start == 0) {
             // Chapter contains the first part of the range
             highlight_range(reference_range['verse_start'], Infinity);
+            if (first_verse_id > reference_range['verse_start']) {
+                first_verse_id = reference_range['verse_start'];
+            }
             continue;
         }
 
         if (compare_end == 0) {
             // Chapter contains the end part of the range
             highlight_range(0, reference_range['verse_end']);
+            first_verse_id = 0;
             continue;
         }
+    }
+
+    // Move the first highlighted element in the visible area
+    first_verse_element = document.getElementById('verse-'+first_verse_id);
+    if (first_verse_element) {
+        first_verse_element.scrollIntoView();
     }
 }
 
