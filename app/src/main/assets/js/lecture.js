@@ -17,7 +17,7 @@ for (var i = 0; i < references_elements.length; i++) {
     var reference = reference_text;
 
     // Extract "Cantiques" references
-    if (reference.startsWith("CANTIQUE")) {
+    if (reference.match(/^CANTIQUE/)) {
         reference = reference.split('(', 1)[1].rsplit(')', 1)[0]
     }
 

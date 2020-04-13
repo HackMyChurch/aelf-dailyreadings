@@ -27,7 +27,7 @@ h3 small i {
 }
 
 small i a {
-    color: unset;
+    color: inherit;
 }
 
 small i a:after {
