@@ -121,7 +121,7 @@ div.app-office-navigation {
 
 /* Mark currently selected verse */
 
-:focus {
+.line:focus {
     outline: none;
     border-left-width: 2px;
     border-left-style: solid;

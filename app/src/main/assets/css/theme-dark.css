@@ -32,7 +32,7 @@ font[color='#000000'] {
 
 /* Mark currently selected verse */
 
-:focus {
+.line:focus {
     border-left-color: rgba(249, 120, 126, 1);
 }
 
