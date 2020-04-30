@@ -34,7 +34,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.2.0-alpha05'
 
     // HTTP layer
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.5.0'
+    implementation 'com.squareup.moshi:moshi:1.9.2'
 
     // Foundation
     implementation 'org.greenrobot:eventbus:3.1.1'
