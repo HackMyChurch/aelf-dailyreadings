@@ -91,6 +91,65 @@ public class BibleController {
         return false;
     }
 
+    public String getBookTitle(String bookRef) {
+        waitReady();
+
+        Cursor cursor = db.query(
+                true,
+                "verses",
+                new String[]{"book_title"},
+                "book = '?'",
+                new String[]{bookRef},
+                null,
+                null,
+                null,
+                "1"
+        );
+
+        if (cursor.getCount() != 1) {
+            return null;
+        }
+
+        return cursor.getString(0);
+    }
+
+    public List<BibleBookChapter> getBookChapters(String bookRef) {
+        waitReady();
+
+        Cursor cursor = db.query(
+                true,
+                "verses",
+                new String[]{"chapter", "chapter_title", "book_title"},
+                "book = ?",
+                new String[]{bookRef},
+                null,
+                null,
+                "CAST(chapter AS INTEGER)",
+                null
+        );
+
+        // Allocate chapters list
+        int chapterCount = cursor.getCount();
+        ArrayList<BibleBookChapter> chapters = new ArrayList<>(chapterCount);
+
+        // Fill the chapter list
+        try {
+            while (cursor.moveToNext()) {
+                String chapterRef = cursor.getString(0);
+                String chapterTitle = cursor.getString(1);
+                if (chapterCount == 1) {
+                    chapterTitle = cursor.getString(2);
+                }
+                BibleBookChapter chapter = new BibleBookChapter(bookRef, chapterRef, chapterTitle);
+                chapters.add(chapter);
+            }
+        } finally {
+            cursor.close();
+        }
+
+        return chapters;
+    }
+
     public Cursor search(String search, Sort sort) {
         waitReady();
 

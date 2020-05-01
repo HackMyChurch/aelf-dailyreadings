@@ -87,7 +87,7 @@ public class BibleBookEntry {
 
     public BibleBook getBook() {
         if (this.mBook == null) {
-            this.mBook = BibleBook.getBook(this.mBookRef, this.mBookName);
+            this.mBook = BibleBook.getBook(this.mBookRef);
         }
         return this.mBook;
     }

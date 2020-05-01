@@ -1,24 +1,17 @@
 package co.epitre.aelf_lectures.bible;
 
-import android.content.res.AssetManager;
-
 import androidx.annotation.NonNull;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import co.epitre.aelf_lectures.LecturesApplication;
 
 public class BibleBook {
-    private final String BIBLE_DIR = "bible";
-
     // Book status
     private String mName;
     private String mRef;
-    private ArrayList<BibleBookChapter> mChapters;
+    private List<BibleBookChapter> mChapters;
+    private BibleController mBibleController;
 
     // Cache of books
     private static HashMap<String, BibleBook> mBooks = new HashMap<>();
@@ -27,26 +20,20 @@ public class BibleBook {
     // Constructors
     //
 
-    private BibleBook(@NonNull String ref, @NonNull String name) {
-        this.mName = name;
+    private BibleBook(@NonNull String ref) {
         this.mRef = ref;
+        this.mBibleController = BibleController.getInstance();
     }
 
-    public static BibleBook getBook(@NonNull String ref, String name) {
+    public static BibleBook getBook(@NonNull String ref) {
         // Try to load book from cache
         BibleBook book = mBooks.get(ref);
         if (book != null) {
             return book;
         }
 
-        // FIXME: We need the name to instanciate the book. This will become an issue when we access
-        // bible books by URL.
-        if (name == null) {
-            return null;
-        }
-
         // Create the book instance and add it to the cache
-        book = new BibleBook(ref, name);
+        book = new BibleBook(ref);
         mBooks.put(ref, book);
         return book;
     }
@@ -56,11 +43,10 @@ public class BibleBook {
     //
 
     public String getName() {
+        if (this.mName == null) {
+            this.mName = mBibleController.getBookTitle(this.mRef);
+        }
         return this.mName;
-    }
-
-    public String getRef() {
-        return this.mRef;
     }
 
     //
@@ -68,43 +54,9 @@ public class BibleBook {
     //
 
     public List<BibleBookChapter> getChapters() {
-        // Check if we have a cached version
-        if (this.mChapters != null) {
-            return this.mChapters;
+        if (this.mChapters == null) {
+            this.mChapters = mBibleController.getBookChapters(mRef);
         }
-
-        // Allocate chapters list
-        this.mChapters = new ArrayList<>();
-
-        // Check if we have chapters
-        if (mRef == null) {
-            return this.mChapters;
-        }
-
-        AssetManager assets = LecturesApplication.getInstance().getAssets();
-
-        // Get all chapters
-        String[] files;
-        try {
-            files = assets.list(BIBLE_DIR+"/"+mRef);
-        } catch (IOException e) {
-            return this.mChapters;
-        }
-
-        for (String name : files) {
-            if (name.endsWith(".html")) {
-                BibleBookChapter chapter = new BibleBookChapter(mRef, name.split("\\.")[0]);
-                this.mChapters.add(chapter);
-            }
-        }
-
-        // If there is a single chapter, set the chapter title to the book name
-        if (this.mChapters.size() == 1) {
-            this.mChapters.get(0).setChapterName(mName);
-        }
-
-        // Sort the chapters in natural order
-        Collections.sort(this.mChapters, new BibleBookChapter.BibleBookChapterComparator());
         return this.mChapters;
     }
 
