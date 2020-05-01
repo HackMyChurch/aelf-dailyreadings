@@ -130,7 +130,7 @@ public class BibleSearchEngine {
         // Base query: all terms
         queryBuilder.append(" SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
         queryBuilder.append(" FROM search");
-        queryBuilder.append(" WHERE content MATCH '\"");
+        queryBuilder.append(" WHERE text MATCH '\"");
         queryBuilder.append(search);
         queryBuilder.append("\" OR ");
         queryBuilder.append(" NEAR(\"");
@@ -158,7 +158,7 @@ public class BibleSearchEngine {
         // Base query: all terms
         queryBuilder.append(" SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
         queryBuilder.append(" FROM search");
-        queryBuilder.append(" WHERE content MATCH '\"");
+        queryBuilder.append(" WHERE text MATCH '\"");
         queryBuilder.append(search);
         queryBuilder.append("\" OR ");
         queryBuilder.append(" NEAR(\"");
@@ -176,7 +176,7 @@ public class BibleSearchEngine {
             queryBuilder.append(" UNION");
             queryBuilder.append(" SELECT book, chapter, title, rank * "+rankScaling+", '"+tokens.get(i).replace("*", "")+"' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
             queryBuilder.append(" FROM search");
-            queryBuilder.append(" WHERE content MATCH '");
+            queryBuilder.append(" WHERE text MATCH '");
             queryBuilder.append(" NEAR(");
             for (int j = 0; j < tokens.size(); j++) {
                 if (i == j) {

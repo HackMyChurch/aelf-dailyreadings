@@ -175,16 +175,52 @@ else:
 if os.path.isfile(BIBLE_DB):
     os.unlink(BIBLE_DB)
 
-# Create new index
 conn = sqlite3.connect(BIBLE_DB)
 cursor = conn.cursor()
+
+# Create Bible table. Typical access pattern:
+# - get ordered list of chapters of a book
+# - get full chapter of book, ordered by verses
+cursor.execute('''
+CREATE TABLE verses (
+    book          TEXT,
+    book_id       INTEGER,
+    book_title    TEXT,
+    chapter       TEXT,
+    chapter_id    INTEGER,
+    chapter_title TEXT,
+    verse         INTEGER,
+    text          TEXT,
+    PRIMARY KEY (book, chapter, verse)
+);''')
+
+# Create the chapter view. Aggregates the verses of a chapter.
+# This glue layer between the verses and the index to share the same data
+cursor.execute('''
+CREATE VIEW chapters (
+    book,
+    book_id,
+    chapter,
+    chapter_id,
+    title,
+    text
+) AS
+    SELECT book, book_id, chapter, chapter_id, book_title || ', ' || chapter_title, group_concat(text, '\n')
+    FROM verses
+    GROUP BY chapter_id
+    ORDER BY book, chapter, verse
+;''')
+
+# Create the index
 cursor.execute('''
 CREATE VIRTUAL TABLE search USING fts5(
     book     UNINDEXED,
     book_id  UNINDEXED,
     chapter  UNINDEXED,
     title    UNINDEXED,
-    content,
+    text,
+    content=chapters,
+    content_rowid=chapter_id,
     tokenize = 'unicode61 remove_diacritics 2',
 );''')
 
@@ -193,12 +229,15 @@ CREATE VIRTUAL TABLE search USING fts5(
 #
 
 book_id = 0
+chapter_id = 0
 
 #
 # Process
 #
 
-def index_path(chapter_file_path, title, book_ref, book_id, chapter_ref):
+def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, chapter_title):
+    global chapter_id
+
     print("\u001b[KINFO: Processing %s..." % (chapter_file_path), end='\r')
 
     # Parse the HTML
@@ -225,6 +264,19 @@ def index_path(chapter_file_path, title, book_ref, book_id, chapter_ref):
         # Register the rewritten verse
         final_elem.append(chapter_verse)
 
+        # Insert the verse in the database
+        verse_text = chapter_verse.span.next_sibling.strip()
+        try:
+            if not verse_ref:
+                verse_ref = None
+            cursor.execute(
+                    '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?);''',
+                    (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_text)
+            )
+        except:
+            print('\nERROR: Failed to insert verse:', book_ref, chapter_ref, verse_ref, chapter_verse, verse_text)
+    chapter_id += 1
+
     # Save the chapter
     dest_folder = os.path.join(BIBLE_DEST_FOLDER, book_ref)
     dest_file = os.path.join(dest_folder, '%s.html' % (chapter_ref))
@@ -233,17 +285,6 @@ def index_path(chapter_file_path, title, book_ref, book_id, chapter_ref):
     with open(dest_file, 'w') as f:
         f.write(str(final_elem))
 
-    # Prepare the chapter for the index
-    for verse in final_elem.find_all(class_='verse'):
-        verse.extract()
-
-    chapter_text = ' '.join([verse.text for verse in final_elem.find_all(class_='line')])
-    chapter_text = chapter_text.replace('\r', ' ').replace('\n', ' ')
-    chapter_text = re.sub(r"\s+", ' ', chapter_text)
-
-    # Index
-    cursor.execute('''INSERT INTO search(book, book_id, chapter, title, content) VALUES(?, ?, ?, ?, ?);''', (book_ref, book_id, chapter_ref, title, chapter_text))
-
 # Post-process the Bible books
 for part_title, part in BIBLE_BOOKS.items():
     for section_title, section in part.items():
@@ -251,10 +292,15 @@ for part_title, part in BIBLE_BOOKS.items():
             book_id += 1
             book_path = book.get('path', book_ref)
             book_title = book['title']
-            for chapter_file_path in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_ref}/*.html'):
+            for chapter_file_path in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_path}/*.html'):
                 chapter_ref = chapter_file_path.rsplit('/')[-1].split('.')[0]
-                chapter_title = f'{book_title}, Chapitre {chapter_ref}'
-                index_path(chapter_file_path, chapter_title, book_ref, book_id, chapter_ref)
+                if chapter_ref == "0" and book_ref == "Est":
+                    chapter_title = f'Préliminaires'
+                elif chapter_ref == "0" and book_ref == "Si":
+                    chapter_title = f'Prologue'
+                else:
+                    chapter_title = f'Chapitre {chapter_ref}'
+                index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, chapter_title)
 
 # Post-process the Bible psalms
 for psalm_ref, psalm in BIBLE_PSALMS.items():
@@ -263,7 +309,10 @@ for psalm_ref, psalm in BIBLE_PSALMS.items():
     chapter_ref = psalm_ref[2:]
     chapter_file_path = f'{BIBLE_CACHE_FOLDER}/{book_ref}/{chapter_ref}.html'
     chapter_title = psalm['title']
-    index_path(chapter_file_path, chapter_title, book_ref, book_id, chapter_ref)
+    index_path(chapter_file_path, book_ref, book_id, "Livre des Psaumes", chapter_ref, chapter_title)
+
+# Index all chapters
+cursor.execute('''INSERT INTO search(book, book_id, chapter, rowid, title, text) SELECT book, book_id, chapter, chapter_id, title, text FROM chapters;''')
 
 # Optimize the index
 print("\u001b[KINFO: Optimizing the index...", end='\r')
@@ -272,6 +321,10 @@ cursor.execute('''INSERT INTO search(search) VALUES('optimize');''')
 # Apply all changes
 print("\u001b[KINFO: Saving the index...", end='\r')
 conn.commit()
+
+# Optimize the database
+print("\u001b[KINFO: Optimizing the database...", end='\r')
+cursor.execute('''VACUUM;''')
 
 print('\u001b[K', end='\r')
 print("INFO: All done!")
