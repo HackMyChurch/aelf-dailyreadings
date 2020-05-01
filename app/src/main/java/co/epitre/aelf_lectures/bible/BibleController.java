@@ -150,6 +150,41 @@ public class BibleController {
         return chapters;
     }
 
+    public List<BibleVerse> getBookChapterVerses(String bookRef, String chapterRef) {
+        waitReady();
+
+        Cursor cursor = db.query(
+                "verses",
+                new String[]{"verse", "text"},
+                "book = ? AND chapter = ?",
+                new String[]{bookRef, chapterRef},
+                null,
+                null,
+                "rowid",
+                null
+        );
+
+        // Allocate verses list
+        ArrayList<BibleVerse> verses = new ArrayList<>(cursor.getCount());
+
+        // Fill the verse list
+        try {
+            while (cursor.moveToNext()) {
+                int verseRef = cursor.getInt(0);
+                if(cursor.isNull(0)) {
+                    verseRef = -1;
+                }
+                String verseText = cursor.getString(1);
+                BibleVerse verse = new BibleVerse(verseRef, verseText);
+                verses.add(verse);
+            }
+        } finally {
+            cursor.close();
+        }
+
+        return verses;
+    }
+
     public Cursor search(String search, Sort sort) {
         waitReady();
 
