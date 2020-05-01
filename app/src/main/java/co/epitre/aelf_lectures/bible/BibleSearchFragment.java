@@ -60,7 +60,7 @@ public class BibleSearchFragment extends BibleFragment implements
     private SearchRunnable mSearchRunnable;
     private ExecutorService mSearchExecutorService = Executors.newSingleThreadExecutor();
     private String mQuery = "";
-    private BibleSearchEngine.Sort mSort = BibleSearchEngine.Sort.Relevance;
+    private BibleController.Sort mSort = BibleController.Sort.Relevance;
     RecyclerView mRecyclerView;
     BibleSearchResultAdapter mResultAdapter;
 
@@ -106,7 +106,7 @@ public class BibleSearchFragment extends BibleFragment implements
             // Load the argument
             mQuery = args.getString(BIBLE_SEARCH_QUERY);
             try {
-                mSort = BibleSearchEngine.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
+                mSort = BibleController.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
             } catch (IllegalArgumentException | NullPointerException e) {
             }
 
@@ -155,7 +155,7 @@ public class BibleSearchFragment extends BibleFragment implements
         mEditSearchSemaphore.release();
     }
 
-    private void setSort(BibleSearchEngine.Sort sort) {
+    private void setSort(BibleController.Sort sort) {
         mSort = sort;
         search(mQuery);
     }
@@ -165,16 +165,16 @@ public class BibleSearchFragment extends BibleFragment implements
      */
     class SearchRunnable implements Runnable {
         private String mQuery;
-        private BibleSearchEngine.Sort mSort;
+        private BibleController.Sort mSort;
         private Semaphore mEditSemaphore;
 
-        SearchRunnable(String query, BibleSearchEngine.Sort sort) {
+        SearchRunnable(String query, BibleController.Sort sort) {
             mQuery = query;
             mSort = sort;
             mEditSemaphore = new Semaphore(1);
         }
 
-        boolean setQuery(String query, BibleSearchEngine.Sort sort) {
+        boolean setQuery(String query, BibleController.Sort sort) {
             if (!mEditSemaphore.tryAcquire()) {
                 return false;
             }
@@ -198,7 +198,7 @@ public class BibleSearchFragment extends BibleFragment implements
                 mResultAdapter = null;
             } else {
                 // Run real search
-                Cursor cursor = BibleSearchEngine.getInstance().search(mQuery, mSort);
+                Cursor cursor = BibleController.getInstance().search(mQuery, mSort);
                 cursor.moveToPosition(0);
 
                 // Create the new adapter
@@ -359,12 +359,12 @@ public class BibleSearchFragment extends BibleFragment implements
         switch(view.getId()) {
             case R.id.radio_sort_bible:
                 if (((RadioButton)view).isChecked()){
-                    setSort(BibleSearchEngine.Sort.Bible);
+                    setSort(BibleController.Sort.Bible);
                 }
                 break;
             case R.id.radio_sort_relevance:
                 if (((RadioButton)view).isChecked()){
-                    setSort(BibleSearchEngine.Sort.Relevance);
+                    setSort(BibleController.Sort.Relevance);
                 }
                 break;
         }

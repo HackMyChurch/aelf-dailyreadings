@@ -27,7 +27,7 @@ import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleFragment;
 import co.epitre.aelf_lectures.bible.BibleMenuFragment;
-import co.epitre.aelf_lectures.bible.BibleSearchEngine;
+import co.epitre.aelf_lectures.bible.BibleController;
 import co.epitre.aelf_lectures.bible.BibleSearchFragment;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -56,7 +56,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Init the search engine asynchronously
-        BibleSearchEngine.getInstance();
+        BibleController.getInstance();
 
         // Load settings
         settings = PreferenceManager.getDefaultSharedPreferences(getContext());

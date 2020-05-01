@@ -23,9 +23,9 @@ import co.epitre.aelf_lectures.LecturesApplication;
 
 import static org.sqlite.database.sqlite.SQLiteDatabase.OPEN_READONLY;
 
-public class BibleSearchEngine {
-    private static final String TAG = "BibleSearchEngine";
-    private static BibleSearchEngine instance;
+public class BibleController {
+    private static final String TAG = "BibleController";
+    private static BibleController instance;
     private InitThread initThread;
     private File dbFile;
     private SQLiteDatabase db;
@@ -53,14 +53,14 @@ public class BibleSearchEngine {
         Bible,
     }
 
-    synchronized public static BibleSearchEngine getInstance() {
+    synchronized public static BibleController getInstance() {
         if(instance == null) {
-            instance = new BibleSearchEngine();
+            instance = new BibleController();
         }
         return instance;
     }
 
-    private BibleSearchEngine() {
+    private BibleController() {
         initThread = new InitThread(LecturesApplication.getInstance());
         initThread.start();
     }
