@@ -25,13 +25,10 @@ from bs4 import BeautifulSoup
 #
 
 CACHE_FOLDER = "./tmp"
+ASSETS_FOLDER = "./app/src/main/assets"
 BIBLE_DOMAIN = "www.aelf.org"
 BIBLE_PATH = "bible"
-ASSETS_FOLDER = "./app/src/main/assets"
-
 BIBLE_CACHE_FOLDER = os.path.join(CACHE_FOLDER, BIBLE_DOMAIN, BIBLE_PATH)
-BIBLE_DEST_FOLDER = os.path.join(ASSETS_FOLDER, BIBLE_PATH)
-
 BIBLE_DB = os.path.join(ASSETS_FOLDER, 'bible.db')
 
 BIBLE_BOOKS = {
@@ -246,29 +243,16 @@ def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, ch
 
     # Find the actual text and rewrite the markup
     chapter_soup = soup.find(class_='block-single-reading')
-    final_elem = soup.new_tag('p')
     for chapter_verse in chapter_soup.find_all('p', recursive=False):
-        # Get the verse identifier and set properties (.text-danger is used in the psalms)
+        # Get the verse identifier (.text-danger is used in the psalms)
         verse_ref_elem = chapter_verse.select_one(".verse_number, .text-danger")
-        verse_ref_elem['aria-hidden'] = "true"
-        verse_ref_elem['class'] = 'verse'
-        verse_ref = verse_ref_elem.text.lower().lstrip('0')
-        verse_ref_elem.string = verse_ref
+        verse_ref = verse_ref_elem.text.lower().lstrip('0') or None
 
-        # Set verse properties
-        chapter_verse.name = 'span'
-        chapter_verse['class'] = 'line'
-        chapter_verse['id'] = "verse-%s" % (verse_ref)
-        chapter_verse['tabindex'] = '0'
-
-        # Register the rewritten verse
-        final_elem.append(chapter_verse)
+        # Get the verse text
+        verse_text = chapter_verse.span.next_sibling.strip()
 
         # Insert the verse in the database
-        verse_text = chapter_verse.span.next_sibling.strip()
         try:
-            if not verse_ref:
-                verse_ref = None
             cursor.execute(
                     '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?);''',
                     (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_text)
@@ -276,14 +260,6 @@ def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, ch
         except:
             print('\nERROR: Failed to insert verse:', book_ref, chapter_ref, verse_ref, chapter_verse, verse_text)
     chapter_id += 1
-
-    # Save the chapter
-    dest_folder = os.path.join(BIBLE_DEST_FOLDER, book_ref)
-    dest_file = os.path.join(dest_folder, '%s.html' % (chapter_ref))
-
-    os.makedirs(dest_folder, exist_ok=True)
-    with open(dest_file, 'w') as f:
-        f.write(str(final_elem))
 
 # Post-process the Bible books
 for part_title, part in BIBLE_BOOKS.items():
