@@ -5,19 +5,22 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import org.xmlpull.v1.XmlPullParserException;
-
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.settings.SettingsActivity;
+
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okio.BufferedSource;
 
 /**
  * Created by jean-tiare on 16/03/18.
@@ -43,6 +46,8 @@ public final class EpitreApi {
             .readTimeout   (60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build();
+    private final Moshi moshi = new Moshi.Builder().build();
+    private final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
 
     /**
      * Singleton
@@ -103,35 +108,50 @@ public final class EpitreApi {
      * Public API
      */
 
-    public List<LectureItem> getOffice(String office, String date) throws IOException {
+    public List<LectureItem> getOffice(String officeName, String date) throws IOException {
         // Load configuration
-        String path = "/%d/office/%s/%s.rss?region=%s";
+        String path = "/%d/office/%s/%s.json?region=%s";
         int version = preference.getInt("version", -1);
 
         // Build URL
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
-        path = String.format(Locale.US, path, version, office, date, region);
+        path = String.format(Locale.US, path, version, officeName, date, region);
 
         // Issue request
         Response response = InternalGet(path);
 
         // Grab response
-        InputStream in = null;
+        BufferedSource source = null;
+        Office office = null;
         try {
-            in = response.body().byteStream();
-            return AelfRssParser.parse(in);
-        } catch (XmlPullParserException e) {
-            Log.e(TAG, "Failed to parse API result", e);
-            throw new IOException(e);
+            source = response.body().source();
+            office = officeJsonAdapter.fromJson(response.body().source());
         } catch (IOException e) {
             Log.w(TAG, "Failed to load lectures from network");
             throw e;
         } catch (Exception e) {
             throw new IOException(e);
         } finally {
-            if(in != null) {
-                in.close();
+            if(source != null) {
+                source.close();
             }
         }
+
+        // Compat: concert office to legacy List<LectureItem>
+        List<LectureItem> legacyLectures = new ArrayList<>();
+        for (OfficeVariant officeVariant: office.variants) {
+            for (List<Lecture> lectureVariant: officeVariant.lectures) {
+                Lecture lecture = lectureVariant.get(0);
+                
+                LectureItem legacyLecture = new LectureItem(
+                        lecture.getKey(),
+                        lecture.getShortTitle(),
+                        lecture.toHtml(),
+                        lecture.getReference()
+                );
+                legacyLectures.add(legacyLecture);
+            }
+        }
+        return legacyLectures;
     }
 }
