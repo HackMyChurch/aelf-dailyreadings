@@ -14,10 +14,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LectureItem;
-import co.epitre.aelf_lectures.data.LecturesController;
-import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LectureItem;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**

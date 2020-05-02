@@ -7,7 +7,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.Preference;
 
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.data.Validator;
+import co.epitre.aelf_lectures.lectures.data.Validator;
 
 public class TesterPrefFragment extends BasePrefFragment implements
         Preference.OnPreferenceChangeListener {

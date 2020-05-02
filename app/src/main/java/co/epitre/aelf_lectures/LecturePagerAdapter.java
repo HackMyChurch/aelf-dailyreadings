@@ -2,7 +2,7 @@ package co.epitre.aelf_lectures;
 
 import java.util.List;
 
-import co.epitre.aelf_lectures.data.LectureItem;
+import co.epitre.aelf_lectures.lectures.data.LectureItem;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;

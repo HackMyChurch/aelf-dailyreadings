@@ -7,8 +7,8 @@ import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import android.accounts.Account;

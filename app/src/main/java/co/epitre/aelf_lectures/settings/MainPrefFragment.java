@@ -19,9 +19,8 @@ import androidx.preference.SeekBarPreference;
 import java.io.File;
 import java.io.IOException;
 
-import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.data.AelfCacheHelper;
+import co.epitre.aelf_lectures.lectures.data.AelfCacheHelper;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class MainPrefFragment extends BasePrefFragment {

@@ -40,9 +40,8 @@ import android.widget.FrameLayout;
 
 import java.io.File;
 
-import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LecturesController.WHAT;
-import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 

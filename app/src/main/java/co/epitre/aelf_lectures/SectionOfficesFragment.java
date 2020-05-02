@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import co.epitre.aelf_lectures.data.AelfDate;
-import co.epitre.aelf_lectures.data.LectureItem;
-import co.epitre.aelf_lectures.data.LecturesController;
-import co.epitre.aelf_lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LectureItem;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
