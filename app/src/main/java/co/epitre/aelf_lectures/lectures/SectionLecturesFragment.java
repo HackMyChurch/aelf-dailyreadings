@@ -402,7 +402,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         DatePickerFragment calendarDialog = new DatePickerFragment();
         calendarDialog.setListener(this);
         calendarDialog.setArguments(args);
-        calendarDialog.show(activity.getSupportFragmentManager(), "datePicker");
+        calendarDialog.show(getChildFragmentManager(), "datePicker");
 
         return true;
     }
@@ -632,7 +632,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             // Set up the ViewPager with the sections adapter.
             try {
                 // 1 slide fragment <==> 1 lecture
-                lecturesPagerAdapter = new LecturePagerAdapter(activity.getSupportFragmentManager(), office);
+                lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office);
                 mViewPager.setAdapter(lecturesPagerAdapter);
                 mViewPager.setCurrentItem(whatwhen.position);
                 setLoading(false);
