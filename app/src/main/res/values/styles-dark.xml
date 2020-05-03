@@ -31,7 +31,7 @@
         <item name="popupTheme">@style/ThemeOverlay.AppCompat</item>
     </style>
 
-    <style name="AelfTabStripDark">
+    <style name="AelfTabStripDark" parent="AelfTabStripBase">
         <item name="android:background">@color/dark_aelf_primary_dark</item>
         <item name="android:textColor">@color/dark_aelf_accent</item>
         <item name="tabTextColor">@color/dark_aelf_accent</item>

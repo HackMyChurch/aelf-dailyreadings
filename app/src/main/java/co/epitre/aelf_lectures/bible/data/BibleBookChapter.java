@@ -29,6 +29,12 @@ public class BibleBookChapter {
         return mChapterName;
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return getChapterName();
+    }
+
     //
     // API
     //

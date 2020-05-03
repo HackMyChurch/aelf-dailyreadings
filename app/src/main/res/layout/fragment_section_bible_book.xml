@@ -11,13 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.material.tabs.TabLayout
+        <co.epitre.aelf_lectures.components.AelfTabLayout
             android:id="@+id/bible_chapter_layout"
             style="?attr/tabstripStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabInlineLabel="true"
-            app:tabMode="scrollable" />
+            app:tabInlineLabel="true" />
 
     </androidx.viewpager.widget.ViewPager>
 

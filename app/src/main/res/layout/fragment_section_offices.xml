@@ -1,13 +1,12 @@
 <!-- Offices / Messe content -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/loading"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <androidx.appcompat.widget.LinearLayoutCompat
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/content"
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -22,14 +21,11 @@
             android:background="?attr/colorLectureBackground"
             tools:context=".LecturesActivity" >
 
-            <androidx.viewpager.widget.PagerTabStrip
+            <co.epitre.aelf_lectures.components.AelfTabLayout
                 android:id="@+id/pager_title_strip"
                 style="?attr/tabstripStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top"
-                android:paddingBottom="4dp"
-                android:paddingTop="4dp"/>
+                android:layout_height="wrap_content" />
         </co.epitre.aelf_lectures.lectures.LectureViewPager>
     </androidx.appcompat.widget.LinearLayoutCompat>
 

@@ -2,14 +2,18 @@ package co.epitre.aelf_lectures.bible;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.PopupMenu;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.ListPopupWindow;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.navigation.NavigationView;
@@ -169,12 +173,7 @@ public class BibleBookFragment extends BibleFragment {
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
-
-        // Set tab mode based on chapter count
-        if (mBibleChapterPagerAdapter.getCount() <= 3) {
-            mTabLayout.setTabMode(TabLayout.MODE_FIXED);
-            mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
-        }
+        mTabLayout.setTabIndicatorFullWidth(true);
 
         // Setup the chapter selection menu
         mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
@@ -232,34 +231,25 @@ public class BibleBookFragment extends BibleFragment {
         }
 
         // Build menu
-        PopupMenu popupMenu = new PopupMenu(getContext(), menuAnchor);
-        Menu menu = popupMenu.getMenu();
-        int menuPosition = 0;
-        int selectedTabPosition = mTabLayout.getSelectedTabPosition();
-        for (BibleBookChapter chapter: mBibleBookEntry.getBook().getChapters()) {
-            MenuItem item = menu.add(Menu.NONE, Menu.NONE, menuPosition, chapter.getChapterName());
-
-            // Mark the current selected chapter
-            if (menuPosition++ == selectedTabPosition) {
-                item.setChecked(true);
-            }
-        }
+        final ListPopupWindow listPopupWindow = new ListPopupWindow(getContext());
+        listPopupWindow.setAnchorView(menuAnchor);
+        listPopupWindow.setDropDownGravity(Gravity.CENTER);
+        listPopupWindow.setHeight(ListPopupWindow.WRAP_CONTENT);
+        listPopupWindow.setWidth(menuAnchor.getWidth());
+        listPopupWindow.setAdapter(new ArrayAdapter(getContext(),
+                android.R.layout.simple_list_item_1, mBibleBookEntry.getBook().getChapters()));
 
         // Handle events
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            public boolean onMenuItemClick(MenuItem item) {
-                if (mViewPager == null) {
-                    return false;
-                }
-
-                int position = item.getOrder();
+        listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                listPopupWindow.dismiss();
                 mViewPager.setCurrentItem(position);
-                return true;
             }
         });
 
         // Display menu
-        popupMenu.show();
+        listPopupWindow.show();
     }
 
     private class ChapterSelectionListener implements TabLayout.OnTabSelectedListener {

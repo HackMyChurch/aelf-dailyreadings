@@ -26,4 +26,9 @@
         <item name="android:paddingBottom">3dp</item>
         <item name="android:textColor">@color/radio_flat_text_selector</item>
     </style>
+
+    <style name="AelfTabStripBase">
+        <item name="tabTextAppearance">@android:style/TextAppearance.Widget.TabWidget</item>
+        <item name="tabMode">scrollable</item>
+    </style>
 </resources>

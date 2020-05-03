@@ -26,6 +26,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
 
+import com.google.android.material.tabs.TabLayout;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -78,6 +80,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
      * The {@link ViewPager} that will host the section contents.
      */
     ViewPager mViewPager;
+    protected TabLayout mTabLayout;
     LecturePagerAdapter lecturesPagerAdapter = null;
 
     // This is called number of screen rotate + 1. The last time with a null argument :/
@@ -143,6 +146,11 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
         // Get view handles
         mViewPager = view.findViewById(R.id.pager);
+        mTabLayout = view.findViewById(R.id.pager_title_strip);
+        mTabLayout.setTabIndicatorFullWidth(true);
+
+        // Populate the tabs
+        mTabLayout.setupWithViewPager(mViewPager);
 
         // Install event handler
         Button cancelButton = view.findViewById(R.id.cancelButton);
