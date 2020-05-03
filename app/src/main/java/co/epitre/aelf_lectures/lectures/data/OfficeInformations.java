@@ -2,7 +2,9 @@ package co.epitre.aelf_lectures.lectures.data;
 
 import com.squareup.moshi.Json;
 
-class OfficeInformations {
+import java.io.Serializable;
+
+class OfficeInformations implements Serializable {
     String couleur;
     String date;
     String zone;

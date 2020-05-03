@@ -11,12 +11,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.LectureItem;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -32,7 +30,7 @@ enum LectureLoadProgress {
 
 interface LectureLoadProgressListener {
     void onLectureLoadProgress(LectureLoadProgress progress);
-    void onLectureLoaded(List<LectureItem> lectures, boolean isSuccess);
+    void onLectureLoaded(Office office, boolean isSuccess);
 }
 
 /* Async loader
@@ -46,12 +44,12 @@ interface LectureLoadProgressListener {
  * - if the flag is true, ignore any result
  * Timeouts *should* limit the impact of threads / connections stacking. Should...
  */
-class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
+class DownloadXmlTask extends AsyncTask<Void, Void, Office> {
     private Context ctx;
     private LectureLoadProgressListener lectureLoadProgressListener;
-    private LecturesController lecturesCtrl = null;
+    private LecturesController lecturesCtrl;
 
-    private WhatWhen ww = null;
+    private WhatWhen ww;
 
     public static final String TAG = "DownloadXmlTask";
 
@@ -99,15 +97,15 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     }
 
     @Override
-    protected List<LectureItem> doInBackground(Void... voids) {
+    protected Office doInBackground(Void... voids) {
 
         try {
             // TODO: start only after a delay
             // TODO: use a nicer lecture swap animation ?
             onLectureLoadProgress(LectureLoadProgress.LOAD_START);
-            List<LectureItem> lectures =  lecturesCtrl.loadLectures(ww.what, ww.when, ww.useCache);
+            Office office = lecturesCtrl.loadLectures(ww.what, ww.when, ww.useCache);
             onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
-            return lectures;
+            return office;
         } catch (IOException e) {
             Log.e(TAG, "I/O error while loading. AELF servers down ?");
             onLectureLoadProgress(LectureLoadProgress.LOAD_FAIL);
@@ -116,16 +114,8 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     }
 
     @Override
-    protected void onCancelled(List<LectureItem> lectureItems) {
-        super.onCancelled(lectureItems);
-    }
-
-    private List<LectureItem> buildErrorMessage(String message) {
-        List<LectureItem> error = new ArrayList<>(1);
-
-        // Build and return error
-        error.add(new LectureItem("error", "Erreur", message, null));
-        return error;
+    protected void onCancelled(Office office) {
+        super.onCancelled(office);
     }
 
     private boolean detectSubOptimalSettings() {
@@ -167,24 +157,19 @@ class DownloadXmlTask extends AsyncTask<Void, Void, List<LectureItem>> {
     }
 
     @Override
-    protected void onPostExecute(final List<LectureItem> lectures) {
-        final List<LectureItem> pager_data;
-        boolean isSuccess = false;
+    protected void onPostExecute(final Office office) {
+        Office pager_data = office;
+        boolean isSuccess = office != null;
 
         // Failed to load
-        if (lectures == null) {
+        if (office == null) {
             if(detectSubOptimalSettings()) {
-                pager_data = buildErrorMessage(subOptimalSettingsErrorMessage);
+                pager_data = Office.createError(subOptimalSettingsErrorMessage);
             } else if (NetworkStatusMonitor.getInstance().isNetworkAvailable()) {
-                pager_data = buildErrorMessage(connectionErrorMessage);
+                pager_data = Office.createError(connectionErrorMessage);
             } else {
-                pager_data = buildErrorMessage(noNetworkErrorMessage);
+                pager_data = Office.createError(noNetworkErrorMessage);
             }
-        } else if (lectures.isEmpty()) {
-            pager_data = buildErrorMessage(emptyOfficeErrorMessage);
-        } else {
-            isSuccess = true;
-            pager_data = lectures;
         }
 
         if(lectureLoadProgressListener != null) {

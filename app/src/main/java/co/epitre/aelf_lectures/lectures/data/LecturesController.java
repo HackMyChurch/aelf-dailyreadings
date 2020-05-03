@@ -7,7 +7,6 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import co.epitre.aelf_lectures.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
@@ -143,8 +142,8 @@ public final class LecturesController {
         }
     }
 
-    public List<LectureItem> loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
-        List<LectureItem> lectures;
+    public Office loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
+        Office office;
         AelfDate minLoadDate = null;
         long minLoadVersion = -1;
 
@@ -154,42 +153,32 @@ public final class LecturesController {
         }
 
         try {
-            lectures = cache.load(what, when, minLoadDate, minLoadVersion);
+            office = cache.load(what, when, minLoadDate, minLoadVersion);
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);
             return null;
         }
 
-        // on error or if cached value looks like an error (not yet in AELF
-        // calendar for instance), force reload of live data.
-        // Need this heuristic after a cache load as previous versions erroneously cached
-        // these.
-        if(lectures != null && !looksLikeError(lectures)) {
-            return lectures;
-        }
-        
-        return null;
+        return office;
     }
 
-    public List<LectureItem> loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
+    public Office loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
-        List<LectureItem> lectures = api.getOffice(what.apiName(), when.toIsoString());
+        Office office = api.getOffice(what.apiName(), when.toIsoString());
 
         // Cache lectures
-        if(!looksLikeError(lectures)) {
-            try {
-                cache.store(what, when.toIsoString(), lectures);
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to store lecture in cache", e);
-            }
+        try {
+            cache.store(what, when.toIsoString(), office);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to store lecture in cache", e);
         }
 
-        return lectures;
+        return office;
     }
 
-    public List<LectureItem> loadLectures(WHAT what, AelfDate when, boolean useCache) throws IOException {
-        List<LectureItem> lectures = null;
+    public Office loadLectures(WHAT what, AelfDate when, boolean useCache) throws IOException {
+        Office office = null;
         boolean isNetworkAvailable = NetworkStatusMonitor.getInstance().isNetworkAvailable();
 
         // When the network is not available, always try to load from cache, even if outdated.
@@ -198,23 +187,23 @@ public final class LecturesController {
 
             // attempt to load from cache: skip loading indicator (avoids flickering)
             // if the cache consider the lecture as outdated, do not return it: we'll try to reload it
-            lectures = loadLecturesFromCache(what, when, allowColdCache);
-            if (lectures != null) {
-                return lectures;
+            office = loadLecturesFromCache(what, when, allowColdCache);
+            if (office != null) {
+                return office;
             }
         }
 
-        lectures = loadLecturesFromNetwork(what, when);
+        office = loadLecturesFromNetwork(what, when);
 
         // Fallback: cold cache
-        if (lectures == null) {
+        if (office == null) {
             // Failed to load lectures from network AND we were asked to refresh so attempt
             // a fallback on the cache to avoid the big error message but still display a notification
             // If the cache considers the lecture as outdated, still return it. We are in error recovery now
-            lectures = loadLecturesFromCache(what, when, true);
+            office = loadLecturesFromCache(what, when, true);
         }
 
-        return lectures;
+        return office;
     }
 
     // re-export cleanup helper
@@ -229,22 +218,4 @@ public final class LecturesController {
             Log.e(TAG, "Failed to truncate lecture from cache", e);
         }
     }
-
-    /**
-     * Helpers
-     */
-
-    private boolean looksLikeError(List<LectureItem> lectures) {
-        // does it look like an error message ? Only simple stupid heuristic for now.
-        if(lectures.size() > 1) {
-            return false;
-        }
-
-        if(lectures.size() == 1 && !lectures.get(0).longTitle.contains("pas dans notre calendrier")) {
-            return false;
-        }
-
-        return true;
-    }
-
 }

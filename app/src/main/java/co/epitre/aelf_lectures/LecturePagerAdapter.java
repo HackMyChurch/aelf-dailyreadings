@@ -1,8 +1,7 @@
 package co.epitre.aelf_lectures;
 
-import java.util.List;
-
-import co.epitre.aelf_lectures.lectures.data.LectureItem;
+import co.epitre.aelf_lectures.lectures.data.Lecture;
+import co.epitre.aelf_lectures.lectures.data.Office;
 
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
@@ -17,41 +16,40 @@ import android.view.ViewGroup;
 class LecturePagerAdapter extends FragmentStatePagerAdapter {
     public static final String TAG = "LecturePagerAdapter";
 
-    private List<LectureItem> mlectures;
+    private Office mOffice;
 
-    LecturePagerAdapter(FragmentManager fm, List<LectureItem> lectures) {
-        super(fm);
-        mlectures = lectures;
+    LecturePagerAdapter(FragmentManager fm, Office office) {
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
+        mOffice = office;
     }
 
     @Override
     public Fragment getItem(int position) {
-        // getItem is called to instantiate the fragment for the given page.
-        LectureItem lecture = mlectures.get(position);
+        Lecture lecture = this.getLecture(position);
         Fragment fragment = new LectureFragment();
 
         Bundle args = new Bundle();
-        args.putString(LectureFragment.ARG_TEXT_HTML, lecture.description);
+        args.putString(LectureFragment.ARG_TEXT_HTML, lecture.toHtml());
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
     public int getCount() {
-        return mlectures.size();
+        return mOffice.getLectures().size();
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
         if(position < this.getCount()) {
-            return mlectures.get(position).shortTitle;
+            return this.getLecture(position).getShortTitle();
         }
         return null;
     }
 
-    public LectureItem getLecture(int position) {
+    public Lecture getLecture(int position) {
         if(position < this.getCount()) {
-            return mlectures.get(position);
+            return mOffice.getLectures().get(position).get(0);
         }
         return null;
     }

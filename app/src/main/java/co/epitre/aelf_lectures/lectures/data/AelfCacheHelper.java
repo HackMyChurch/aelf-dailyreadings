@@ -125,7 +125,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
 
 
-    synchronized void store(LecturesController.WHAT what, String when, List<LectureItem> lectures) throws IOException {
+    synchronized void store(LecturesController.WHAT what, String when, Office office) throws IOException {
         final String key  = when;
         final String create_date = computeKey(new GregorianCalendar());
         final long create_version = preference.getInt("version", -1);
@@ -136,7 +136,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos;
             oos = new ObjectOutputStream(bos);
-            oos.writeObject(lectures);
+            oos.writeObject(office);
             blob = bos.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -178,7 +178,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    synchronized List<LectureItem> load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
+    synchronized Office load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
         final String key  = computeKey(when);
         final String table_name = what.toString();
         final String min_create_date = computeKey(minLoadDate);
@@ -186,7 +186,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
-        return (List<LectureItem>)retry(new Callable() {
+        return (Office)retry(new Callable() {
             @Override
             public Object call() throws Exception {
                 SQLiteDatabase db = getReadableDatabase();

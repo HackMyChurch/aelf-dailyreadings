@@ -7,9 +7,6 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-
-import androidx.annotation.NonNull;
-import androidx.viewpager.widget.ViewPager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -26,15 +23,18 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.viewpager.widget.ViewPager;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.LectureItem;
+import co.epitre.aelf_lectures.lectures.data.Lecture;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -245,10 +245,10 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
         // Get current lecture
         int position = mViewPager.getCurrentItem();
-        LectureItem lecture = lecturesPagerAdapter.getLecture(position);
+        Lecture lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
-        return buildUri(whatwhen.what, whatwhen.when, lecture.key);
+        return buildUri(whatwhen.what, whatwhen.when, lecture.getKey());
     }
 
     public static Uri buildUri(LecturesController.WHAT what) {
@@ -412,7 +412,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
 
         // Get current lecture
         int position = mViewPager.getCurrentItem();
-        LectureItem lecture = lecturesPagerAdapter.getLecture(position);
+        Lecture lecture = lecturesPagerAdapter.getLecture(position);
 
         // Build URL
         String url = getUri().toString();
@@ -425,14 +425,10 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         String subject;
         if (whatwhen.what == LecturesController.WHAT.MESSE && whatwhen.when.isToday()) {
             // If this is Today's mass, let's be concise
-            if (lecture.title != null) {
-                message = lecture.title;
-            } else {
-                message = lecture.shortTitle;
-            }
+            message = lecture.getShortTitle();
         } else {
             // Generic case
-            message = lecture.shortTitle+" "+whatwhen.what.prettyName();
+            message = lecture.getShortTitle()+" "+whatwhen.what.prettyName();
 
             // Append date if not today
             if (!whatwhen.when.isToday()) {
@@ -440,21 +436,23 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
             }
 
             // Append title if defined
-            if (lecture.title != null) {
-                message += ": "+lecture.title;
+            String title = lecture.getTitle();
+            if (title != null) {
+                message += ": "+title;
             }
         }
 
         // Append the reference, IF defined AND not the same as the title
-        if (lecture.reference != null && !lecture.reference.equals("") && !lecture.reference.equalsIgnoreCase(lecture.shortTitle)) {
-            message += " ("+lecture.reference+")";
+        String reference = lecture.getReference();
+        if (reference != null) {
+            message += " ("+reference+")";
         }
 
         // Append the link
         message += ". "+url;
 
         // Generate the subject, let's be concise
-        subject = lecture.shortTitle+" "+whatwhen.what.prettyName();
+        subject = lecture.getShortTitle()+" "+whatwhen.what.prettyName();
         if (!whatwhen.when.isToday()) {
             subject += " " + prettyDate;
         }
@@ -609,30 +607,28 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     }
 
 
-    public void onLectureLoaded(List<LectureItem> lectures, boolean isSuccess) {
+    public void onLectureLoaded(Office office, boolean isSuccess) {
         preventCancel.lock();
         this.isSuccess = isSuccess;
+
         try {
+            whatwhen.position = -1;
+
             // If we have an anchor, attempt to find corresponding position
             if (isSuccess) {
-                if (whatwhen.anchor != null && lectures != null) {
-                    int position = -1;
-                    for (LectureItem lecture : lectures) {
-                        position++;
-                        if (whatwhen.anchor.equals(lecture.key)) {
-                            whatwhen.position = position;
-                            break;
-                        }
-                    }
+                if (whatwhen.anchor != null && office != null) {
+                    whatwhen.position = office.getLecturePosition(whatwhen.anchor);
                 }
-            } else {
+            }
+
+            if (whatwhen.position == -1) {
                 whatwhen.position = 0;
             }
 
             // Set up the ViewPager with the sections adapter.
             try {
                 // 1 slide fragment <==> 1 lecture
-                lecturesPagerAdapter = new LecturePagerAdapter(activity.getSupportFragmentManager(), lectures);
+                lecturesPagerAdapter = new LecturePagerAdapter(activity.getSupportFragmentManager(), office);
                 mViewPager.setAdapter(lecturesPagerAdapter);
                 mViewPager.setCurrentItem(whatwhen.position);
                 setLoading(false);

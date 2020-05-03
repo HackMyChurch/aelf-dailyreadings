@@ -4,7 +4,9 @@ import android.text.TextUtils;
 
 import com.squareup.moshi.Json;
 
-class Lecture {
+import java.io.Serializable;
+
+public class Lecture implements Serializable {
     String key;
     @Json(name = "key.orig") String keyOrig;
     String type;
@@ -17,9 +19,9 @@ class Lecture {
     String repons;
     String text;
 
-    private String html = null;
+    private transient String html = null;
 
-    public String getShortTitle() {
+    public final String getShortTitle() {
         if (this.shortTitle != null && !this.shortTitle.isEmpty()) {
             return this.shortTitle;
         } else {
@@ -27,15 +29,22 @@ class Lecture {
         }
     }
 
-    public String getReference() {
+    public final String getTitle() {
+        return title;
+    }
+
+    public final String getReference() {
+        if (reference.equals("")) {
+            return null;
+        }
         return reference;
     }
 
-    public String getKey() {
+    public final String getKey() {
         return key;
     }
 
-    public String toHtml() {
+    public final String toHtml() {
         if (this.html != null) {
             return this.html;
         }

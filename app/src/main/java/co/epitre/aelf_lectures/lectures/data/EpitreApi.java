@@ -6,8 +6,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -108,7 +106,7 @@ public final class EpitreApi {
      * Public API
      */
 
-    public List<LectureItem> getOffice(String officeName, String date) throws IOException {
+    public Office getOffice(String officeName, String date) throws IOException {
         // Load configuration
         String path = "/%d/office/%s/%s.json?region=%s";
         int version = preference.getInt("version", -1);
@@ -122,7 +120,7 @@ public final class EpitreApi {
 
         // Grab response
         BufferedSource source = null;
-        Office office = null;
+        Office office;
         try {
             source = response.body().source();
             office = officeJsonAdapter.fromJson(response.body().source());
@@ -137,21 +135,6 @@ public final class EpitreApi {
             }
         }
 
-        // Compat: concert office to legacy List<LectureItem>
-        List<LectureItem> legacyLectures = new ArrayList<>();
-        for (OfficeVariant officeVariant: office.variants) {
-            for (List<Lecture> lectureVariant: officeVariant.lectures) {
-                Lecture lecture = lectureVariant.get(0);
-                
-                LectureItem legacyLecture = new LectureItem(
-                        lecture.getKey(),
-                        lecture.getShortTitle(),
-                        lecture.toHtml(),
-                        lecture.getReference()
-                );
-                legacyLectures.add(legacyLecture);
-            }
-        }
-        return legacyLectures;
+        return office;
     }
 }
