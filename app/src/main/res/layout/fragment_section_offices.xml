@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <co.epitre.aelf_lectures.LectureViewPager
+        <co.epitre.aelf_lectures.lectures.LectureViewPager
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -30,7 +30,7 @@
                 android:layout_gravity="top"
                 android:paddingBottom="4dp"
                 android:paddingTop="4dp"/>
-        </co.epitre.aelf_lectures.LectureViewPager>
+        </co.epitre.aelf_lectures.lectures.LectureViewPager>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
     <RelativeLayout

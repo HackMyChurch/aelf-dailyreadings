@@ -40,6 +40,7 @@ import android.widget.FrameLayout;
 
 import java.io.File;
 
+import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -288,7 +289,7 @@ public class LecturesActivity extends AppCompatActivity implements
         } else if (handleIntent(getIntent())) {
             // Called from a search or link
         } else {
-            setSection(new SectionOfficesFragment());
+            setSection(new SectionLecturesFragment());
         }
 
         // Setup the (full) screen
@@ -543,7 +544,7 @@ public class LecturesActivity extends AppCompatActivity implements
         WHAT what = WHAT.fromMenuId(item.getItemId());
         Intent intent;
         if (what != null) {
-            Uri uri = SectionOfficesFragment.buildUri(what);
+            Uri uri = SectionLecturesFragment.buildUri(what);
             intent = new Intent(Intent.ACTION_VIEW, uri);
         } else if (item.getItemId() == R.id.nav_bible) {
             intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.aelf.org/bible/home"));
@@ -625,7 +626,7 @@ public class LecturesActivity extends AppCompatActivity implements
                 setSection(new SectionBibleFragment());
             } else if (chunks.length == 1 || chunks.length >= 2 && chunks[1].matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
                 // Home page or Office link
-                setSection(new SectionOfficesFragment());
+                setSection(new SectionLecturesFragment());
             }
         }
 

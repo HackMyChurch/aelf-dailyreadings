@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.lectures;
 
 import android.content.Context;
 import android.os.Parcelable;

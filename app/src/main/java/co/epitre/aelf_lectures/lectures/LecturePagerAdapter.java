@@ -1,5 +1,6 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.lectures;
 
+import co.epitre.aelf_lectures.lectures.LectureFragment;
 import co.epitre.aelf_lectures.lectures.data.Lecture;
 import co.epitre.aelf_lectures.lectures.data.Office;
 
@@ -13,12 +14,12 @@ import android.view.ViewGroup;
 /**
  * Adapter, return a fragment for each lecture / slide.
  */
-class LecturePagerAdapter extends FragmentStatePagerAdapter {
+public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     public static final String TAG = "LecturePagerAdapter";
 
     private Office mOffice;
 
-    LecturePagerAdapter(FragmentManager fm, Office office) {
+    public LecturePagerAdapter(FragmentManager fm, Office office) {
         super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mOffice = office;
     }
