@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.bible;
 
 import android.app.SearchManager;
 import android.content.Context;
@@ -23,6 +23,8 @@ import androidx.fragment.app.FragmentTransaction;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.SectionFragmentBase;
 import co.epitre.aelf_lectures.bible.BibleBookFragment;
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
 import co.epitre.aelf_lectures.bible.BibleFragment;

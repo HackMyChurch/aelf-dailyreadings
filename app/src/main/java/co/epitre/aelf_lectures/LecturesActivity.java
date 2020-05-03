@@ -40,6 +40,7 @@ import android.widget.FrameLayout;
 
 import java.io.File;
 
+import co.epitre.aelf_lectures.bible.SectionBibleFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
