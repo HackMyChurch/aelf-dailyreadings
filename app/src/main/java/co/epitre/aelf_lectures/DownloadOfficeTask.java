@@ -44,14 +44,14 @@ interface LectureLoadProgressListener {
  * - if the flag is true, ignore any result
  * Timeouts *should* limit the impact of threads / connections stacking. Should...
  */
-class DownloadXmlTask extends AsyncTask<Void, Void, Office> {
+class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
     private Context ctx;
     private LectureLoadProgressListener lectureLoadProgressListener;
     private LecturesController lecturesCtrl;
 
     private WhatWhen ww;
 
-    public static final String TAG = "DownloadXmlTask";
+    public static final String TAG = "DownloadOfficeTask";
 
     /**
      * Error messages
@@ -74,7 +74,7 @@ class DownloadXmlTask extends AsyncTask<Void, Void, Office> {
             "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/apply-optimal-sync-settings\">Appliquer ces paramètres</a></div>";
 
 
-    public DownloadXmlTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
+    public DownloadOfficeTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
         this.ctx = ctx;
         this.lecturesCtrl = LecturesController.getInstance(ctx);
         this.lectureLoadProgressListener = lectureLoadProgressListener;

@@ -60,7 +60,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
     WhatWhen whatwhen = null;
     private boolean isLoading = false;
     private boolean isSuccess = true;
-    DownloadXmlTask currentRefresh = null;
+    DownloadOfficeTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
 
     /**
@@ -560,7 +560,7 @@ public class SectionOfficesFragment extends SectionFragmentBase implements
         // Start Loading
         preventCancel.lock();
         try {
-            DownloadXmlTask loader = new DownloadXmlTask(getContext(), whatwhen, this);
+            DownloadOfficeTask loader = new DownloadOfficeTask(getContext(), whatwhen, this);
             loader.execute();
             whatwhen.useCache = true; // cache override are one-shot
             currentRefresh = loader;
