@@ -1,7 +1,7 @@
 /**
  *
  */
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.components;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,6 +10,8 @@ import androidx.fragment.app.DialogFragment;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+
+import co.epitre.aelf_lectures.R;
 
 /**
  * @author jean-tiare

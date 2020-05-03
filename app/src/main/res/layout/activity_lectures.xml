@@ -33,7 +33,7 @@
             HACK: overload NavigationView + set insetForeground to NULL to hide the system UI
             padding when using transluent status bar
         -->
-        <co.epitre.aelf_lectures.AelfNavigationView
+        <co.epitre.aelf_lectures.components.AelfNavigationView
             android:id="@+id/drawer_navigation_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

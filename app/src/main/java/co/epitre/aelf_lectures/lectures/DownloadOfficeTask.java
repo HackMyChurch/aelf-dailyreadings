@@ -12,7 +12,7 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import co.epitre.aelf_lectures.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;

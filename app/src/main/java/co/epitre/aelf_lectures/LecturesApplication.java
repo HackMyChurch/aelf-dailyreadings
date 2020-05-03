@@ -9,6 +9,7 @@ import androidx.core.app.NotificationCompat;
 import android.util.Log;
 import android.os.Process;
 
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 
 import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICIPATE_SERVER;

@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.components;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import co.epitre.aelf_lectures.DatePickerFragment;
-import co.epitre.aelf_lectures.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.components.DatePickerFragment;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SectionFragmentBase;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;

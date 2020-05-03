@@ -14,7 +14,6 @@ import android.webkit.WebView;
 import androidx.fragment.app.Fragment;
 
 import co.epitre.aelf_lectures.LecturesActivity;
-import co.epitre.aelf_lectures.PinchToZoomListener;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 

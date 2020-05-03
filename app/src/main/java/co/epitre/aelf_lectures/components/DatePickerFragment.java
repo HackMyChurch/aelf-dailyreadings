@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.components;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.DatePicker;
+
+import co.epitre.aelf_lectures.R;
 
 public class DatePickerFragment extends DialogFragment
     implements DatePickerDialog.OnDateSetListener, DialogInterface.OnClickListener {

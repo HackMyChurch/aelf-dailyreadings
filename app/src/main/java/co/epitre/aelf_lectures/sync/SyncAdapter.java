@@ -5,7 +5,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
-import co.epitre.aelf_lectures.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
