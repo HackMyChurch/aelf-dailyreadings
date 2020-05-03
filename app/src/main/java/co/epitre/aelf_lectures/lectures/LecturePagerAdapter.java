@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures.lectures;
 
-import co.epitre.aelf_lectures.lectures.LectureFragment;
 import co.epitre.aelf_lectures.lectures.data.Lecture;
 import co.epitre.aelf_lectures.lectures.data.Office;
 
@@ -10,6 +9,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
+
+import java.util.List;
 
 /**
  * Adapter, return a fragment for each lecture / slide.
@@ -26,11 +27,10 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        Lecture lecture = this.getLecture(position);
-        Fragment fragment = new LectureFragment();
-
         Bundle args = new Bundle();
-        args.putString(LectureFragment.ARG_TEXT_HTML, lecture.toHtml());
+        args.putInt(LectureFragment.ARG_POSITION, position);
+
+        Fragment fragment = new LectureFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,11 +48,15 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
         return null;
     }
 
-    public Lecture getLecture(int position) {
+    public List<Lecture> getLectureVariants(int position) {
         if(position < this.getCount()) {
-            return mOffice.getLectures().get(position).get(0);
+            return mOffice.getLectures().get(position);
         }
         return null;
+    }
+
+    public Lecture getLecture(int position) {
+        return getLectureVariants(position).get(0);
     }
 
     @Override

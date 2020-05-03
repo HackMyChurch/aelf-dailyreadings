@@ -28,6 +28,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -265,6 +266,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             url += "#"+key;
         }
         return Uri.parse(url);
+    }
+
+    List<Lecture> getLectureVariants(int position) {
+        if (lecturesPagerAdapter == null) {
+            return null;
+        }
+
+        return lecturesPagerAdapter.getLectureVariants(position);
     }
 
     //

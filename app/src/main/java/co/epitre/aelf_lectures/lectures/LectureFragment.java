@@ -10,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 
+import java.util.List;
+
 import co.epitre.aelf_lectures.components.ReadingFragment;
+import co.epitre.aelf_lectures.lectures.data.Lecture;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
@@ -23,7 +26,7 @@ public class LectureFragment extends ReadingFragment implements
     /**
      * The fragment arguments
      */
-    public static final String ARG_TEXT_HTML = "text html";
+    public static final String ARG_POSITION = "position";
 
     private SharedPreferences preferences;
 
@@ -50,10 +53,14 @@ public class LectureFragment extends ReadingFragment implements
             return;
         }
 
-        // compute view --> HTML
-        StringBuilder htmlString = new StringBuilder();
-        String body = getArguments().getString(ARG_TEXT_HTML);
+        // Get the lecture
+        int position = getArguments().getInt(ARG_POSITION);
+        SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
+        List<Lecture> lectureVariants = parent.getLectureVariants(position);
+        Lecture lecture = lectureVariants.get(0);
 
+        // Build HTML
+        StringBuilder htmlString = new StringBuilder();
         htmlString.append("<!DOCTYPE html><html><head>");
         htmlString.append("<link href=\"css/common.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
         htmlString.append("<link href=\"");
@@ -61,7 +68,7 @@ public class LectureFragment extends ReadingFragment implements
         htmlString.append("\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
         htmlString.append("</head>");
         htmlString.append("<body>");
-        htmlString.append(body);
+        htmlString.append(lecture.toHtml());
         htmlString.append("<script src=\"js/lecture.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</body></html>");
 
