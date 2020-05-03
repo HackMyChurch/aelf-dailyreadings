@@ -11,7 +11,7 @@ public class BibleMenuPagerAdapter extends FragmentPagerAdapter {
     private BibleBookList mBibleBookList;
 
     BibleMenuPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookList bibleBookList) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         this.mBibleBookList = bibleBookList;
     }
 

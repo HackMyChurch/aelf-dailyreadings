@@ -19,7 +19,7 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
     private String mReference;
 
     public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery, String reference) {
-        super(fm);
+        super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mBibleBookEntry = bibleBookEntry;
         mHighlightChapterId = highlightChapterId;
         mHighlightQuery = highlightQuery;
