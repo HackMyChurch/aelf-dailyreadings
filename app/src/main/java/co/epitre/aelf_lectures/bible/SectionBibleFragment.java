@@ -25,12 +25,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SectionFragmentBase;
-import co.epitre.aelf_lectures.bible.BibleBookFragment;
-import co.epitre.aelf_lectures.bible.BibleBookListAdapter;
-import co.epitre.aelf_lectures.bible.BibleFragment;
-import co.epitre.aelf_lectures.bible.BibleMenuFragment;
-import co.epitre.aelf_lectures.bible.BibleController;
-import co.epitre.aelf_lectures.bible.BibleSearchFragment;
+import co.epitre.aelf_lectures.bible.data.BibleController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 

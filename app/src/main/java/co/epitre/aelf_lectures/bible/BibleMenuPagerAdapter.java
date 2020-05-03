@@ -5,6 +5,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import co.epitre.aelf_lectures.bible.data.BibleBookList;
+
 public class BibleMenuPagerAdapter extends FragmentPagerAdapter {
     private BibleBookList mBibleBookList;
 

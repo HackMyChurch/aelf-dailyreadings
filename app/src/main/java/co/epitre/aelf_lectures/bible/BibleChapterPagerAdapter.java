@@ -9,6 +9,9 @@ import androidx.fragment.app.FragmentPagerAdapter;
 
 import java.util.List;
 
+import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
+import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
+
 public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
     private BibleBookEntry mBibleBookEntry;
     private int mHighlightChapterId;

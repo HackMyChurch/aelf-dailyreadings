@@ -1,34 +1,9 @@
-package co.epitre.aelf_lectures.bible;
+package co.epitre.aelf_lectures.bible.data;
 
 import androidx.annotation.NonNull;
 
 import java.util.List;
 
-
-enum BibleBookEntryType {
-    SECTION(0),
-    BOOK(1),
-    ;
-
-    private int mValue;
-
-    BibleBookEntryType(int value) {
-        mValue = value;
-    }
-
-    public static BibleBookEntryType fromValue(int value) {
-        for (BibleBookEntryType bookListEntryType : BibleBookEntryType.values()) {
-            if(bookListEntryType.mValue == value) {
-                return bookListEntryType;
-            }
-        }
-        return null;
-    }
-
-    public int getValue() {
-        return mValue;
-    }
-}
 
 public class BibleBookEntry {
     private BibleBookEntryType mType;

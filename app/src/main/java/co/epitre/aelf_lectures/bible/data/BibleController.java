@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible;
+package co.epitre.aelf_lectures.bible.data;
 
 import android.content.Context;
 import android.content.res.AssetManager;

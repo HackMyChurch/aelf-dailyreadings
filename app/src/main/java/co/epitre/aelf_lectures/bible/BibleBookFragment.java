@@ -17,6 +17,10 @@ import com.google.android.material.tabs.TabLayout;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
+import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
+import co.epitre.aelf_lectures.bible.data.BibleBookList;
+import co.epitre.aelf_lectures.bible.data.BiblePart;
 
 public class BibleBookFragment extends BibleFragment {
     /**

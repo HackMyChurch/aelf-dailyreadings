@@ -11,6 +11,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.greenrobot.eventbus.EventBus;
 
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
+import co.epitre.aelf_lectures.bible.data.BibleBookEntryType;
+import co.epitre.aelf_lectures.bible.data.BibleBookList;
+import co.epitre.aelf_lectures.bible.data.BiblePart;
 
 public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdapter.ViewHolder> {
 

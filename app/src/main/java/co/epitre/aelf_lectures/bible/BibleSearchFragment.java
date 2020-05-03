@@ -32,6 +32,7 @@ import java.util.concurrent.Semaphore;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.bible.data.BibleController;
 
 public class BibleSearchFragment extends BibleFragment implements
         BibleSearchResultAdapter.ItemClickListener,
