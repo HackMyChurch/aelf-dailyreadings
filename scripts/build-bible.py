@@ -187,8 +187,14 @@ CREATE TABLE verses (
     chapter_id    INTEGER,
     chapter_title TEXT,
     verse         INTEGER,
-    text          TEXT,
-    PRIMARY KEY (book, chapter, verse)
+    text          TEXT
+);''')
+
+cursor.execute('''
+CREATE INDEX verses_idx ON verses (
+    book,
+    chapter,
+    verse
 );''')
 
 # Create the chapter view. Aggregates the verses of a chapter.
@@ -205,7 +211,7 @@ CREATE VIEW chapters (
     SELECT book, book_id, chapter, chapter_id, book_title || ', ' || chapter_title, group_concat(text, '\n')
     FROM verses
     GROUP BY chapter_id
-    ORDER BY book, chapter, verse
+    ORDER BY rowid
 ;''')
 
 # Create the index
@@ -252,13 +258,10 @@ def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, ch
         verse_text = chapter_verse.span.next_sibling.strip()
 
         # Insert the verse in the database
-        try:
-            cursor.execute(
-                    '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?);''',
-                    (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_text)
-            )
-        except:
-            print('\nERROR: Failed to insert verse:', book_ref, chapter_ref, verse_ref, chapter_verse, verse_text)
+        cursor.execute(
+                '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?);''',
+                (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_text)
+        )
     chapter_id += 1
 
 # Post-process the Bible books
