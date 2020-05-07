@@ -33,8 +33,8 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'com.google.android.material:material:1.2.0-alpha06'
 
-    // HTTP layer
-    implementation 'com.squareup.okhttp3:okhttp:4.5.0'
+    // HTTP layer (3.12.X is the last version to support Android 4.x)
+    implementation 'com.squareup.okhttp3:okhttp:3.12.11'
     implementation 'com.squareup.moshi:moshi:1.9.2'
 
     // Foundation
