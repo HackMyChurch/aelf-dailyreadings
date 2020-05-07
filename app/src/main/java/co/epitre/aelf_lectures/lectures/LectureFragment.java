@@ -57,6 +57,9 @@ public class LectureFragment extends ReadingFragment implements
         int position = getArguments().getInt(ARG_POSITION);
         SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
         List<Lecture> lectureVariants = parent.getLectureVariants(position);
+        if (lectureVariants == null) {
+            return;
+        }
         Lecture lecture = lectureVariants.get(0);
 
         // Build HTML
