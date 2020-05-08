@@ -26,6 +26,7 @@ public class LectureFragment extends ReadingFragment implements
      * The fragment arguments
      */
     public static final String ARG_POSITION = "position";
+    public static final String ARG_VARIANT = "variant";
 
     private SharedPreferences preferences;
 
@@ -54,12 +55,13 @@ public class LectureFragment extends ReadingFragment implements
 
         // Get the lecture
         int position = getArguments().getInt(ARG_POSITION);
+        int variant = getArguments().getInt(ARG_VARIANT);
         SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
         LectureVariants lectureVariants = parent.getLectureVariants(position);
         if (lectureVariants == null) {
             return;
         }
-        Lecture lecture = lectureVariants.get(0);
+        Lecture lecture = lectureVariants.get(variant);
 
         // Build HTML
         StringBuilder htmlString = new StringBuilder();

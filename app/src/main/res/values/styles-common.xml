@@ -30,5 +30,6 @@
     <style name="AelfTabStripBase">
         <item name="tabTextAppearance">@android:style/TextAppearance.Widget.TabWidget</item>
         <item name="tabMode">scrollable</item>
+        <item name="tabInlineLabel">true</item>
     </style>
 </resources>

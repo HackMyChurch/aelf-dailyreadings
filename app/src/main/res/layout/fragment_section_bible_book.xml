@@ -15,8 +15,7 @@
             android:id="@+id/bible_chapter_layout"
             style="?attr/tabstripStyle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabInlineLabel="true" />
+            android:layout_height="wrap_content" />
 
     </androidx.viewpager.widget.ViewPager>
 

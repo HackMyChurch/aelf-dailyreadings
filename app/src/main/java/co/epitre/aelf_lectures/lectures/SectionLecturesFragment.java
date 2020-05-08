@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,12 +19,15 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.ListPopupWindow;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
@@ -148,6 +152,9 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         mViewPager = view.findViewById(R.id.pager);
         mTabLayout = view.findViewById(R.id.pager_title_strip);
         mTabLayout.setTabIndicatorFullWidth(true);
+
+        // Setup the chapter selection menu
+        mTabLayout.addOnTabSelectedListener(new LectureVariantSelectionListener());
 
         // Populate the tabs
         mTabLayout.setupWithViewPager(mViewPager);
@@ -373,6 +380,62 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         boolean visible = networkStatusMonitor.isNetworkAvailable();
         mMenu.findItem(R.id.action_refresh).setVisible(visible);
         mMenu.findItem(R.id.action_sync_do).setVisible(visible);
+    }
+
+    //
+    // Lecture variant selection
+    //
+
+    private void showLectureVariantSelectionMenu(View menuAnchor, final int position) {
+        if (menuAnchor == null || mTabLayout == null || lecturesPagerAdapter == null) {
+            return;
+        }
+
+        // Build menu
+        final ListPopupWindow listPopupWindow = new ListPopupWindow(getContext());
+        listPopupWindow.setAnchorView(menuAnchor);
+        listPopupWindow.setDropDownGravity(Gravity.CENTER);
+        listPopupWindow.setHeight(ListPopupWindow.WRAP_CONTENT);
+        listPopupWindow.setWidth(menuAnchor.getWidth());
+        listPopupWindow.setAdapter(new ArrayAdapter(getContext(),
+                android.R.layout.simple_list_item_1, lecturesPagerAdapter.getVariantTitles(position)));
+
+        // Handle events
+        listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int variant, long id) {
+                listPopupWindow.dismiss();
+                lecturesPagerAdapter.setLectureVariantId(position, variant);
+            }
+        });
+
+        // Display menu
+        listPopupWindow.show();
+    }
+
+    private class LectureVariantSelectionListener implements TabLayout.OnTabSelectedListener {
+        @Override
+        public void onTabSelected(TabLayout.Tab tab) {
+            if (lecturesPagerAdapter == null) {
+                return;
+            }
+
+            if (!lecturesPagerAdapter.hasVariants(tab.getPosition())) {
+                return;
+            }
+
+            tab.setIcon(R.drawable.ic_drop_down);
+        }
+
+        @Override
+        public void onTabUnselected(TabLayout.Tab tab) {
+            tab.setIcon(null);
+        }
+
+        @Override
+        public void onTabReselected(TabLayout.Tab tab) {
+            showLectureVariantSelectionMenu(tab.view, tab.getPosition());
+        }
     }
 
     //
