@@ -44,7 +44,9 @@ public final class EpitreApi {
             .readTimeout   (60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .build();
-    private final Moshi moshi = new Moshi.Builder().build();
+    private final Moshi moshi = new Moshi.Builder()
+            .add(new LectureVariantsJsonAdapter())
+            .build();
     private final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
 
     /**

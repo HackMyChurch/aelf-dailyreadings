@@ -30,7 +30,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,6 +39,7 @@ import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SectionFragmentBase;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.Lecture;
+import co.epitre.aelf_lectures.lectures.data.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
@@ -276,7 +276,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         return Uri.parse(url);
     }
 
-    List<Lecture> getLectureVariants(int position) {
+    LectureVariants getLectureVariants(int position) {
         if (lecturesPagerAdapter == null) {
             return null;
         }

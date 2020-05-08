@@ -20,21 +20,21 @@ public class Office implements Serializable {
     /*
      * Cache
      */
-    private transient List<List<Lecture>> lectures;
+    private transient List<LectureVariants> lectures;
 
     public final List<OfficeVariant> getVariants() {
         return variants;
     }
 
-    public final List<List<Lecture>> getLectures() {
+    public final List<LectureVariants> getLectures() {
         if (lectures != null) {
             return lectures;
         }
 
         lectures = new ArrayList<>();
         for (OfficeVariant officeVariant : getVariants()) {
-            for (List<Lecture> lectureVariant : officeVariant.getLectures()) {
-                lectures.add(lectureVariant);
+            for (LectureVariants lectureVariants : officeVariant.getLectures()) {
+                lectures.add(lectureVariants);
             }
         }
 
@@ -43,7 +43,7 @@ public class Office implements Serializable {
 
     public int getLecturePosition(String key) {
         int position = -1;
-        for (List<Lecture> lectureVariants : lectures) {
+        for (LectureVariants lectureVariants : lectures) {
             position++;
             Lecture lecture = lectureVariants.get(0);
             if (key.equals(lecture.key)) {
@@ -61,10 +61,10 @@ public class Office implements Serializable {
         errorLecture.title = "Erreur";
         errorLecture.key = "error";
 
-        List<Lecture> lectures = Arrays.asList(errorLecture);
+        LectureVariants lectureVariants = new LectureVariants(Arrays.asList(errorLecture));
 
         OfficeVariant errorVariant = new OfficeVariant();
-        errorVariant.lectures = Arrays.asList(lectures);
+        errorVariant.lectures = Arrays.asList(lectureVariants);
 
         Office office = new Office();
         office.variants = Arrays.asList(errorVariant);

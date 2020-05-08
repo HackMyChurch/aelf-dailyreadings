@@ -1,6 +1,7 @@
 package co.epitre.aelf_lectures.lectures;
 
 import co.epitre.aelf_lectures.lectures.data.Lecture;
+import co.epitre.aelf_lectures.lectures.data.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.Office;
 
 import android.os.Bundle;
@@ -9,8 +10,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
-
-import java.util.List;
 
 /**
  * Adapter, return a fragment for each lecture / slide.
@@ -48,7 +47,7 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
         return null;
     }
 
-    public List<Lecture> getLectureVariants(int position) {
+    public LectureVariants getLectureVariants(int position) {
         if(position < this.getCount()) {
             return mOffice.getLectures().get(position);
         }

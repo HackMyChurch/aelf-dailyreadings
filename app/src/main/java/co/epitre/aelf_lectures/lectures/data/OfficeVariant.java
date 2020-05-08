@@ -5,9 +5,9 @@ import java.util.List;
 
 public class OfficeVariant implements Serializable {
     String name;
-    List<List<Lecture>> lectures;
+    List<LectureVariants> lectures;
 
-    public final List<List<Lecture>> getLectures() {
+    public final List<LectureVariants> getLectures() {
         return lectures;
     }
 }

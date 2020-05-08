@@ -10,10 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 
-import java.util.List;
-
 import co.epitre.aelf_lectures.components.ReadingFragment;
 import co.epitre.aelf_lectures.lectures.data.Lecture;
+import co.epitre.aelf_lectures.lectures.data.LectureVariants;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
@@ -56,7 +55,7 @@ public class LectureFragment extends ReadingFragment implements
         // Get the lecture
         int position = getArguments().getInt(ARG_POSITION);
         SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
-        List<Lecture> lectureVariants = parent.getLectureVariants(position);
+        LectureVariants lectureVariants = parent.getLectureVariants(position);
         if (lectureVariants == null) {
             return;
         }
