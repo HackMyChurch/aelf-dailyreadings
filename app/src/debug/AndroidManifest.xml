@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        Permissions required to automatically wake and unlock the phone/emulator if we're in
+        development mode.
+    -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
+    <!--
+        Avoid AOT compilation if we're in development mode to speed up launches
+        Allow unsecure HTTP to connect to a local server
+    -->
+    <application
+        android:vmSafeMode="true"
+        android:usesCleartextTraffic="true"
+        />
+</manifest>
