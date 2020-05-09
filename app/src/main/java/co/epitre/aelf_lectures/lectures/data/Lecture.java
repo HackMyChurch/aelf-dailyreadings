@@ -13,6 +13,7 @@ public class Lecture implements Serializable {
     String title;
     @Json(name = "short_title") String shortTitle;
     @Json(name = "long_title")  String longTitle;
+    @Json(name = "variant_title")  String variantTitle;
     String reference;
     String antienne;
     String verset;
@@ -27,6 +28,23 @@ public class Lecture implements Serializable {
         } else {
             return this.title;
         }
+    }
+
+    public final String getVariantTitle() {
+        if (variantTitle != null) {
+            return variantTitle;
+        }
+
+        StringBuilder lectureVariantTitle = new StringBuilder();
+        lectureVariantTitle.append(title.trim());
+        if (reference != null && !reference.isEmpty()) {
+            lectureVariantTitle.append(" (");
+            lectureVariantTitle.append(reference);
+            lectureVariantTitle.append(" )");
+        }
+        variantTitle = lectureVariantTitle.toString();
+
+        return variantTitle;
     }
 
     public final String getTitle() {

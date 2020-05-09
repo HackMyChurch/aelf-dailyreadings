@@ -36,18 +36,7 @@ public class LectureVariants implements Serializable {
 
         mTitles = new ArrayList<>(mLectures.size());
         for (Lecture lecture: mLectures) {
-            String title = lecture.getTitle();
-            String reference = lecture.getReference();
-            StringBuilder lectureVariantTitle = new StringBuilder();
-
-            lectureVariantTitle.append(title.trim());
-            if (reference != null && !reference.isEmpty()) {
-                lectureVariantTitle.append(" (");
-                lectureVariantTitle.append(reference);
-                lectureVariantTitle.append(" )");
-            }
-
-            mTitles.add(lectureVariantTitle.toString());
+            mTitles.add(lecture.getVariantTitle());
         }
 
         return mTitles;
