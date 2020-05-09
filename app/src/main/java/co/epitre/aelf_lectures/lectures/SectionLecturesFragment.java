@@ -434,6 +434,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
         @Override
         public void onTabReselected(TabLayout.Tab tab) {
+            if (lecturesPagerAdapter == null) {
+                return;
+            }
+
+            if (!lecturesPagerAdapter.hasVariants(tab.getPosition())) {
+                return;
+            }
+
             showLectureVariantSelectionMenu(tab.view, tab.getPosition());
         }
     }
