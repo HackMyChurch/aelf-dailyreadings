@@ -226,31 +226,14 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     synchronized boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
-        String key  = computeKey(when);
         String min_create_date = computeKey(minLoadDate);
         String min_create_version = String.valueOf(minLoadVersion);
 
-        // load from db
         Log.i(TAG, "Checking if lecture is in cache with create_date>="+min_create_date+" create_version>="+min_create_version);
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cur = null;
         try {
-            cur = db.query(
-                    what.toString(),                                           // FROM
-                    new String[]{"date"},                                      // SELECT
-                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
-                    new String[]{key, min_create_date, min_create_version},    // params
-                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
-            );
-            return cur != null && cur.getCount() > 0;
-        } catch (SQLiteException e) {
+            return load(what, when, minLoadDate, minLoadVersion) != null;
+        } catch (IOException e) {
             return false;
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "Illegal state", e);
-            return false;
-        } finally {
-            if (cur != null) cur.close();
-            close();
         }
     }
 
