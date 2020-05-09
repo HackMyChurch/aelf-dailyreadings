@@ -157,7 +157,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         mTabLayout.addOnTabSelectedListener(new LectureVariantSelectionListener());
 
         // Populate the tabs
-        mTabLayout.setupWithViewPager(mViewPager);
+        mTabLayout.setupWithViewPager(mViewPager, false);
 
         // Install event handler
         Button cancelButton = view.findViewById(R.id.cancelButton);
