@@ -43,7 +43,7 @@ public class Office implements Serializable {
 
     public int getLecturePosition(String key) {
         int position = -1;
-        for (LectureVariants lectureVariants : lectures) {
+        for (LectureVariants lectureVariants : getLectures()) {
             position++;
             Lecture lecture = lectureVariants.get(0);
             if (key.equals(lecture.key)) {
