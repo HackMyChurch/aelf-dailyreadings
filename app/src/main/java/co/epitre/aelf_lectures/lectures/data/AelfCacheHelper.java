@@ -113,6 +113,9 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
                     onSqliteError(e);
                 } else {
                 }
+            } catch (java.io.InvalidClassException e) {
+                // Old cache --> act as missing
+                return null;
             } catch (Exception e) {
                 throw new IOException(e);
             } finally {
