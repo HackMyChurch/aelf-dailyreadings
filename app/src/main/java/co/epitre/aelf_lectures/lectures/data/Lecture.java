@@ -52,7 +52,7 @@ public class Lecture implements Serializable {
     }
 
     public final String getReference() {
-        if (reference.equals("")) {
+        if (reference == null || reference.equals("")) {
             return null;
         }
         return reference;
