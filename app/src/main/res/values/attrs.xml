@@ -10,6 +10,7 @@
 
     <!-- Styles-->
     <attr name="tabstripStyle" format="reference"/>
+    <attr name="flatRadioButtonStyle" format="reference"/>
 
     <!-- Drawables (workaround unsupported color references with API < 21) -->
     <attr name="drawableMenuItemBg" format="reference"/>

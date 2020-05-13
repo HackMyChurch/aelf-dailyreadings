@@ -18,14 +18,14 @@
         android:orientation="horizontal">
 
         <RadioButton
-            style="@style/AelfSearchRadioButtons"
+            style="?attr/flatRadioButtonStyle"
             android:id="@+id/radio_sort_bible"
             android:layout_width="160dp"
             android:layout_height="32dp"
             android:text="Ordre Biblique" />
 
         <RadioButton
-            style="@style/AelfSearchRadioButtons"
+            style="?attr/flatRadioButtonStyle"
             android:id="@+id/radio_sort_relevance"
             android:layout_width="160dp"
             android:layout_height="32dp"

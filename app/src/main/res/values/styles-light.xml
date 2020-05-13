@@ -18,6 +18,7 @@
         <item name="actionBarStyle">@style/AelfActionBarLight</item>
         <item name="toolbarStyle">@style/AelfActionBar</item>
         <item name="tabstripStyle">@style/AelfTabStripLight</item>
+        <item name="flatRadioButtonStyle">@style/AelfSearchRadioButtonsLight</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_light</item>
         <item name="drawableButtonShape">@drawable/button_shape_light</item>
 
@@ -40,6 +41,10 @@
         <item name="tabIndicatorColor">@color/white</item>
         <item name="tabIconTint">@color/light_aelf_lecture_background</item>
         <item name="tabRippleColor">@color/light_aelf_lecture_background_26</item>
+    </style>
+
+    <style name="AelfSearchRadioButtonsLight" parent="AelfSearchRadioButtonsBase">
+        <item name="android:background">@drawable/radio_flat_selector_light</item>
     </style>
 
 </resources>

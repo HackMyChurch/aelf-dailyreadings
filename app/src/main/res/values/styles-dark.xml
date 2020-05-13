@@ -16,6 +16,7 @@
         <!-- Component styles -->
         <item name="toolbarStyle">@style/AelfActionBarDark</item>
         <item name="tabstripStyle">@style/AelfTabStripDark</item>
+        <item name="flatRadioButtonStyle">@style/AelfSearchRadioButtonsDark</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_dark</item>
         <item name="drawableButtonShape">@drawable/button_shape_dark</item>
 
@@ -37,6 +38,10 @@
         <item name="tabTextColor">@color/dark_aelf_accent</item>
         <item name="tabIndicatorColor">@color/dark_aelf_accent</item>
         <item name="tabIconTint">@color/dark_aelf_accent</item>
+    </style>
+
+    <style name="AelfSearchRadioButtonsDark" parent="AelfSearchRadioButtonsBase">
+        <item name="android:background">@drawable/radio_flat_selector_dark</item>
     </style>
 
 </resources>
