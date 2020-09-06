@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="69">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!--
         Permissions required to automatically wake and unlock the phone/emulator if we're in
         development mode.
