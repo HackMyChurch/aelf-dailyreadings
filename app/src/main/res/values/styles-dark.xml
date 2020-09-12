@@ -17,6 +17,7 @@
         <item name="toolbarStyle">@style/AelfActionBarDark</item>
         <item name="tabstripStyle">@style/AelfTabStripDark</item>
         <item name="flatRadioButtonStyle">@style/AelfSearchRadioButtonsDark</item>
+        <item name="listPopupWindowStyle">@style/AelfListPopupWindow</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_dark</item>
         <item name="drawableButtonShape">@drawable/button_shape_dark</item>
 
@@ -42,6 +43,10 @@
 
     <style name="AelfSearchRadioButtonsDark" parent="AelfSearchRadioButtonsBase">
         <item name="android:background">@drawable/radio_flat_selector_dark</item>
+    </style>
+
+    <style name="AelfListPopupWindow" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:popupBackground">#303030</item>
     </style>
 
 </resources>
