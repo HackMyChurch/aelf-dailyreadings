@@ -125,7 +125,7 @@ public final class EpitreApi {
         Office office;
         try {
             source = response.body().source();
-            office = officeJsonAdapter.fromJson(response.body().source());
+            office = officeJsonAdapter.fromJson(source);
         } catch (IOException e) {
             Log.w(TAG, "Failed to load lectures from network");
             throw e;
