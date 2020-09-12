@@ -626,7 +626,7 @@ public class LecturesActivity extends AppCompatActivity implements
             if (chunks.length >= 2 && (chunks[1].equals("bible") || chunks[1].equals("search"))) {
                 // Bible link
                 setSection(new SectionBibleFragment());
-            } else if (chunks.length == 1 || chunks.length >= 2 && chunks[1].matches("20[0-9]{2}-[0-9]{2}-[0-9]{2}")) {
+            } else if (chunks.length == 1 || chunks.length >= 2) {
                 // Home page or Office link
                 setSection(new SectionLecturesFragment());
             }

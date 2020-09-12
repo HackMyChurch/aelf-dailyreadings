@@ -127,21 +127,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
                 whatwhen.what = LecturesController.WHAT.MESSE;
             } else {
-                long hour = whatwhen.when.get(Calendar.HOUR_OF_DAY);
-                if (hour < 3) {
-                    whatwhen.what = LecturesController.WHAT.COMPLIES;
-                    whatwhen.when.add(GregorianCalendar.DAY_OF_YEAR, -1);
-                } else if (hour < 4) {
-                    whatwhen.what = LecturesController.WHAT.LECTURES;
-                } else if (hour < 8) {
-                    whatwhen.what = LecturesController.WHAT.LAUDES;
-                } else if (hour < 15) {
-                    whatwhen.what = LecturesController.WHAT.MESSE;
-                } else if (hour < 21) {
-                    whatwhen.what = LecturesController.WHAT.VEPRES;
-                } else {
-                    whatwhen.what = LecturesController.WHAT.COMPLIES;
-                }
+                computeCurrentOffice(true);
             }
         }
 
@@ -192,6 +178,9 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         // http://www.aelf.org/2017-01-27/romain/messe#messe1_lecture3 --> messe du 2017-01-27, calendrier romain, lecture N
         // http://www.aelf.org/2017-01-27/romain/complies              --> office des complies du 2017-01-27
         // http://www.aelf.org/2017-01-27/romain/complies#office_psaume1 --> office_TYPE[N]
+        // Shortcut URLs:
+        // http://www.aelf.org/shortcut/messe
+        // http://www.aelf.org/shortcut/office
         // Legacy shortcut URLs:
         // https://www.aelf.org/office-[NOM]
 
@@ -217,6 +206,12 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
                 } catch (IllegalArgumentException e) {
                     Log.w(TAG, "Failed to parse office '" + chunks[2] + "', falling back to messe", e);
                     whatwhen.what = LecturesController.WHAT.MESSE;
+                }
+            } else if (chunks[1].equals("shortcut")) {
+                if (chunks[2].equals("messe")) {
+                    whatwhen.what = LecturesController.WHAT.MESSE;
+                } else if (chunks[2].equals("office")) {
+                    computeCurrentOffice(false);
                 }
             } else {
                 // Attempt to parse NEW url format, starting with a date
@@ -249,6 +244,25 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
                 // Finally, grab anchor
                 whatwhen.anchor = fragment;
             }
+        }
+    }
+
+    // Set the office based on the time of day
+    void computeCurrentOffice(boolean includeMass) {
+        long hour = whatwhen.when.get(Calendar.HOUR_OF_DAY);
+        if (hour < 3) {
+            whatwhen.what = LecturesController.WHAT.COMPLIES;
+            whatwhen.when.add(GregorianCalendar.DAY_OF_YEAR, -1);
+        } else if (hour < 4) {
+            whatwhen.what = LecturesController.WHAT.LECTURES;
+        } else if (hour < 8) {
+            whatwhen.what = LecturesController.WHAT.LAUDES;
+        } else if (hour < 15 && includeMass) {
+            whatwhen.what = LecturesController.WHAT.MESSE;
+        } else if (hour < 21) {
+            whatwhen.what = LecturesController.WHAT.VEPRES;
+        } else {
+            whatwhen.what = LecturesController.WHAT.COMPLIES;
         }
     }
 

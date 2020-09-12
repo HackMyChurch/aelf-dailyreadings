@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a> -->
+    <shortcut
+        android:shortcutId="messe"
+        android:enabled="true"
+        android:icon="@mipmap/ic_mass_round"
+        android:shortcutShortLabel="@string/shortcut_mass_label" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="co.epitre.aelf_lectures"
+            android:targetClass="co.epitre.aelf_lectures.LecturesActivity"
+            android:data="https://www.aelf.org/shortcut/messe" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="office"
+        android:enabled="true"
+        android:icon="@mipmap/ic_office_round"
+        android:shortcutShortLabel="@string/shortcut_office_label" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="co.epitre.aelf_lectures"
+            android:targetClass="co.epitre.aelf_lectures.LecturesActivity"
+            android:data="https://www.aelf.org/shortcut/office" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="bible"
+        android:enabled="true"
+        android:icon="@mipmap/ic_bible_round"
+        android:shortcutShortLabel="@string/shortcut_bible_label" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="co.epitre.aelf_lectures"
+            android:targetClass="co.epitre.aelf_lectures.LecturesActivity"
+            android:data="https://www.aelf.org/bible" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="search"
+        android:enabled="true"
+        android:icon="@mipmap/ic_bible_search_round"
+        android:shortcutShortLabel="@string/shortcut_search_label" >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="co.epitre.aelf_lectures"
+            android:targetClass="co.epitre.aelf_lectures.LecturesActivity"
+            android:data="https://www.aelf.org/search" />
+    </shortcut>
+</shortcuts>

@@ -61,4 +61,10 @@
     <string name="bible_search_hint">Rechercher un passage de la Bible</string>
     <string name="bible_search_title">Rechercher</string>
 
+    <!-- Shortcuts -->
+    <string name="shortcut_mass_label">Messe du jour</string>
+    <string name="shortcut_office_label">Liturgie des heures</string>
+    <string name="shortcut_bible_label">Lire la Bible</string>
+    <string name="shortcut_search_label">Rechercher dans la Bible</string>
+
 </resources>
