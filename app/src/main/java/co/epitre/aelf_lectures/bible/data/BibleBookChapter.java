@@ -55,15 +55,15 @@ public class BibleBookChapter {
         // Load from the database
         chapterStringBuilder.append("<p>");
         for (BibleVerse bibleVerse: mBibleController.getBookChapterVerses(mBookRef, mChapterRef)) {
-            int verseRef = bibleVerse.getRef();
+            String verseRef = bibleVerse.getRef();
             chapterStringBuilder.append("<span class=\"line\"");
-            if (verseRef > 0) {
+            if (verseRef != null && !verseRef.isEmpty()) {
                 chapterStringBuilder.append(" id=\"verse-");
                 chapterStringBuilder.append(verseRef);
                 chapterStringBuilder.append("\"");
             }
             chapterStringBuilder.append(" tabindex=\"0\">");
-            if (verseRef > 0) {
+            if (verseRef != null && !verseRef.isEmpty()) {
                 chapterStringBuilder.append("<span aria-hidden=\"true\" class=\"verse\">");
                 chapterStringBuilder.append(verseRef);
                 chapterStringBuilder.append("</span>");

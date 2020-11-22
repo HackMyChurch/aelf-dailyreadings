@@ -186,7 +186,7 @@ CREATE TABLE verses (
     chapter       TEXT,
     chapter_id    INTEGER,
     chapter_title TEXT,
-    verse         INTEGER,
+    verse         TEXT,
     text          TEXT
 );''')
 

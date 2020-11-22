@@ -170,9 +170,9 @@ public class BibleController {
         // Fill the verse list
         try {
             while (cursor.moveToNext()) {
-                int verseRef = cursor.getInt(0);
+                String verseRef = cursor.getString(0);
                 if(cursor.isNull(0)) {
-                    verseRef = -1;
+                    verseRef = "";
                 }
                 String verseText = cursor.getString(1);
                 BibleVerse verse = new BibleVerse(verseRef, verseText);

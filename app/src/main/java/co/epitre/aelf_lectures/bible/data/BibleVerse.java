@@ -3,15 +3,15 @@ package co.epitre.aelf_lectures.bible.data;
 import androidx.annotation.NonNull;
 
 public class BibleVerse {
-    private int mRef;
+    private String mRef;
     private String mText;
 
-    BibleVerse(int verseRef, @NonNull String text) {
+    BibleVerse(String verseRef, @NonNull String text) {
         this.mRef = verseRef;
         this.mText = text;
     }
 
-    public int getRef() {
+    public String getRef() {
         return this.mRef;
     }
 
