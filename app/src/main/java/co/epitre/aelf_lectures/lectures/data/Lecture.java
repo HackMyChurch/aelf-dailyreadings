@@ -92,9 +92,12 @@ public class Lecture implements Serializable {
         bodyBuilder.append(this.text);
 
         if (this.antienne != null && !this.antienne.isEmpty()) {
-            bodyBuilder.append("<div class=\"gloria_patri\"><span tabindex=\"0\" id=\"");
-            bodyBuilder.append(this.key);
-            bodyBuilder.append("-gloria_patri\" class=\"line\">Gloire au Père, ...</span></div>");
+            // Insert the "Gloria Patri", unless Dn 3 which implies it.
+            if (this.reference != null && !this.reference.equals("Dn 3")) {
+                bodyBuilder.append("<div class=\"gloria_patri\"><span tabindex=\"0\" id=\"");
+                bodyBuilder.append(this.key);
+                bodyBuilder.append("-gloria_patri\" class=\"line\">Gloire au Père, ...</span></div>");
+            }
 
             bodyBuilder.append("<div class=\"antienne\"><span tabindex=\"0\" id=\"");
             bodyBuilder.append(this.key);
