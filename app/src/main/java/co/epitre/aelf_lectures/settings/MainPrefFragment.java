@@ -122,13 +122,20 @@ public class MainPrefFragment extends BasePrefFragment {
         String to[] = {getString(R.string.app_support)};
         String subject = "Application " + getString(R.string.app_name) + " (version: " + getString(R.string.app_version) + ")";
         String packageName = context.getApplicationContext().getPackageName();
-        Uri logcatURI = FileProvider.getUriForFile(context, packageName + ".fileprovider", outputFile);
+        Uri logcatURI = null;
+        try {
+            logcatURI = FileProvider.getUriForFile(context, packageName + ".fileprovider", outputFile);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
 
         Intent emailIntent = new Intent(Intent.ACTION_SEND);
         emailIntent.setType("vnd.android.cursor.dir/email");
         emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        emailIntent.putExtra(Intent.EXTRA_STREAM, logcatURI);
+        if (logcatURI != null) {
+            emailIntent.putExtra(Intent.EXTRA_STREAM, logcatURI);
+        }
         emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         startActivity(Intent.createChooser(emailIntent , getString(R.string.mailto_dev)));
