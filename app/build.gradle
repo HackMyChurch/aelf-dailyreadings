@@ -23,6 +23,9 @@ android {
             // Release build for the Play Store
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.txt'
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
     lintOptions {
