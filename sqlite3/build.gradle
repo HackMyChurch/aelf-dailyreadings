@@ -37,9 +37,9 @@ android {
 
 dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestImplementation 'com.android.support:support-annotations:24.0.0'
-    androidTestImplementation 'com.android.support.test:runner:0.5'
-    androidTestImplementation 'com.android.support.test:rules:0.5'
+    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
     testImplementation 'junit:junit:4.12'
 }
 
@@ -47,6 +47,6 @@ allprojects {
     repositories {
         // The order in which you list these repositories matter.
         google()
-        jcenter()
+        mavenCentral()
     }
 }

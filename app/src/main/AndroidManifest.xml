@@ -26,6 +26,7 @@
         <meta-data android:name="android.max_aspect" android:value="2.1" />
         <activity
             android:name="co.epitre.aelf_lectures.LecturesActivity"
+            android:exported="true"
             android:resizeableActivity="true"
             android:label="@string/app_name"
             android:launchMode="singleTop"
@@ -75,6 +76,7 @@
         </activity>
         <activity
             android:name="co.epitre.aelf_lectures.settings.SettingsActivity"
+            android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
             <intent-filter>
@@ -130,7 +132,9 @@
 
         It's also possible to attach a SyncAdapter to an existing account provided by another
         package. In that case, this element could be omitted here. -->
-        <service android:name="co.epitre.aelf_lectures.sync.AuthenticatorService">
+        <service
+            android:name="co.epitre.aelf_lectures.sync.AuthenticatorService"
+            android:exported="true">
             <!-- Required filter used by the system to launch our account service. -->
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
