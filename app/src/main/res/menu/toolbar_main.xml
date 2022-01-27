@@ -23,6 +23,12 @@
         android:title="@string/action_sync_do"/>
 
     <item
+        android:id="@+id/action_whats_new"
+        android:orderInCategory="210"
+        app:showAsAction="never"
+        android:title="@string/dialog_whats_new_title"/>
+
+    <item
         android:id="@+id/action_about"
         android:orderInCategory="210"
         app:showAsAction="never"

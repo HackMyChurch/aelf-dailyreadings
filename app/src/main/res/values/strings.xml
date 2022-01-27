@@ -48,9 +48,21 @@
 
         \n\nPour plus d\'informations sur cette application, contactez &app_support;.
     </string>
-	
+
+    <string name="dialog_whats_new_title">Nouveautés</string>
+    <string name="dialog_whats_new_content">
+        Merci d\'avoir mis à jour votre application \"&app_name;\" !
+
+        \n\nSi le "zoom à 2 doigts" n\'est pas idéal pour vous, bonne nouvelle: Il est maintenant
+        possible de le désactiver depuis les paramètres.
+
+        \n\nEt toujours la parole de Dieu, rien que la parole de Dieu. Gratuitement, car nous avons
+        reçu gratuitement. Sans espionner, car c\'est dans le secret que l\'on prie.
+    </string>
+
 	<!-- Buttons -->
     <string name="button_ok">Valider</string>
+    <string name="button_close">Fermer</string>
     <string name="button_cancel">Annuler</string>
     <string name="button_today">Auj.</string>
 
