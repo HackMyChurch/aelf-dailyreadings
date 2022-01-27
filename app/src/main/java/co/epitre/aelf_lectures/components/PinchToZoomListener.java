@@ -58,6 +58,10 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector detector) {
+            // Is the "Pinch to zoom" feature enabled ?
+            if (!preferences.getBoolean(SettingsActivity.KEY_PREF_DISP_PINCH_TO_ZOOM, true)) {
+                return false;
+            }
             initialZoom = onZoomStart();
             return super.onScaleBegin(detector);
         }

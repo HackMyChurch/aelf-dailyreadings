@@ -38,6 +38,12 @@
             app:updatesContinuously="true"
             android:key="pref_disp_font_size"
             android:title="@string/pref_disp_text_zoom_title" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="pref_disp_pinch_to_zoom"
+            android:summaryOff="@string/pref_disp_text_pinch_to_zoom_off"
+            android:summaryOn="@string/pref_disp_text_pinch_to_zoom_on"
+            android:title="@string/pref_disp_text_pinch_to_zoom" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_section_sync_title">

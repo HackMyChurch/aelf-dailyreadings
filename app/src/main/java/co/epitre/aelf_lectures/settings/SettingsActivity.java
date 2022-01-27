@@ -11,6 +11,7 @@ import co.epitre.aelf_lectures.R;
 public class SettingsActivity extends AppCompatActivity {
     public static final String KEY_PREF_REGION = "pref_region";
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
+    public static final String KEY_PREF_DISP_PINCH_TO_ZOOM = "pref_disp_pinch_to_zoom";
     public static final String KEY_PREF_DISP_PSALM_UNDERLINE = "pref_disp_psalm_underline";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_DISP_NIGHT_MODE = "pref_disp_night_mode";

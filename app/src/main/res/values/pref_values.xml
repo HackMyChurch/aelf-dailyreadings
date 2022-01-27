@@ -80,6 +80,7 @@
     <string name="pref_section_disp_title">Affichage</string>
     <string name="pref_disp_fullscreen_title">Plein écran</string>
     <string name="pref_disp_text_zoom_title">Taille du texte</string>
+    <string name="pref_disp_text_pinch_to_zoom">Zoomer à 2 doigts</string>
     <string name="pref_disp_psalm_underline_title">Souligner le changement de ton</string>
     <string name="pref_disp_night_mode_title">Mode nuit</string>
 
@@ -111,6 +112,8 @@
 
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>
+    <string name="pref_disp_text_pinch_to_zoom_on">Le zoom à 2 doigts est activé.</string>
+    <string name="pref_disp_text_pinch_to_zoom_off">Le zoom à 2 doigts est désactivé. Utilisez le champ au dessus pour régler la taille du texte.</string>
     <string name="pref_disp_night_mode_on">Les textes s\'afficheront sur fond sombre pour préserver les yeux.</string>
     <string name="pref_disp_night_mode_off">Les textes s\'afficheront sur fond clair, plus doux.</string>
     <string name="pref_contribute_beta_on">Participation bien enregistrée. Merci !</string>
