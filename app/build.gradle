@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion '31.0.0'
+    compileSdkVersion 33
+    buildToolsVersion '33.0.2'
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
-        minSdkVersion 16
-        targetSdkVersion 31
+        minSdkVersion 21
+        targetSdkVersion 33
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
             targetCompatibility JavaVersion.VERSION_1_8
@@ -28,20 +28,21 @@ android {
             }
         }
     }
-    lintOptions {
-        checkReleaseBuilds false // Add this
+    lint {
         abortOnError false
+        checkReleaseBuilds false
     }
+    namespace 'co.epitre.aelf_lectures'
 }
 
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.preference:preference:1.2.0'
 
     // Material design
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'com.google.android.material:material:1.6.0-alpha02'
+    implementation 'androidx.recyclerview:recyclerview:1.3.0'
+    implementation 'com.google.android.material:material:1.9.0'
 
     // HTTP layer (3.12.X is the last version to support Android 4.x)
     implementation 'com.squareup.okhttp3:okhttp:3.12.13'

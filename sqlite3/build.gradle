@@ -33,6 +33,7 @@ android {
             path 'src/main/jni/Android.mk'
         }
     }
+    namespace 'org.sqlite.database'
 }
 
 dependencies {
