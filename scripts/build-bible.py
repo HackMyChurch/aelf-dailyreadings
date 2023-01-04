@@ -187,6 +187,7 @@ CREATE TABLE verses (
     chapter_id    INTEGER,
     chapter_title TEXT,
     verse         TEXT,
+    verse_id      INTEGER,
     text          TEXT
 );''')
 
@@ -233,13 +234,15 @@ CREATE VIRTUAL TABLE search USING fts5(
 
 book_id = 0
 chapter_id = 0
-
+verse_id = 0
 #
 # Process
 #
 
 def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, chapter_title):
+
     global chapter_id
+    global verse_id
 
     print("\u001b[KINFO: Processing %s..." % (chapter_file_path), end='\r')
 
@@ -253,15 +256,17 @@ def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, ch
         # Get the verse identifier (.text-danger is used in the psalms)
         verse_ref_elem = chapter_verse.select_one(".verse_number, .text-danger")
         verse_ref = verse_ref_elem.text.lower().lstrip('0') or None
+        verse_id += 1
 
         # Get the verse text
         verse_text = chapter_verse.span.next_sibling.strip()
 
         # Insert the verse in the database
         cursor.execute(
-                '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?);''',
-                (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_text)
+                '''INSERT INTO verses(book, book_id, book_title, chapter, chapter_id, chapter_title, verse, verse_id, text) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);''',
+                (book_ref, book_id, book_title, chapter_ref, chapter_id, chapter_title, verse_ref, verse_id, verse_text)
         )
+    #endFor
     chapter_id += 1
 
 # Post-process the Bible books
@@ -271,7 +276,13 @@ for part_title, part in BIBLE_BOOKS.items():
             book_id += 1
             book_path = book.get('path', book_ref)
             book_title = book['title']
-            for chapter_file_path in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_path}/*.html'):
+
+            list_chapters = [
+                int(e.split("/")[-1].replace(".html", "")) for e in glob.glob(f'{BIBLE_CACHE_FOLDER}/{book_path}/*.html')
+            ]
+            list_chapters.sort()
+
+            for chapter_file_path in [f"{BIBLE_CACHE_FOLDER}/{book_path}/{e}.html" for e in list_chapters]:
                 chapter_ref = chapter_file_path.rsplit('/')[-1].split('.')[0]
                 if chapter_ref == "0" and book_ref == "Est":
                     chapter_title = f'Préliminaires'
@@ -279,7 +290,13 @@ for part_title, part in BIBLE_BOOKS.items():
                     chapter_title = f'Prologue'
                 else:
                     chapter_title = f'Chapitre {chapter_ref}'
+                #endIf
+
                 index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, chapter_title)
+            #endFor
+        #endFor
+    #endFor
+#endFor
 
 # Post-process the Bible psalms
 for psalm_ref, psalm in BIBLE_PSALMS.items():
