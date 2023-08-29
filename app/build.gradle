@@ -5,7 +5,7 @@ android {
     buildToolsVersion '34.0.0'
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
-        minSdkVersion 21
+        minSdkVersion 25
         targetSdkVersion 34
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_8
