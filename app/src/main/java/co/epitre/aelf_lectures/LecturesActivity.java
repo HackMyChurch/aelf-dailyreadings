@@ -204,18 +204,6 @@ public class LecturesActivity extends BaseActivity implements
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
-        // On older phones >= 44 < 6.0, we can set status bar to translucent but not its color.
-        // the trick is to place a view under the status bar to emulate it.
-        // cf http://stackoverflow.com/questions/22192291/how-to-change-the-status-bar-color-in-android
-        if (Build.VERSION.SDK_INT >= 19 && Build.VERSION.SDK_INT < 21) {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-            statusBarBackgroundView = new View(this);
-            statusBarBackgroundView.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-            statusBarBackgroundView.getLayoutParams().height = get_status_bar_height();
-            ((ViewGroup) getWindow().getDecorView()).addView(statusBarBackgroundView);
-            statusBarBackgroundView.setBackgroundColor(ContextCompat.getColor(this, R.color.dark_aelf_primary_dark));
-        }
-
         // Navigation drawer
         drawerLayout = findViewById(R.id.drawer_layout);
         drawerView = findViewById(R.id.drawer_navigation_view);
@@ -238,25 +226,21 @@ public class LecturesActivity extends BaseActivity implements
         });
 
         // Add some padding at the bottom of the drawer and content to account for the navigation bar
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                @Override
-                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-                    View navigationMenuView = findViewById(R.id.design_navigation_view);
-                    navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
-                    return windowInsets.consumeSystemWindowInsets();
-                }
-            });
-        }
+        drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+            @Override
+            public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
+                View navigationMenuView = findViewById(R.id.design_navigation_view);
+                navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
+                return windowInsets.consumeSystemWindowInsets();
+            }
+        });
 
-        // Task switcher color for Android >= 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Bitmap appIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-            String appName = getString(R.string.app_name);
-            int appColor = getResources().getColor(R.color.dark_aelf_primary_dark);
-            ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(appName, appIcon, appColor);
-            setTaskDescription(taskDescription);
-        }
+        // Task switcher color
+        Bitmap appIcon = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+        String appName = getString(R.string.app_name);
+        int appColor = getResources().getColor(R.color.dark_aelf_primary_dark);
+        ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(appName, appIcon, appColor);
+        setTaskDescription(taskDescription);
 
         // Turn on periodic caching
         if (mAccount != null) {
@@ -271,9 +255,7 @@ public class LecturesActivity extends BaseActivity implements
         }
 
         // Init display state
-        if (Build.VERSION.SDK_INT >= 24) {
-            isMultiWindow = isInMultiWindowMode();
-        }
+        isMultiWindow = isInMultiWindowMode();
 
         // Route the application
         if (savedInstanceState != null) {
@@ -403,30 +385,21 @@ public class LecturesActivity extends BaseActivity implements
             if (has_bottom_navigation_bar && hideStatusBar) {
                 uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
             }
-            if (Build.VERSION.SDK_INT >= 19) {
-                uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            }
+            uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         }
 
         // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-        if (Build.VERSION.SDK_INT >= 19) {
-            if (has_bottom_navigation_bar && !isMultiWindow) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            } else  {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            }
-
-            // Compensate status bar height in full screen, with visible toolbar, on portrait mode
-            // or some specific versions in landscape too.
-            if (!isMultiWindow && !hideStatusBar && (has_bottom_navigation_bar || Build.VERSION.SDK_INT < 21)) {
-                toolbar.setPadding(0, get_status_bar_height(), 0, 0);
-            } else {
-                // When switching between modes, reset height
-                toolbar.setPadding(0, 0, 0, 0);
-            }
-
-        } else {
+        if (has_bottom_navigation_bar && !isMultiWindow) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        } else  {
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        }
+
+        // Compensate status bar height in full screen, with visible toolbar, on portrait mode
+        if (!isMultiWindow && !hideStatusBar && (has_bottom_navigation_bar)) {
+            toolbar.setPadding(0, get_status_bar_height(), 0, 0);
+        } else {
+            // When switching between modes, reset height
             toolbar.setPadding(0, 0, 0, 0);
         }
 

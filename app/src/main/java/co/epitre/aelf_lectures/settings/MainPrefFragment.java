@@ -34,17 +34,13 @@ public class MainPrefFragment extends BasePrefFragment {
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
 
         // Request adding app to doze mode whitelist
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
-            batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    requestDozeModeExemption();
-                    return true;
-                }
-            });
-        } else {
-            getPreferenceScreen().removePreferenceRecursively(SettingsActivity.KEY_PREF_SYNC_BATTERY);
-        }
+        Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
+        batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                requestDozeModeExemption();
+                return true;
+            }
+        });
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
@@ -85,14 +81,12 @@ public class MainPrefFragment extends BasePrefFragment {
             SeekBarPreference pref = findPreference(key);
             pref.setSummary("Agrandissement du texte: " + pref.getValue() + "%");
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_BATTERY)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
-                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
-                    batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
-                } else {
-                    batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
-                }
+            Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
+                batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
+            } else {
+                batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
             }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
             long dbSize = AelfCacheHelper.getDatabaseSize(context);
@@ -142,10 +136,6 @@ public class MainPrefFragment extends BasePrefFragment {
     }
 
     private void requestDozeModeExemption() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return;
-        }
-
         Context context = getContext();
         if (context == null) {
             return;

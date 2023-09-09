@@ -79,12 +79,8 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
         // Start the scale detector
         mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
-        if (Build.VERSION.SDK_INT >= 23) {
-            mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
-        }
-        if (Build.VERSION.SDK_INT >= 19) {
-            mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
-        }
+        mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
+        mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
 
         // Set initial zoom
         int initialZoom = this.onZoomStart();
