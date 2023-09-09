@@ -8,7 +8,6 @@ import android.app.Dialog;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import co.epitre.aelf_lectures.R;

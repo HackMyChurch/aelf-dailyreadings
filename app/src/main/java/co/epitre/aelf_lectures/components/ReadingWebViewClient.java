@@ -3,19 +3,13 @@ package co.epitre.aelf_lectures.components;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.annotation.NonNull;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import co.epitre.aelf_lectures.LecturesActivity;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 public class ReadingWebViewClient extends WebViewClient {
     private static final String TAG = "ReadingWebViewClient";
