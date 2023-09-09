@@ -89,7 +89,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
     // This is called number of screen rotate + 1. The last time with a null argument :/
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Load settings
@@ -362,7 +362,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     //
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
         // Inflate the menu; this adds items to the action bar

@@ -3,6 +3,8 @@ package co.epitre.aelf_lectures;
 import android.net.Uri;
 import android.os.Bundle;
 import com.google.android.material.navigation.NavigationView;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.ActionBar;
 import android.view.LayoutInflater;
@@ -26,7 +28,7 @@ public abstract class SectionFragmentBase extends Fragment {
     protected Menu mMenu;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Load global views
         activity = (LecturesActivity) getActivity();
         actionBar = activity.getSupportActionBar();
@@ -65,7 +67,7 @@ public abstract class SectionFragmentBase extends Fragment {
     //
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
     }

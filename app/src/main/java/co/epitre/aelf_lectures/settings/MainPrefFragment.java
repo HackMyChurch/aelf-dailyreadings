@@ -12,6 +12,7 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Html;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.preference.Preference;
 import androidx.preference.SeekBarPreference;
@@ -36,7 +37,7 @@ public class MainPrefFragment extends BasePrefFragment {
         // Request adding app to doze mode whitelist
         Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(@NonNull Preference preference) {
                 requestDozeModeExemption();
                 return true;
             }
@@ -45,7 +46,7 @@ public class MainPrefFragment extends BasePrefFragment {
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
         contactDevPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(@NonNull Preference preference) {
                 sendMailDev();
                 return true;
             }
@@ -54,7 +55,7 @@ public class MainPrefFragment extends BasePrefFragment {
         // Drop the cache
         Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
         dropCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(Preference preference) {
+            public boolean onPreferenceClick(@NonNull Preference preference) {
                 dropCache();
                 return true;
             }

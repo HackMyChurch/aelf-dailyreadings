@@ -5,6 +5,8 @@ import java.util.GregorianCalendar;
 
 import android.app.Dialog;
 import android.os.Build;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.appcompat.view.ContextThemeWrapper;
 import android.app.DatePickerDialog;
@@ -35,6 +37,7 @@ public class DatePickerFragment extends DialogFragment
     }
 
     @Override
+    @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = getArguments();
         final Calendar c = Calendar.getInstance();

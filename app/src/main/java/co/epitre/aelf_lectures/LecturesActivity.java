@@ -228,7 +228,8 @@ public class LecturesActivity extends BaseActivity implements
         // Add some padding at the bottom of the drawer and content to account for the navigation bar
         drawerView.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
             @Override
-            public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
+            @NonNull
+            public WindowInsets onApplyWindowInsets(@NonNull View view, @NonNull WindowInsets windowInsets) {
                 View navigationMenuView = findViewById(R.id.design_navigation_view);
                 navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
                 return windowInsets.consumeSystemWindowInsets();
@@ -533,7 +534,7 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
@@ -633,7 +634,7 @@ public class LecturesActivity extends BaseActivity implements
      */
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         // Call parent (handles night mode)
         super.onConfigurationChanged(newConfig);
 

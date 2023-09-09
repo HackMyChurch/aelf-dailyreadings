@@ -95,9 +95,6 @@ public final class LecturesController {
             return menu_id;
         }
 
-        public String toString(){
-            return name;
-        }
     }
 
 

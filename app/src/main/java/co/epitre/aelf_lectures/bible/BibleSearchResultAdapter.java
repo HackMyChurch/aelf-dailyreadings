@@ -43,13 +43,14 @@ public class BibleSearchResultAdapter extends RecyclerView.Adapter<BibleSearchRe
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @NonNull
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.item_bible_search_result, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         // FIXME: this is racy. On click listeners will move the cursor too
         mCursor.moveToPosition(position);
 

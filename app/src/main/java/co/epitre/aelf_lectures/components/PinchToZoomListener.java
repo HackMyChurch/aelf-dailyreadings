@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 public class PinchToZoomListener implements View.OnTouchListener, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -57,7 +59,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
         }
 
         @Override
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
+        public boolean onScaleBegin(@NonNull ScaleGestureDetector detector) {
             // Is the "Pinch to zoom" feature enabled ?
             if (!preferences.getBoolean(SettingsActivity.KEY_PREF_DISP_PINCH_TO_ZOOM, true)) {
                 return false;
@@ -67,7 +69,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
         }
 
         @Override
-        public void onScaleEnd(ScaleGestureDetector detector) {
+        public void onScaleEnd(@NonNull ScaleGestureDetector detector) {
             super.onScaleEnd(detector);
             onZoomEnd(newZoom);
         }

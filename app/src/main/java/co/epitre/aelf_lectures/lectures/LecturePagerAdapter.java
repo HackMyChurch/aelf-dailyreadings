@@ -5,6 +5,8 @@ import co.epitre.aelf_lectures.lectures.data.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.Office;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -29,6 +31,7 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
+    @NonNull
     public Fragment getItem(int position) {
         Bundle args = new Bundle();
         args.putInt(LectureFragment.ARG_POSITION, position);
@@ -88,7 +91,7 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         LectureFragment lectureFragment = (LectureFragment)object;
         Bundle args = lectureFragment.getArguments();
 
@@ -107,7 +110,7 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public void finishUpdate(ViewGroup container) {
+    public void finishUpdate(@NonNull ViewGroup container) {
         // https://stackoverflow.com/questions/41650721/attempt-to-invoke-virtual-method-android-os-handler-android-support-v4-app-frag
         try{
             super.finishUpdate(container);
