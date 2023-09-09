@@ -78,6 +78,10 @@ public class BaseActivity extends AppCompatActivity implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null) {
+            return;
+        }
+
         if (key.equals(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE_V2)) {
             recreate();
         }

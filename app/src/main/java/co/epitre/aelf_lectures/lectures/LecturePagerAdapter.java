@@ -94,6 +94,9 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     public int getItemPosition(@NonNull Object object) {
         LectureFragment lectureFragment = (LectureFragment)object;
         Bundle args = lectureFragment.getArguments();
+        if (args == null) {
+            return POSITION_UNCHANGED;
+        }
 
         // Get current status
         int position = args.getInt(LectureFragment.ARG_POSITION);

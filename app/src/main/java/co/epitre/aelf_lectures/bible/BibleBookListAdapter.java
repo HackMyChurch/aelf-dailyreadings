@@ -54,6 +54,7 @@ public class BibleBookListAdapter extends RecyclerView.Adapter<BibleBookListAdap
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Decode item type
         BibleBookEntryType bookEntryType = BibleBookEntryType.fromValue(viewType);
+        assert bookEntryType != null;
 
         // Create a view holder of this type
         int layoutId = R.layout.item_bible_book_name;

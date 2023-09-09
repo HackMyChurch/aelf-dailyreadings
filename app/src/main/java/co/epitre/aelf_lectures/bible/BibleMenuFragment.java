@@ -14,6 +14,8 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 
+import java.util.Objects;
+
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.bible.data.BibleBookList;
@@ -79,7 +81,7 @@ public class BibleMenuFragment extends BibleFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Load global views
-        activity = (LecturesActivity) getActivity();
+        activity = (LecturesActivity) requireActivity();
         actionBar = activity.getSupportActionBar();
         drawerView = activity.findViewById(R.id.drawer_navigation_view);
 
@@ -90,7 +92,11 @@ public class BibleMenuFragment extends BibleFragment {
         View view = inflater.inflate(R.layout.fragment_section_bible_menu, container, false);
 
         // Load the Bible part book list
-        int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
+        Bundle args = getArguments();
+        int biblePartId = 0;
+        if (args != null) {
+            biblePartId = args.getInt(BIBLE_PART_ID, 0);
+        }
 
         // Set section title
         actionBar.setTitle("Bible de la liturgie");
@@ -128,7 +134,7 @@ public class BibleMenuFragment extends BibleFragment {
         }
 
         int position = mViewPager.getCurrentItem();
-        String partTitle = mBibleMenuPagerAdapter.getPageTitle(position).toString();
+        String partTitle = Objects.requireNonNull(mBibleMenuPagerAdapter.getPageTitle(position)).toString();
         return "Bible de la liturgie — " + partTitle;
     }
 }

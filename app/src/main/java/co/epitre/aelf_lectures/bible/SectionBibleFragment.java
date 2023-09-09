@@ -78,7 +78,8 @@ public class SectionBibleFragment extends SectionFragmentBase {
         } else if (savedInstanceState != null) {
             // Nothing to do
         } else if (uri != null) {
-            if (uri.getPath().equals("/bible/home")) {
+            String path = uri.getPath();
+            if (path != null && path.equals("/bible/home")) {
                 // Handle "Home": Load default or last visited page
                 onHome();
             } else {
@@ -123,16 +124,23 @@ public class SectionBibleFragment extends SectionFragmentBase {
         if (uri == null) {
             // To the menu fragment, first page
             newBibleFragment = BibleMenuFragment.newInstance(0);
-        } else if (uri.getPath().equals("/bible")) {
-            // To the menu fragment
-            newBibleFragment = BibleMenuFragment.newInstance(uri);
-        } else if (uri.getPath().equals("/search")) {
-            // To the search fragment
-            newBibleFragment = BibleSearchFragment.newInstance(uri);
         } else {
-            // To the Bible fragment
-            newBibleFragment = BibleBookFragment.newInstance(uri);
+            String path = uri.getPath();
+            if (path == null) {
+                // To the Bible fragment
+                newBibleFragment = BibleBookFragment.newInstance(uri);
+            } else if (path.equals("/bible")) {
+                // To the menu fragment
+                newBibleFragment = BibleMenuFragment.newInstance(uri);
+            } else if (path.equals("/search")) {
+                // To the search fragment
+                newBibleFragment = BibleSearchFragment.newInstance(uri);
+            } else {
+                // To the Bible fragment
+                newBibleFragment = BibleBookFragment.newInstance(uri);
+            }
         }
+
 
         // Start selected fragment
         setFragment(newBibleFragment);
@@ -163,6 +171,10 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
         SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        if (searchView == null ) {
+            return;
+        }
+
         searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
         searchView.setMaxWidth(Integer.MAX_VALUE);
 

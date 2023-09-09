@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -49,6 +50,7 @@ public class BibleMenuBookListFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
+        Bundle args = getArguments();
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_bible_book_list, container, false);
@@ -64,7 +66,10 @@ public class BibleMenuBookListFragment extends Fragment {
         updateListBottomMargin();
 
         // Load the Bible part book list
-        mBiblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
+        mBiblePartId = 0;
+        if (args != null) {
+            mBiblePartId = args.getInt(BIBLE_PART_ID, 0);
+        }
 
         // Specify an adapter
         mAdapter = new BibleBookListAdapter(mBiblePartId);
@@ -107,6 +112,11 @@ public class BibleMenuBookListFragment extends Fragment {
 
     private void updateListBottomMargin() {
         // Inject margin at the bottom to account for the navigation bar
+        Context ctx = getContext();
+        if (ctx == null) {
+            return;
+        }
+
         Resources resources = getContext().getResources();
         int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         int navigationBarHeight = 0;

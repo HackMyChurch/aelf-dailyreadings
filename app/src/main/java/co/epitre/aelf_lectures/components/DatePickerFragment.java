@@ -57,7 +57,7 @@ public class DatePickerFragment extends DialogFragment
         int day = c.get(Calendar.DAY_OF_MONTH);
 
         // Create a new instance of DatePickerDialog and return it
-        Context context = getActivity();
+        Context context = requireContext();
         dialog = new DatePickerDialog(context, this, year, month, day);
         dialog.setCancelable(true);
         dialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.button_cancel), this);

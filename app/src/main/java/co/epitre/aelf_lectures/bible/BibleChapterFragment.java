@@ -1,5 +1,7 @@
 package co.epitre.aelf_lectures.bible;
 
+import android.os.Bundle;
+
 import co.epitre.aelf_lectures.components.ReadingFragment;
 
 
@@ -8,12 +10,21 @@ public class BibleChapterFragment extends ReadingFragment {
 
     @Override
     protected void loadText() {
+        // Get arguments
+        Bundle args = getArguments();
+
         // Build content
         StringBuilder htmlString = new StringBuilder();
-        String body = getArguments().getString(ARG_TEXT_HTML);
-        String highlight = getArguments().getString(ARG_HIGHLIGHT, "");
-        String reference = getArguments().getString(ARG_REFERENCE, "");
-        String chapter = getArguments().getString(ARG_CHAPTER, "");
+        String body = "";
+        String highlight = "";
+        String reference = "";
+        String chapter = "";
+        if (args != null) {
+            body = args.getString(ARG_TEXT_HTML);
+            highlight = args.getString(ARG_HIGHLIGHT, "");
+            reference = args.getString(ARG_REFERENCE, "");
+            chapter = args.getString(ARG_CHAPTER, "");
+        }
 
         htmlString.append("<!DOCTYPE html><html><head>");
         htmlString.append("<link href=\"css/common.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");

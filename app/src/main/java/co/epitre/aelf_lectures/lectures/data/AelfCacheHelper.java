@@ -3,11 +3,12 @@ package co.epitre.aelf_lectures.lectures.data;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
-import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import android.annotation.SuppressLint;
@@ -57,7 +58,10 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     AelfCacheHelper(Context context) {
         super(context, context.getDatabasePath(DB_NAME).getAbsolutePath(), null, DB_VERSION);
-        context.getDatabasePath(DB_NAME).getParentFile().mkdirs();
+        File dbDir = context.getDatabasePath(DB_NAME).getParentFile();
+        if (dbDir != null) {
+            dbDir.mkdirs();
+        }
         preference = PreferenceManager.getDefaultSharedPreferences(context);
         ctx = context;
     }
@@ -248,7 +252,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        for (LecturesController.WHAT what : LecturesController.WHAT.class.getEnumConstants()) {
+        for (LecturesController.WHAT what : Objects.requireNonNull(LecturesController.WHAT.class.getEnumConstants())) {
             createCache(db, what);
         }
     }

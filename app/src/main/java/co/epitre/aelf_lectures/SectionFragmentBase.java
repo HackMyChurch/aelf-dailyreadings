@@ -30,7 +30,7 @@ public abstract class SectionFragmentBase extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Load global views
-        activity = (LecturesActivity) getActivity();
+        activity = (LecturesActivity) requireActivity();
         actionBar = activity.getSupportActionBar();
         drawerView = activity.findViewById(R.id.drawer_navigation_view);
 

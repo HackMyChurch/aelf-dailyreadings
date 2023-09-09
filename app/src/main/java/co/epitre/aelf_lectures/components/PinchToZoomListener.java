@@ -94,6 +94,10 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null) {
+            return;
+        }
+
         // Apply externally changed zoom
         if(key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             int zoomLevel = preferences.getInt(SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100);

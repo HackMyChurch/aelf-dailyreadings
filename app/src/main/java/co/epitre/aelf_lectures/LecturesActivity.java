@@ -37,6 +37,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import java.io.File;
+import java.util.Objects;
 
 import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
@@ -201,6 +202,7 @@ public class LecturesActivity extends BaseActivity implements
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         actionBar = getSupportActionBar();
+        assert actionBar != null;
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
 
@@ -573,8 +575,20 @@ public class LecturesActivity extends BaseActivity implements
     private boolean onLink(Uri link) {
         // Handle special URLs
         String scheme = link.getScheme();
+        if (scheme == null) {
+            scheme = "";
+        }
+
         String host = link.getHost();
+        if (host == null) {
+            host = "";
+        }
+
         String path = link.getPath();
+        if (path == null) {
+            path = "";
+        }
+
         String[] chunks = path.split("/");
 
         if (scheme.equals("aelf")) {
@@ -712,7 +726,7 @@ public class LecturesActivity extends BaseActivity implements
     public boolean deleteDir(File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++) {
+            for (int i = 0; i < Objects.requireNonNull(children).length; i++) {
                 boolean success = deleteDir(new File(dir, children[i]));
                 if (!success) {
                     return false;

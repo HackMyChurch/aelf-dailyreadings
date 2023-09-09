@@ -17,7 +17,9 @@ public class TesterPrefFragment extends BasePrefFragment implements
         setPreferencesFromResource(R.xml.tester_settings, rootKey);
 
         // Register validator for server to prevent users from using a mail address...
-        getPreferenceScreen().findPreference(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER).setOnPreferenceChangeListener(this);
+        Preference serverPreference = getPreferenceScreen().findPreference(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER);
+        assert serverPreference != null;
+        serverPreference.setOnPreferenceChangeListener(this);
 
         // hacky hack, but does the job --> init summaries
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_PARTICIPATE_SERVER);
@@ -25,14 +27,22 @@ public class TesterPrefFragment extends BasePrefFragment implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null) {
+            return;
+        }
+
         // set summary
         if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
             EditTextPreference pref = findPreference(key);
-            String server = pref.getText();
-            if (server == null || server.isEmpty()) {
-                pref.setSummary("Serveur par défaut (recommandé)");
-            } else {
-                pref.setSummary("L'application fonctionne avec le serveur de test: " + server + ". En cas de doute, vous pouvez effacer cette valeur sans danger.");
+            String server = null;
+            if (pref != null) {
+                server = pref.getText();
+
+                if (server == null || server.isEmpty()) {
+                    pref.setSummary("Serveur par défaut (recommandé)");
+                } else {
+                    pref.setSummary("L'application fonctionne avec le serveur de test: " + server + ". En cas de doute, vous pouvez effacer cette valeur sans danger.");
+                }
             }
         }
 

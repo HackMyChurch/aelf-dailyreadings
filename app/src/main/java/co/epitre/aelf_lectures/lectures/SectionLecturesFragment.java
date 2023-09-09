@@ -185,7 +185,13 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         // https://www.aelf.org/office-[NOM]
 
         String path = uri.getPath();
+        if (path == null) {
+            path = "";
+        }
         String host = uri.getHost();
+        if (host == null) {
+            host = "";
+        }
         String fragment = uri.getFragment();
 
         // Set default values
@@ -204,7 +210,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
                 try {
                     whatwhen.what = LecturesController.WHAT.valueOf(office_name);
                 } catch (IllegalArgumentException e) {
-                    Log.w(TAG, "Failed to parse office '" + chunks[2] + "', falling back to messe", e);
+                    Log.w(TAG, "Failed to parse office '" + chunks[1] + "', falling back to messe", e);
                     whatwhen.what = LecturesController.WHAT.MESSE;
                 }
             } else if (chunks[1].equals("shortcut")) {
@@ -401,12 +407,13 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     //
 
     private void showLectureVariantSelectionMenu(View menuAnchor, final int position) {
-        if (menuAnchor == null || mTabLayout == null || lecturesPagerAdapter == null) {
+        Context ctx = getContext();
+        if (ctx == null || menuAnchor == null || mTabLayout == null || lecturesPagerAdapter == null) {
             return;
         }
 
         // Build menu
-        final ListPopupWindow listPopupWindow = new ListPopupWindow(getContext());
+        final ListPopupWindow listPopupWindow = new ListPopupWindow(ctx);
         listPopupWindow.setAnchorView(menuAnchor);
         listPopupWindow.setDropDownGravity(Gravity.CENTER);
         listPopupWindow.setHeight(ListPopupWindow.WRAP_CONTENT);
@@ -610,12 +617,13 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         isLoading = loading;
 
         View view = getView();
-        if (view == null) {
+        Context ctx = getContext();
+        if (ctx == null || view == null) {
             return;
         }
 
         TypedValue colorValue = new TypedValue();
-        getContext().getTheme().resolveAttribute(R.attr.colorLectureAccent, colorValue, true);
+        ctx.getTheme().resolveAttribute(R.attr.colorLectureAccent, colorValue, true);
 
         final RelativeLayout loadingOverlay = view.findViewById(R.id.loadingOverlay);
         final ProgressBar loadingIndicator = view.findViewById(R.id.loadingIndicator);

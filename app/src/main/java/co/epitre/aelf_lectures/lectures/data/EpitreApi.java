@@ -7,6 +7,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -124,7 +125,7 @@ public final class EpitreApi {
         BufferedSource source = null;
         Office office;
         try {
-            source = response.body().source();
+            source = Objects.requireNonNull(response.body()).source();
             office = officeJsonAdapter.fromJson(source);
         } catch (IOException e) {
             Log.w(TAG, "Failed to load lectures from network");

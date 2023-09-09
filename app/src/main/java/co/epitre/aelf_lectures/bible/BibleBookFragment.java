@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
@@ -19,6 +20,8 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
+
+import java.util.Objects;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
@@ -57,6 +60,9 @@ public class BibleBookFragment extends BibleFragment {
     // FIXME: this is *very* ineficient
     public static BibleBookFragment newInstance(Uri uri) {
         String path = uri.getPath();
+        if (path == null) {
+            path = "";
+        }
         String[] chunks = path.split("/");
         String query = uri.getQueryParameter("query");
         String reference = uri.getQueryParameter("reference");
@@ -142,7 +148,7 @@ public class BibleBookFragment extends BibleFragment {
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Load global views
-        activity = (LecturesActivity) getActivity();
+        activity = (LecturesActivity) requireActivity();
         actionBar = activity.getSupportActionBar();
         drawerView = activity.findViewById(R.id.drawer_navigation_view);
 
@@ -153,9 +159,17 @@ public class BibleBookFragment extends BibleFragment {
         View view = inflater.inflate(R.layout.fragment_section_bible_book, container, false);
 
         // Load the Bible part book list
-        int biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
-        int bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
-        int bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
+        Bundle args = getArguments();
+        int biblePartId = 0;
+        int bibleBookId = 0;
+        int bibleChapterId = -1;
+
+        if (args != null) {
+            biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
+            bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
+            bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
+        }
+
         String query = getArguments().getString(BIBLE_SEARCH_QUERY);
         String reference = getArguments().getString(BIBLE_REFERENCE);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
@@ -194,20 +208,25 @@ public class BibleBookFragment extends BibleFragment {
             return null;
         }
 
+        Bundle args = getArguments();
+
         String separator = "?";
 
         int position = mViewPager.getCurrentItem();
         String route = "/bible"+mBibleChapterPagerAdapter.getRoute(position);
 
-        if (position == getArguments().getInt(BIBLE_CHAPTER_ID, -1)) {
-            route += separator+"query=" + getArguments().getString(BIBLE_SEARCH_QUERY);
+        if (args != null && position == args.getInt(BIBLE_CHAPTER_ID, -1)) {
+            route += separator+"query=" + args.getString(BIBLE_SEARCH_QUERY);
             separator = "&";
         }
 
-        String reference = getArguments().getString(BIBLE_SEARCH_QUERY);
-        if (reference != null) {
+        String reference = null;
+        if (args != null) {
+            reference = args.getString(BIBLE_SEARCH_QUERY);
+        }
+
+        if (args != null && reference != null) {
             route += separator+"reference=" + reference;
-            separator = "&";
         }
 
         return route;
@@ -221,23 +240,24 @@ public class BibleBookFragment extends BibleFragment {
 
         int position = mViewPager.getCurrentItem();
         String BookTitle = mBibleBookEntry.getBookName();
-        String ChapterTitle = mBibleChapterPagerAdapter.getPageTitle(position).toString();
+        String ChapterTitle = Objects.requireNonNull(mBibleChapterPagerAdapter.getPageTitle(position)).toString();
 
         return BookTitle + " — " + ChapterTitle;
     }
 
     private void showChapterSelectionMenu(View menuAnchor) {
-        if (menuAnchor == null || mTabLayout == null) {
+        Context ctx = getContext();
+        if (ctx == null || menuAnchor == null || mTabLayout == null) {
             return;
         }
 
         // Build menu
-        final ListPopupWindow listPopupWindow = new ListPopupWindow(getContext());
+        final ListPopupWindow listPopupWindow = new ListPopupWindow(ctx);
         listPopupWindow.setAnchorView(menuAnchor);
         listPopupWindow.setDropDownGravity(Gravity.CENTER);
         listPopupWindow.setHeight(ListPopupWindow.WRAP_CONTENT);
         listPopupWindow.setWidth(menuAnchor.getWidth());
-        listPopupWindow.setAdapter(new ArrayAdapter(getContext(),
+        listPopupWindow.setAdapter(new ArrayAdapter(ctx,
                 android.R.layout.simple_list_item_1, mBibleBookEntry.getBook().getChapters()));
 
         // Handle events

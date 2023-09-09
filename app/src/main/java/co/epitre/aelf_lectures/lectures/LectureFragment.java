@@ -32,6 +32,10 @@ public class LectureFragment extends ReadingFragment implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null) {
+            return;
+        }
+
         if (key.equals(SettingsActivity.KEY_PREF_DISP_PSALM_UNDERLINE)) {
             loadText();
         }
@@ -49,18 +53,25 @@ public class LectureFragment extends ReadingFragment implements
     @Override
     protected void loadText() {
         Context context = getActivity();
-        if (context == null || mWebView == null) {
+        Bundle args = getArguments();
+        if (context == null || mWebView == null || args == null) {
             return;
         }
 
         // Get the lecture
-        int position = getArguments().getInt(ARG_POSITION);
-        int variant = getArguments().getInt(ARG_VARIANT);
+        int position = args.getInt(ARG_POSITION);
+        int variant = args.getInt(ARG_VARIANT);
+
         SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
+        if (parent == null) {
+            return;
+        }
+
         LectureVariants lectureVariants = parent.getLectureVariants(position);
         if (lectureVariants == null) {
             return;
         }
+
         Lecture lecture = lectureVariants.get(variant);
 
         // Build HTML

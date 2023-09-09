@@ -36,6 +36,7 @@ public class MainPrefFragment extends BasePrefFragment {
 
         // Request adding app to doze mode whitelist
         Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
+        assert batterySyncPref != null;
         batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(@NonNull Preference preference) {
                 requestDozeModeExemption();
@@ -45,6 +46,7 @@ public class MainPrefFragment extends BasePrefFragment {
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
+        assert contactDevPref != null;
         contactDevPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(@NonNull Preference preference) {
                 sendMailDev();
@@ -54,6 +56,7 @@ public class MainPrefFragment extends BasePrefFragment {
 
         // Drop the cache
         Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+        assert dropCachePref != null;
         dropCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             public boolean onPreferenceClick(@NonNull Preference preference) {
                 dropCache();
@@ -73,27 +76,33 @@ public class MainPrefFragment extends BasePrefFragment {
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Context context = getContext();
-        if (context == null) {
+        if (key == null || context == null) {
             return;
         }
 
         // Set summary
         if (key.equals(SettingsActivity.KEY_PREF_DISP_FONT_SIZE)) {
             SeekBarPreference pref = findPreference(key);
-            pref.setSummary("Agrandissement du texte: " + pref.getValue() + "%");
+            if (pref != null) {
+                pref.setSummary("Agrandissement du texte: " + pref.getValue() + "%");
+            }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_BATTERY)) {
             Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
-                batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
-            } else {
-                batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
+            if (batterySyncPref != null) {
+                if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
+                    batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
+                } else {
+                    batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
+                }
             }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
             long dbSize = AelfCacheHelper.getDatabaseSize(context);
             Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
             String summary = "Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize)+".";
-            dropCachePref.setSummary(summary);
+            if (dropCachePref != null) {
+                dropCachePref.setSummary(summary);
+            }
         }
 
         super.onSharedPreferenceChanged(sharedPreferences, key);

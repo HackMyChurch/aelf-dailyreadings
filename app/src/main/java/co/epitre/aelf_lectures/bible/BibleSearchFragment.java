@@ -1,6 +1,7 @@
 package co.epitre.aelf_lectures.bible;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -81,7 +82,7 @@ public class BibleSearchFragment extends BibleFragment implements
         super.onCreateView(inflater, container, savedInstanceState);
 
         // Load global views
-        activity = (LecturesActivity) getActivity();
+        activity = (LecturesActivity) requireActivity();
         actionBar = activity.getSupportActionBar();
         drawerView = activity.findViewById(R.id.drawer_navigation_view);
 
@@ -105,10 +106,12 @@ public class BibleSearchFragment extends BibleFragment implements
             }
 
             // Load the argument
-            mQuery = args.getString(BIBLE_SEARCH_QUERY);
-            try {
-                mSort = BibleController.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
-            } catch (IllegalArgumentException | NullPointerException e) {
+            if (args != null) {
+                mQuery = args.getString(BIBLE_SEARCH_QUERY);
+                try {
+                    mSort = BibleController.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
+                } catch (IllegalArgumentException e) {
+                }
             }
 
             // Setup the sort buttons
@@ -232,6 +235,7 @@ public class BibleSearchFragment extends BibleFragment implements
 
         // Initialize the search box with the query
         mSearchView = (SearchView) searchMenuItem.getActionView();
+        assert mSearchView != null;
         mSearchView.setIconifiedByDefault(false);
         mSearchView.setSubmitButtonEnabled(false);
         mSearchView.setQuery(mQuery, false);
@@ -269,8 +273,13 @@ public class BibleSearchFragment extends BibleFragment implements
     }
 
     private void updateListBottomMargin() {
+        Context ctx = getContext();
+        if (ctx == null) {
+            return;
+        }
+
         // Inject margin at the bottom to account for the navigation bar
-        Resources resources = getContext().getResources();
+        Resources resources = ctx.getResources();
         int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         int navigationBarHeight = 0;
         if (resourceId > 0) {
@@ -347,6 +356,10 @@ public class BibleSearchFragment extends BibleFragment implements
         try {
             mainActivity = (LecturesActivity) getActivity();
         } catch (ClassCastException e) {
+            return;
+        }
+
+        if (mainActivity == null) {
             return;
         }
 
