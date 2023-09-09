@@ -117,9 +117,13 @@
     <string name="pref_participate_code_title">Contribuer au code</string>
 
     <string name="pref_section_contact_title">Garder le contact</string>
-    <string name="pref_contact_mail_title">Envoyer un e-mail au développeur</string>
     <string name="pref_contact_twitter_title">Suivre @AELF_officiel sur Twitter</string>
     <string name="pref_contact_mailing_title">S\'abonner aux lectures par email</string>
+    <string name="pref_contact_mail_title">Envoyer un e-mail au développeur</string>
+
+    <string name="pref_section_app_title">Application</string>
+    <string name="pref_app_about_title">@string/dialog_about_title</string>
+    <string name="pref_app_news_title">@string/dialog_whats_new_title</string>
 
     <string name="pref_disp_fullscreen_on">La barre de notifications et l\'heure seront masquées.</string>
     <string name="pref_disp_fullscreen_off">La barre de notifications et l\'heure seront affichées.</string>

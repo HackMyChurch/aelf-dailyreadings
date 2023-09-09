@@ -36,8 +36,8 @@ import java.io.File;
 import java.util.Objects;
 
 import co.epitre.aelf_lectures.base.BaseActivity;
+import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
-import co.epitre.aelf_lectures.components.MessageDialogFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
@@ -106,7 +106,7 @@ public class LecturesActivity extends BaseActivity implements
             editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
             editor.putInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
             SyncAdapter.triggerSync(this);
-            onWhatsNew();
+            DialogsKt.displayWhatsNewDialog(this);
         }
 
         // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
@@ -437,24 +437,6 @@ public class LecturesActivity extends BaseActivity implements
         prepare_fullscreen();
     }
 
-    public boolean onAbout() {
-        MessageDialogFragment aboutDialog = new MessageDialogFragment(
-                getString(R.string.dialog_about_title),
-                getString(R.string.dialog_about_content)
-        );
-        aboutDialog.show(getSupportFragmentManager(), "aboutDialog");
-        return true;
-    }
-
-    public boolean onWhatsNew() {
-        MessageDialogFragment aboutDialog = new MessageDialogFragment(
-                getString(R.string.dialog_whats_new_title),
-                getString(R.string.dialog_whats_new_content)
-        );
-        aboutDialog.show(getSupportFragmentManager(), "whatsNewDialog");
-        return true;
-    }
-
     public boolean onSyncPref() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
@@ -539,9 +521,8 @@ public class LecturesActivity extends BaseActivity implements
 
         switch (item.getItemId()) {
             case R.id.action_about:
-                return onAbout();
-            case R.id.action_whats_new:
-                return onWhatsNew();
+                DialogsKt.displayAboutDialog(this);
+                return true;
             case R.id.action_sync_settings:
                 return onSyncPref();
             case R.id.action_sync_do:

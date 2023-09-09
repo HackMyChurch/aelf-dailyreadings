@@ -23,6 +23,8 @@ public class SettingsActivity extends BaseActivity {
     public static final String KEY_PREF_PARTICIPATE_NOCACHE = "pref_participate_nocache";
     public static final String KEY_PREF_PARTICIPATE_SERVER = "pref_participate_server";
     public static final String KEY_CONTACT_DEV = "contact_dev";
+    public static final String KEY_APP_ABOUT = "app_about";
+    public static final String KEY_APP_NEWS = "app_news";
     public static final String KEY_APP_PREVIOUS_VERSION = "previous_version";
     public static final String KEY_APP_SYNC_LAST_STOP = "app_sync_last_stop";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";

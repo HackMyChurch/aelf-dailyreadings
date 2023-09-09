@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures.settings;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -11,7 +10,6 @@ import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Html;
 
-import androidx.annotation.NonNull;
 import androidx.core.content.FileProvider;
 import androidx.preference.Preference;
 import androidx.preference.SeekBarPreference;
@@ -20,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.lectures.data.AelfCacheHelper;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
@@ -36,31 +35,41 @@ public class MainPrefFragment extends BasePrefFragment {
         // Request adding app to doze mode whitelist
         Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         assert batterySyncPref != null;
-        batterySyncPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                requestDozeModeExemption();
-                return true;
-            }
+        batterySyncPref.setOnPreferenceClickListener(preference -> {
+            requestDozeModeExemption();
+            return true;
         });
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
         assert contactDevPref != null;
-        contactDevPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                sendMailDev();
-                return true;
-            }
+        contactDevPref.setOnPreferenceClickListener(preference -> {
+            sendMailDev();
+            return true;
         });
 
         // Drop the cache
         Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
         assert dropCachePref != null;
-        dropCachePref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            public boolean onPreferenceClick(@NonNull Preference preference) {
-                dropCache();
-                return true;
-            }
+        dropCachePref.setOnPreferenceClickListener(preference -> {
+            dropCache();
+            return true;
+        });
+
+        // About
+        Preference aboutPref = findPreference(SettingsActivity.KEY_APP_ABOUT);
+        assert aboutPref != null;
+        aboutPref.setOnPreferenceClickListener(preference -> {
+            DialogsKt.displayAboutDialog(getContext());
+            return true;
+        });
+
+        // What's new ?
+        Preference newsPref = findPreference(SettingsActivity.KEY_APP_NEWS);
+        assert newsPref != null;
+        newsPref.setOnPreferenceClickListener(preference -> {
+            DialogsKt.displayWhatsNewDialog(getContext());
+            return true;
         });
     }
 
@@ -106,7 +115,6 @@ public class MainPrefFragment extends BasePrefFragment {
 
         super.onSharedPreferenceChanged(sharedPreferences, key);
     }
-
     private void sendMailDev(){
         Context context = getContext();
         if (context == null) {
@@ -143,7 +151,6 @@ public class MainPrefFragment extends BasePrefFragment {
 
         startActivity(Intent.createChooser(emailIntent , getString(R.string.mailto_dev)));
     }
-
     private void requestDozeModeExemption() {
         Context context = getContext();
         if (context == null) {
@@ -161,15 +168,13 @@ public class MainPrefFragment extends BasePrefFragment {
                                 "<br/>2. Cherchez l'application AELF</li>" +
                                 "<br/>3. Désactivez les 'optimisation de batterie'</li>"
                 ))
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        try {
-                            startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
-                        } catch (Exception e) {
-                            // EMPTY
-                        }
-                        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    try {
+                        startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    } catch (Exception e) {
+                        // EMPTY
                     }
+                    onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
                 })
                 .setNegativeButton(android.R.string.no, null)
                 .setIcon(android.R.drawable.ic_dialog_info)
@@ -190,22 +195,20 @@ public class MainPrefFragment extends BasePrefFragment {
                                 "<br>Purger le cache supprimera toutes les lectures « hors connexion »." +
                                 " Une nouvelle synchronisation sera automatiquement démarrée mais peut prendre du temps suivant votre connexion Internet."
                 ))
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Kill any running sync
-                        SyncAdapter.killPendingSyncs(context);
+                .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                    // Kill any running sync
+                    SyncAdapter.killPendingSyncs(context);
 
-                        // Drop the database
-                        try {
-                            AelfCacheHelper.dropDatabase(context);
-                        } catch (Exception e) {}
+                    // Drop the database
+                    try {
+                        AelfCacheHelper.dropDatabase(context);
+                    } catch (Exception e) {}
 
-                        // Refresh the size
-                        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+                    // Refresh the size
+                    onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
 
-                        // Start a new background sync
-                        SyncAdapter.triggerSync(context);
-                    }
+                    // Start a new background sync
+                    SyncAdapter.triggerSync(context);
                 })
                 .setNegativeButton(android.R.string.no, null)
                 .show();
