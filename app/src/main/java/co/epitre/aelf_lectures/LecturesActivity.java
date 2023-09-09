@@ -13,7 +13,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
 
@@ -23,7 +22,6 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
@@ -40,6 +38,7 @@ import android.widget.FrameLayout;
 
 import java.io.File;
 
+import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
 import co.epitre.aelf_lectures.components.MessageDialogFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
@@ -48,10 +47,9 @@ import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
-public class LecturesActivity extends AppCompatActivity implements
+public class LecturesActivity extends BaseActivity implements
         NavigationView.OnNavigationItemSelectedListener,
-        DrawerLayout.DrawerListener,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        DrawerLayout.DrawerListener {
 
     public static final String TAG = "AELFLecturesActivity";
 
@@ -65,7 +63,6 @@ public class LecturesActivity extends AppCompatActivity implements
     /**
      * Global managers / resources
      */
-    SharedPreferences settings = null;
 
     // Instance fields
     Account mAccount;
@@ -82,19 +79,9 @@ public class LecturesActivity extends AppCompatActivity implements
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
 
-    /**
-     * Theme
-     */
-    Boolean nightMode = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Install theme before anything else
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
-        nightMode = settings.getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
-        this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
-
-        // Restore state
+        // Call parent (handles night mode)
         super.onCreate(savedInstanceState);
 
         // ---- need upgrade ?
@@ -111,7 +98,6 @@ public class LecturesActivity extends AppCompatActivity implements
 
         // load saved version, if any
         Resources res = getResources();
-        settings.registerOnSharedPreferenceChangeListener(this);
         savedVersion = settings.getInt(SettingsActivity.KEY_APP_VERSION, -1);
 
 
@@ -189,6 +175,9 @@ public class LecturesActivity extends AppCompatActivity implements
         if (syncDuree.equals("auj") || syncDuree.equals("auj-dim")) {
             editor.putString(SettingsActivity.KEY_PREF_SYNC_DUREE, "semaine");
         }
+
+        // delete legacy preference
+        editor.remove(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE);
 
         editor.apply();
         // ---- end upgrade
@@ -505,15 +494,6 @@ public class LecturesActivity extends AppCompatActivity implements
         return true;
     }
 
-    public boolean onToggleNightMode() {
-        // Toggle the value
-        nightMode = !nightMode;
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, nightMode);
-        editor.apply();
-        return true;
-    }
-
     public boolean onApplyOptimalSyncSettings() {
         SharedPreferences.Editor editor = settings.edit();
 
@@ -576,7 +556,6 @@ public class LecturesActivity extends AppCompatActivity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar
         getMenuInflater().inflate(R.menu.toolbar_main, menu);
-        menu.findItem(R.id.action_toggle_night_mode).setChecked(nightMode);
         return true;
     }
 
@@ -595,9 +574,6 @@ public class LecturesActivity extends AppCompatActivity implements
                 return onSyncPref();
             case R.id.action_sync_do:
                 return onSyncDo();
-            case R.id.action_toggle_night_mode:
-                item.setChecked(!item.isChecked()); // Fast visual feedback
-                return onToggleNightMode();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -663,6 +639,8 @@ public class LecturesActivity extends AppCompatActivity implements
     // FIXME: this should probably be in the application. Should also move the account managment there
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        super.onSharedPreferenceChanged(sharedPreferences, key);
+
         if (key.equals(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
             SyncAdapter.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
@@ -674,18 +652,19 @@ public class LecturesActivity extends AppCompatActivity implements
             SharedPreferences.Editor editor = settings.edit();
             editor.putLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
             editor.apply();
-        } else if (key.equals(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE)) {
-            recreate();
         }
     }
 
     /*
-     * Orientation change
+     * Phone configuration change
      */
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        // Call parent (handles night mode)
         super.onConfigurationChanged(newConfig);
+
+        // Update screen
         prepare_fullscreen();
     }
 

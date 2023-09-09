@@ -1,20 +1,18 @@
 package co.epitre.aelf_lectures.settings;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.base.BaseActivity;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
     public static final String KEY_PREF_REGION = "pref_region";
     public static final String KEY_PREF_DISP_FONT_SIZE = "pref_disp_font_size";
     public static final String KEY_PREF_DISP_PINCH_TO_ZOOM = "pref_disp_pinch_to_zoom";
     public static final String KEY_PREF_DISP_PSALM_UNDERLINE = "pref_disp_psalm_underline";
     public static final String KEY_PREF_DISP_FULLSCREEN = "pref_disp_fullscreen";
     public static final String KEY_PREF_DISP_NIGHT_MODE = "pref_disp_night_mode";
+    public static final String KEY_PREF_DISP_NIGHT_MODE_V2 = "pref_disp_night_mode_v2";
     public static final String KEY_PREF_SYNC_LECTURES = "pref_sync_lectures";
     public static final String KEY_PREF_SYNC_DUREE = "pref_sync_duree";
     public static final String KEY_PREF_SYNC_CONSERV = "pref_sync_conserv";
@@ -36,12 +34,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Install theme before anything else
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        Boolean nightMode = settings.getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
-        this.setTheme(nightMode ? R.style.AelfAppThemeDark : R.style.AelfAppThemeLight);
-
-        // Call parent
+        // Call parent (handles night mode)
         super.onCreate(savedInstanceState);
 
         // Register settings fragment
@@ -51,5 +44,4 @@ public class SettingsActivity extends AppCompatActivity {
                 .replace(R.id.preference_container, new MainPrefFragment())
                 .commit();
     }
-
 }

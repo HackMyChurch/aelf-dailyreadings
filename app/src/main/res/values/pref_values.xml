@@ -72,7 +72,18 @@
     </string-array>
     <string name="pref_disp_psalm_underline_def">auto</string>
 
-    <string name="pref_section_global_title">Preférences</string>
+    <!-- Display mode -->
+    <string-array name="pref_disp_night_mode_v2_title">
+        <item>Jour</item>
+        <item>Nuit</item>
+    </string-array>
+    <string-array name="pref_disp_night_mode_v2_values">
+        <item>day</item>
+        <item>night</item>
+    </string-array>
+    <string name="pref_disp_night_mode_v2_def">day</string>
+
+    <string name="pref_section_global_title">Préférences</string>
 
     <string name="pref_section_reading_title">Lectures</string>
     <string name="pref_region_title">Région</string>
@@ -82,7 +93,7 @@
     <string name="pref_disp_text_zoom_title">Taille du texte</string>
     <string name="pref_disp_text_pinch_to_zoom">Zoomer à 2 doigts</string>
     <string name="pref_disp_psalm_underline_title">Souligner le changement de ton</string>
-    <string name="pref_disp_night_mode_title">Mode nuit</string>
+    <string name="pref_disp_night_mode_v2_title">Mode nuit</string>
 
     <string name="pref_section_sync_title">Mode hors connexion</string>
     <string name="pref_lectures_title">Lectures à synchroniser</string>

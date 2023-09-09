@@ -30,7 +30,6 @@
     <!-- Toolbar buttons -->
     <string name="action_calendar">Date</string>
     <string name="action_share">Partager</string>
-    <string name="action_toggle_night_mode">Mode nuit</string>
     <string name="action_sync_settings">Paramètres</string>
     <string name="action_sync_do">Synchroniser</string>
     <string name="action_refresh">Rafraîchir</string>

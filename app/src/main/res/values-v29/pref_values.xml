@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Display mode -->
+    <string-array name="pref_disp_night_mode_v2_title">
+        <item>Automatique</item>
+        <item>Jour</item>
+        <item>Nuit</item>
+    </string-array>
+    <string-array name="pref_disp_night_mode_v2_values">
+        <item>auto</item>
+        <item>day</item>
+        <item>night</item>
+    </string-array>
+    <string name="pref_disp_night_mode_v2_def">auto</string>
+</resources>

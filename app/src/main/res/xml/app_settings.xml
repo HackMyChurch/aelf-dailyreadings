@@ -24,6 +24,14 @@
             android:summaryOn="@string/pref_disp_fullscreen_on"
             android:title="@string/pref_disp_fullscreen_title" />
         <ListPreference
+            android:title="@string/pref_disp_night_mode_v2_title"
+            android:dialogTitle="@string/pref_disp_night_mode_v2_title"
+            android:entryValues="@array/pref_disp_night_mode_v2_values"
+            android:entries="@array/pref_disp_night_mode_v2_title"
+            android:key="pref_disp_night_mode_v2"
+            android:defaultValue="@string/pref_disp_night_mode_v2_def"
+            app:useSimpleSummaryProvider="true" />
+        <ListPreference
             android:title="@string/pref_disp_psalm_underline_title"
             android:dialogTitle="@string/pref_disp_psalm_underline_title"
             android:entryValues="@array/pref_disp_psalm_underline_values"

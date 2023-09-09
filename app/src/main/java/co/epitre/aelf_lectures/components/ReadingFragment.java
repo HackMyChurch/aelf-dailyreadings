@@ -1,9 +1,8 @@
 package co.epitre.aelf_lectures.components;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +14,6 @@ import androidx.fragment.app.Fragment;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
 public abstract class ReadingFragment extends Fragment {
@@ -35,9 +33,20 @@ public abstract class ReadingFragment extends Fragment {
     protected WebView mWebView;
     private WebSettings mWebSettings;
 
+    /**
+     * Internals
+     */
+
+    private SharedPreferences settings;
+    private LecturesActivity lecturesActivity;
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Get context
+        this.lecturesActivity = (LecturesActivity) getActivity();
+        this.settings = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getContext());
+
         // Build UI
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
         mWebView = rootView.findViewById(R.id.LectureView);
@@ -48,7 +57,7 @@ public abstract class ReadingFragment extends Fragment {
         mWebSettings.setDomStorageEnabled(true);
 
         // Install theme and styling hooks
-        mWebView.setWebViewClient(new ReadingWebViewClient((LecturesActivity) getActivity(), mWebView));
+        mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
 
         // Install Zoom support
         mWebView.setOnTouchListener(new ReadingFragment.ReadingPinchToZoomListener());
@@ -137,13 +146,7 @@ public abstract class ReadingFragment extends Fragment {
      */
 
     protected String getThemeCss() {
-        Activity activity = getActivity();
-        if (activity == null) {
-            return null;
-        }
-
-        boolean nightMode = PreferenceManager.getDefaultSharedPreferences(getActivity()).getBoolean(SettingsActivity.KEY_PREF_DISP_NIGHT_MODE, false);
-        String themeName = nightMode ? "dark":"light";
+        String themeName = this.lecturesActivity.getNightMode() ? "dark":"light";
         return "css/theme-"+themeName+".css";
     }
 

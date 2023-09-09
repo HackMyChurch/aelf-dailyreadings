@@ -29,7 +29,7 @@
             android:resizeableActivity="true"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -77,6 +77,7 @@
             android:name="co.epitre.aelf_lectures.settings.SettingsActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:configChanges="uiMode"
             android:screenOrientation="portrait" >
             <intent-filter>
        			<action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />

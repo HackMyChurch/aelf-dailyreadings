@@ -4,13 +4,6 @@
     tools:context=".LecturesActivity">
 
     <item
-        android:id="@+id/action_toggle_night_mode"
-        android:checkable="true"
-        android:orderInCategory="200"
-        android:title="@string/action_toggle_night_mode"
-        app:showAsAction="never" />
-
-    <item
         android:id="@+id/action_sync_settings"
         android:orderInCategory="200"
         app:showAsAction="never"
