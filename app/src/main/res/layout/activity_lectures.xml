@@ -29,11 +29,7 @@
 
         <!-- Drawer aka "menu" -->
         <!-- Documentation: https://developer.android.com/training/material/design-library.html -->
-        <!--
-            HACK: overload NavigationView + set insetForeground to NULL to hide the system UI
-            padding when using transluent status bar
-        -->
-        <co.epitre.aelf_lectures.components.AelfNavigationView
+        <com.google.android.material.navigation.NavigationView
             android:id="@+id/drawer_navigation_view"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -42,7 +38,6 @@
             app:itemBackground="?attr/drawableMenuItemBg"
             app:itemTextColor="@drawable/menu_item_text"
             app:menu="@menu/drawer" />
-        <!-- app:headerLayout="@layout/my_drawer_header" -->
 
     </androidx.drawerlayout.widget.DrawerLayout>
 </LinearLayout>
