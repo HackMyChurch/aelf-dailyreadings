@@ -131,11 +131,10 @@ public final class LecturesController {
     }
 
     public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
-        GregorianCalendar minLoadDate = null;
         long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
 
         try {
-            return cache.has(what, when, minLoadDate, minLoadVersion);
+            return cache.has(what, when, null, minLoadVersion);
         } catch (Exception e) {
             Log.e(TAG, "Failed to check if lecture is in cache", e);
             return false;

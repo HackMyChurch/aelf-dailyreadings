@@ -315,9 +315,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static void configureSync(Context ctx) {
         Account account = getSyncAccount(ctx);
-        if (account == null) {
-            return;
-        }
 
         ContentResolver.setIsSyncable(account, AUTHORITY, 1);
         ContentResolver.setSyncAutomatically(account, AUTHORITY, true);
@@ -326,9 +323,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     public static void triggerSync(Context ctx) {
         Account account = getSyncAccount(ctx);
-        if (account == null) {
-            return;
-        }
 
         // Pass the settings flags by inserting them in a bundle
         Bundle settingsBundle = new Bundle();
@@ -350,9 +344,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         Account account = getSyncAccount(ctx);
-        if (account == null) {
-            return;
-        }
 
         // Cancel sync
         ContentResolver.cancelSync(account, AUTHORITY);

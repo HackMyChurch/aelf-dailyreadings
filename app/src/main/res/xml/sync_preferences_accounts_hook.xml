@@ -9,6 +9,6 @@
     	<intent
         	android:action="android.intent.action.MANAGE_NETWORK_USAGE"
         	android:targetPackage="co.epitre.aelf_lectures"
-        	android:targetClass="co.epitre.aelf_lectures.SyncPrefActivity" />
+        	android:targetClass="co.epitre.aelf_lectures.settings.SettingsActivity" />
 	</PreferenceScreen>
 </PreferenceScreen>

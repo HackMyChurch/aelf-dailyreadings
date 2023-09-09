@@ -208,11 +208,6 @@ public class BibleController {
             return cursor;
         }
 
-        // If there is only one token, the slow version would return exactly the same (non) results
-        if (tokens.size() <= 1) {
-            return cursor;
-        }
-
         // Fallback on slow path (Variants with each token omitted once)
         return searchSlow(search, tokens, sort);
     }
