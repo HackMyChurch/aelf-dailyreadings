@@ -98,7 +98,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             if (e.getCause() instanceof InterruptedException) {
                 throw (InterruptedException) e.getCause();
             }
-            Log.e(TAG, "I/O error while syncing");
+            Log.e(TAG, "I/O error while loading "+what.urlName()+"/"+when.toIsoString()+": "+e.getMessage(), e);
             syncResult.stats.numIoExceptions++;
         }
     }

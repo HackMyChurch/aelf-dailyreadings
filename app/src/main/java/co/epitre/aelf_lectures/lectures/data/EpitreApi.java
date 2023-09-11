@@ -118,17 +118,17 @@ public final class EpitreApi {
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
         path = String.format(Locale.US, path, version, officeName, date, region);
 
-        // Issue request
-        Response response = InternalGet(path);
-
-        // Grab response
         BufferedSource source = null;
         Office office;
         try {
+            // Issue request
+            Response response = InternalGet(path);
+
+            // Grab response
             source = Objects.requireNonNull(response.body()).source();
             office = officeJsonAdapter.fromJson(source);
         } catch (IOException e) {
-            Log.w(TAG, "Failed to load lectures from network");
+            Log.w(TAG, "Failed to load lectures from network: " + e.getMessage());
             throw e;
         } catch (Exception e) {
             throw new IOException(e);
