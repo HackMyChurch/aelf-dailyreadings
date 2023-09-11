@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdk 34
@@ -8,8 +9,8 @@ android {
         minSdkVersion 25
         targetSdkVersion 34
         compileOptions {
-            sourceCompatibility JavaVersion.VERSION_1_8
-            targetCompatibility JavaVersion.VERSION_1_8
+            sourceCompatibility JavaVersion.VERSION_18
+            targetCompatibility JavaVersion.VERSION_18
         }
     }
     buildTypes {
@@ -35,6 +36,10 @@ android {
     namespace 'co.epitre.aelf_lectures'
 }
 
+kotlin {
+    jvmToolchain(18)
+}
+
 dependencies {
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -50,6 +55,9 @@ dependencies {
 
     // Foundation
     implementation 'org.greenrobot:eventbus:3.1.1'
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     // Sqlite
     implementation project(path: ':sqlite3')
