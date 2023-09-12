@@ -45,17 +45,9 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class LecturesActivity extends BaseActivity implements
-        NavigationView.OnNavigationItemSelectedListener,
-        DrawerLayout.DrawerListener {
+        NavigationView.OnNavigationItemSelectedListener {
 
     public static final String TAG = "AELFLecturesActivity";
-
-    /**
-     * Full screen mode
-     */
-    private boolean isFullScreen = true;
-    private boolean isMultiWindow = false;
-    private View statusBarBackgroundView = null;
 
     /**
      * Global managers / resources
@@ -209,7 +201,6 @@ public class LecturesActivity extends BaseActivity implements
         drawerToggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.drawer_open, R.string.drawer_close);
         drawerToggle.syncState();
         drawerLayout.addDrawerListener(drawerToggle);
-        drawerLayout.addDrawerListener(this);
 
         // Open drawer on toolbar title click for easier migration / discovery
         toolbar.setOnClickListener(new View.OnClickListener() {
@@ -252,9 +243,6 @@ public class LecturesActivity extends BaseActivity implements
                 SyncAdapter.triggerSync(this);
             }
         }
-
-        // Init display state
-        isMultiWindow = isInMultiWindowMode();
 
         // Route the application
         if (savedInstanceState != null) {
@@ -341,15 +329,7 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     public void prepare_fullscreen() {
-        // This code is a plate of spaghetti but fullscreen is such a mess that I'm not even sure it's
-        // possible to make it clean...
         Window window = getWindow();
-
-        // Fullscreen does not make sense when in multi-window mode
-        boolean doFullScreen = isFullScreen && !isMultiWindow;
-
-        // Some users wants complete full screen, no status bar at all. This is NOT compatible with multiwindow mode / non focused
-        boolean hideStatusBar = settings.getBoolean(SettingsActivity.KEY_PREF_DISP_FULLSCREEN, false) && !isMultiWindow;
 
         // Detect orientation
         Display getOrient = getWindowManager().getDefaultDisplay();
@@ -364,41 +344,16 @@ public class LecturesActivity extends BaseActivity implements
 
         // Build UI options
         int uiOptions = 0;
+        uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-        // When the user wants fullscreen, always hide the status bar, even after a "tap"
-        if (hideStatusBar) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
-
-        // On Android versions supporting translucent but not colored status bar, manage "color" visibility
-        if (statusBarBackgroundView != null) {
-            statusBarBackgroundView.setAlpha(hideStatusBar?0f:1f);
-        }
-
-        if (doFullScreen) {
-            uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
-
-            // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-            if (has_bottom_navigation_bar && hideStatusBar) {
-                uiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            }
-            uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        }
-
-        // Translucent bar, *ONLY* in portrait mode (broken in landscape)
-        if (has_bottom_navigation_bar && !isMultiWindow) {
+        if (has_bottom_navigation_bar && !isInMultiWindowMode()) {
+            // Portrait mode: enable translucent navigation bar and compensate height
             window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-        } else  {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-        }
-
-        // Compensate status bar height in full screen, with visible toolbar, on portrait mode
-        if (!isMultiWindow && !hideStatusBar && (has_bottom_navigation_bar)) {
             toolbar.setPadding(0, get_status_bar_height(), 0, 0);
-        } else {
-            // When switching between modes, reset height
+        } else  {
+            // FIXME: looks like we have always the same padding
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
             toolbar.setPadding(0, 0, 0, 0);
         }
 
@@ -407,33 +362,10 @@ public class LecturesActivity extends BaseActivity implements
         decorView.setSystemUiVisibility(uiOptions);
     }
 
-    private void enterFullscreen() {
-        isFullScreen = true;
-        prepare_fullscreen();
-    }
-
-    private void exitFullscreen() {
-        isFullScreen = false;
-        prepare_fullscreen();
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        // manage application's intrusiveness for different Android versions
-        super.onWindowFocusChanged(hasFocus);
-
-        // If we are gaining the focus, go fullscreen
-        if (hasFocus) {
-            isFullScreen = true;
-            prepare_fullscreen();
-        }
-    }
-
     @Override
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
         // Force fullscreen to false and refresh screen
         super.onMultiWindowModeChanged(isInMultiWindowMode);
-        isMultiWindow = isInMultiWindowMode;
         prepare_fullscreen();
     }
 
@@ -632,26 +564,6 @@ public class LecturesActivity extends BaseActivity implements
         // Update screen
         prepare_fullscreen();
     }
-
-    /*
-     * Drawer open / close listener
-     */
-
-    @Override
-    public void onDrawerOpened(@NonNull View drawerView) {
-        exitFullscreen();
-    }
-
-    @Override
-    public void onDrawerClosed(@NonNull View drawerView) {
-        enterFullscreen();
-    }
-
-    @Override
-    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
-
-    @Override
-    public void onDrawerStateChanged(int newState) {}
 
     //
     // Last pause helpers (restart if paused for too long)

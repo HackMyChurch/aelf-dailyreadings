@@ -18,12 +18,6 @@
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/pref_section_disp_title">
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="pref_disp_fullscreen"
-            android:summaryOff="@string/pref_disp_fullscreen_off"
-            android:summaryOn="@string/pref_disp_fullscreen_on"
-            android:title="@string/pref_disp_fullscreen_title" />
         <ListPreference
             android:title="@string/pref_disp_night_mode_v2_title"
             android:dialogTitle="@string/pref_disp_night_mode_v2_title"
