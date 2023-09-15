@@ -20,6 +20,7 @@ import java.io.IOException;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.lectures.data.AelfCacheHelper;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
 public class MainPrefFragment extends BasePrefFragment {
@@ -105,7 +106,7 @@ public class MainPrefFragment extends BasePrefFragment {
                 }
             }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
-            long dbSize = AelfCacheHelper.getDatabaseSize(context);
+            long dbSize = LecturesController.getInstance(context).getDatabaseSize();
             Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
             String summary = "Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize)+".";
             if (dropCachePref != null) {
@@ -201,7 +202,7 @@ public class MainPrefFragment extends BasePrefFragment {
 
                     // Drop the database
                     try {
-                        AelfCacheHelper.dropDatabase(context);
+                        LecturesController.getInstance(context).dropDatabase();
                     } catch (Exception e) {}
 
                     // Refresh the size

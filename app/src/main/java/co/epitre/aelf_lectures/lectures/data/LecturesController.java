@@ -214,4 +214,12 @@ public final class LecturesController {
             Log.e(TAG, "Failed to truncate lecture from cache", e);
         }
     }
+
+    public long getDatabaseSize() {
+        return cache.getDatabaseSize();
+    }
+
+    public void dropDatabase() {
+        cache.dropDatabase();
+    }
 }
