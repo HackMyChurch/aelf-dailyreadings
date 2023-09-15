@@ -131,20 +131,17 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
         // insert into the database
         final String sql = String.format(DB_TABLE_SET, what.toString());
-        retry(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                SQLiteStatement stmt;
-                stmt = getWritableDatabase().compileStatement(sql);
-                stmt.bindString(1, key);
-                stmt.bindBlob(2, blob);
-                stmt.bindString(3, create_date);
-                stmt.bindLong(4, create_version);
+        retry(() -> {
+            SQLiteStatement stmt;
+            stmt = getWritableDatabase().compileStatement(sql);
+            stmt.bindString(1, key);
+            stmt.bindBlob(2, blob);
+            stmt.bindString(3, create_date);
+            stmt.bindLong(4, create_version);
 
-                stmt.execute();
+            stmt.execute();
 
-                return null;
-            }
+            return null;
         });
     }
 
@@ -153,13 +150,10 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         final String key = computeKey(when);
         final String table_name = what.toString();
 
-        retry(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                SQLiteDatabase db = getWritableDatabase();
-                db.delete(table_name, "`date` < ?", new String[] {key});
-                return null;
-            }
+        retry(() -> {
+            SQLiteDatabase db = getWritableDatabase();
+            db.delete(table_name, "`date` < ?", new String[] {key});
+            return null;
         });
     }
 
@@ -173,38 +167,35 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
-        return (Office)retry(new Callable() {
-            @Override
-            public Object call() throws Exception {
-                SQLiteDatabase db = getReadableDatabase();
-                Cursor cur = db.query(
-                        table_name,                                                // FROM
-                        new String[]{"lectures", "create_date", "create_version"}, // SELECT
-                        "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
-                        new String[]{key, min_create_date, min_create_version},    // params
-                        null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
-                );
+        return (Office)retry(() -> {
+            SQLiteDatabase db = getReadableDatabase();
+            Cursor cur = db.query(
+                    table_name,                                                // FROM
+                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
+                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
+                    new String[]{key, min_create_date, min_create_version},    // params
+                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
+            );
 
-                // If there is no result --> exit
-                if(cur == null || cur.getCount() == 0) {
-                    return null;
-                }
+            // If there is no result --> exit
+            if(cur == null || cur.getCount() == 0) {
+                return null;
+            }
 
-                cur.moveToFirst();
-                byte[] blob = cur.getBlob(0);
+            cur.moveToFirst();
+            byte[] blob = cur.getBlob(0);
 
-                Log.i(TAG, "Loaded lecture from cache create_date="+cur.getString(1)+" create_version="+cur.getLong(2));
+            Log.i(TAG, "Loaded lecture from cache create_date="+cur.getString(1)+" create_version="+cur.getLong(2));
 
-                try {
-                    ByteArrayInputStream bis = new ByteArrayInputStream(blob);
-                    ObjectInputStream ois = new ObjectInputStream(bis);
+            try {
+                ByteArrayInputStream bis = new ByteArrayInputStream(blob);
+                ObjectInputStream ois = new ObjectInputStream(bis);
 
-                    return ois.readObject();
-                } catch (ClassNotFoundException | IOException e) {
-                    throw e;
-                } finally {
-                    cur.close();
-                }
+                return ois.readObject();
+            } catch (ClassNotFoundException | IOException e) {
+                throw e;
+            } finally {
+                cur.close();
             }
         });
     }
@@ -239,41 +230,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if(oldVersion <= 1) {
-            Log.i(TAG, "Upgrading DB from version 1");
-            createCache(db, LecturesController.WHAT.INFORMATIONS);
-        }
-
-        if(oldVersion <= 2) {
-            // Add create_date + create_version for finer grained invalidation
-            Log.i(TAG, "Upgrading DB from version 2");
-            db.beginTransaction();
-            try {
-                for (LecturesController.WHAT what: LecturesController.WHAT.values()) {
-                    db.execSQL("ALTER TABLE `" + what + "` ADD COLUMN create_date TEXT");
-                    db.execSQL("ALTER TABLE `" + what + "` ADD COLUMN create_version INTEGER;");
-                    db.execSQL("UPDATE `" + what + "` SET create_date = '0000-00-00', create_version = 0;");
-                }
-                db.setTransactionSuccessful();
-            } catch (Exception e) {
-                throw e;
-            } finally {
-                db.endTransaction();
-            }
-        }
-
-        if(oldVersion <= 3) {
-            Log.i(TAG, "Upgrading DB from version 3");
-            db.beginTransaction();
-            try {
-                db.execSQL("ALTER TABLE `lectures_metas` RENAME TO `"+LecturesController.WHAT.INFORMATIONS+"`");
-                db.setTransactionSuccessful();
-            } catch (Exception e) {
-                throw e;
-            } finally {
-                db.endTransaction();
-            }
-        }
+        this.dropDatabase(); // This is a cache, we can re-build it
     }
 
 }
