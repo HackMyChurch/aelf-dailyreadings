@@ -1,32 +1,21 @@
-# view res/layout/activity_lectures.xml #generated:13
--keep class android.support.v4.view.PagerTabStrip { <init>(...); }
+-keep class org.sqlite.** { *; }
+-keep class org.sqlite.database.** { *; }
 
-# view res/layout/activity_lectures.xml #generated:1
--keep class android.support.v4.view.ViewPager { <init>(...); }
+# Attempt to keep the tab strip
+-keep class com.google.android.material.tabs.TabLayout { *; }
+-keep class androidx.viewpager.** { *; }
+
+# Keep the classes for reflection
+-keep class co.epitre.aelf_lectures.lectures.data.** { *; }
 
 # view AndroidManifest.xml #generated:26
 -keep class co.epitre.aelf_lectures.LecturesActivity { <init>(...); }
-
-# view AndroidManifest.xml #generated:71
--keep class co.epitre.aelf_lectures.accounts.GenericAccountService { <init>(...); }
 
 # view AndroidManifest.xml #generated:44
 -keep class co.epitre.aelf_lectures.sync.StubProvider { <init>(...); }
 
 # view AndroidManifest.xml #generated:52
 -keep class co.epitre.aelf_lectures.sync.SyncService { <init>(...); }
-
-# Fix bug on Samsung, Wiko (and other) devices running Android 4.2
-# See also: https://code.google.com/p/android/issues/detail?id=78377
--keepattributes **
--keep class !android.support.v7.view.menu.**,!android.support.design.internal.NavigationMenu,!android.support.design.internal.NavigationMenuPresenter,!android.support.design.internal.NavigationSubMenu,** {*;}
-
-# Fix Sentry support https://github.com/getsentry/raven-java/issues/373 // https://github.com/square/okio
--dontwarn okio.**
--dontwarn javax.annotation.**
--dontwarn javax.naming.**
--dontwarn javax.servlet.**
--dontwarn org.slf4j.**
 
 # Fix okhttp (see https://github.com/square/okhttp/blob/master/okhttp/src/main/resources/META-INF/proguard/okhttp3.pro)
 -dontwarn javax.annotation.**
