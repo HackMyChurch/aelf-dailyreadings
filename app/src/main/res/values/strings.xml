@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.7.5">
+    <!ENTITY app_version "2.8.0">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -51,11 +51,16 @@
     <string name="dialog_whats_new_title">Nouveautés</string>
     <string name="dialog_whats_new_content">
         Merci d\'avoir mis à jour votre application \"&app_name;\" !
-
-        \n\nSi le "zoom à 2 doigts" n\'est pas idéal pour vous, bonne nouvelle: Il est maintenant
-        possible de le désactiver depuis les paramètres.
-
-        \n\nEt toujours la parole de Dieu, rien que la parole de Dieu. Gratuitement, car nous avons
+        \n
+        \nDe petites améliorations discrètes, mais qui font toute la différence
+        sont au programme:
+        \n
+        \n• Il est maintenant possible de désactiver le "zoom à 2 doigts"
+        \n• L\'icône de l\'application s\'intègre maintenant en douceur dans les thèmes Android 13
+        \n• Le mode "plein écran", qui n\'est plus nécessaire, a été retiré
+        \n• Le code de l\'application a été dépoussiéré et mis à jour, fidèlement
+        \n
+        \nEt toujours la parole de Dieu, rien que la parole de Dieu. Gratuitement, car nous avons
         reçu gratuitement. Sans espionner, car c\'est dans le secret que l\'on prie.
     </string>
 
