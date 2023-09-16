@@ -122,7 +122,7 @@
             android:title="@string/pref_contact_mailing_title" >
             <intent
                 android:action="android.intent.action.VIEW"
-                android:data="http://www.aelf.org/mailing/create" />
+                android:data="https://www.aelf.org/abonne/create" />
         </Preference>
         <Preference
             android:key="contact_dev"
