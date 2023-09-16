@@ -1,12 +1,13 @@
 -keep class org.sqlite.** { *; }
 -keep class org.sqlite.database.** { *; }
 
-# Attempt to keep the tab strip
+# Keep the tab strip
 -keep class com.google.android.material.tabs.TabLayout { *; }
 -keep class androidx.viewpager.** { *; }
 
 # Keep the classes for reflection
 -keep class co.epitre.aelf_lectures.lectures.data.** { *; }
+-keep class co.epitre.aelf_lectures.settings.** { *; }
 
 # view AndroidManifest.xml #generated:26
 -keep class co.epitre.aelf_lectures.LecturesActivity { <init>(...); }
