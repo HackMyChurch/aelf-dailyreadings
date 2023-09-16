@@ -109,7 +109,7 @@ public class BibleSearchFragment extends BibleFragment implements
             if (args != null) {
                 mQuery = args.getString(BIBLE_SEARCH_QUERY);
                 try {
-                    mSort = BibleController.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT));
+                    mSort = BibleController.Sort.valueOf(args.getString(BIBLE_SEARCH_SORT, ""));
                 } catch (IllegalArgumentException e) {
                 }
             }
