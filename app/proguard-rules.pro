@@ -17,11 +17,10 @@
 # view AndroidManifest.xml #generated:52
 -keep class co.epitre.aelf_lectures.sync.SyncService { <init>(...); }
 
-# Fix okhttp (see https://github.com/square/okhttp/blob/master/okhttp/src/main/resources/META-INF/proguard/okhttp3.pro)
--dontwarn javax.annotation.**
--keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
--dontwarn org.codehaus.mojo.animal_sniffer.*
--dontwarn okhttp3.internal.platform.ConscryptPlatform
+# Fix okhttp (see https://github.com/square/okhttp/issues/6258)
+-dontwarn org.bouncycastle.jsse.**
+-dontwarn org.conscrypt.**
+-dontwarn org.openjsse.**
 
 # EventBus support http://greenrobot.org/eventbus/documentation/proguard
 -keepattributes *Annotation*
