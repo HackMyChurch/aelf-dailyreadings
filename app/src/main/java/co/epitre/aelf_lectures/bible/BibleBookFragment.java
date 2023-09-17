@@ -3,6 +3,7 @@ package co.epitre.aelf_lectures.bible;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -29,6 +30,8 @@ import co.epitre.aelf_lectures.bible.data.BibleBookList;
 import co.epitre.aelf_lectures.bible.data.BiblePart;
 
 public class BibleBookFragment extends BibleFragment {
+    private final static String TAG = "BibleBookFragment";
+
     /**
      * Internal
      */
@@ -92,8 +95,8 @@ public class BibleBookFragment extends BibleFragment {
 
             // Not found
             if (bibleBookEntry == null) {
-                biblePartId = 0;
-                bibleBookId = 0;
+                Log.e(TAG, "Failed to route book URI "+uri);
+                return null;
             }
         }
 
@@ -161,15 +164,17 @@ public class BibleBookFragment extends BibleFragment {
         int biblePartId = 0;
         int bibleBookId = 0;
         int bibleChapterId = -1;
+        String query = null;
+        String reference = null;
 
         if (args != null) {
-            biblePartId = getArguments().getInt(BIBLE_PART_ID, 0);
-            bibleBookId = getArguments().getInt(BIBLE_BOOK_ID, 0);
-            bibleChapterId = getArguments().getInt(BIBLE_CHAPTER_ID, -1);
+            biblePartId = args.getInt(BIBLE_PART_ID, 0);
+            bibleBookId = args.getInt(BIBLE_BOOK_ID, 0);
+            bibleChapterId = args.getInt(BIBLE_CHAPTER_ID, -1);
+            query = args.getString(BIBLE_SEARCH_QUERY);
+            reference = args.getString(BIBLE_REFERENCE);
         }
 
-        String query = getArguments().getString(BIBLE_SEARCH_QUERY);
-        String reference = getArguments().getString(BIBLE_REFERENCE);
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
         mBibleBookEntry = biblePart.getBibleBookEntries().get(bibleBookId);
 

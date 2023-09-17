@@ -141,6 +141,11 @@ public class SectionBibleFragment extends SectionFragmentBase {
             }
         }
 
+        // Handle errors when parsing the URL
+        if (newBibleFragment == null) {
+            // Fallback on the menu fragment (instead of crashing miserably)
+            newBibleFragment = BibleMenuFragment.newInstance(uri);
+        }
 
         // Start selected fragment
         setFragment(newBibleFragment);
