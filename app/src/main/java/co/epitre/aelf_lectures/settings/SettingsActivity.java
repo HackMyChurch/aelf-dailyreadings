@@ -1,6 +1,10 @@
 package co.epitre.aelf_lectures.settings;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.BaseActivity;
@@ -44,5 +48,16 @@ public class SettingsActivity extends BaseActivity {
                 .beginTransaction()
                 .replace(R.id.preference_container, new MainPrefFragment())
                 .commit();
+    }
+
+    // Intercept crashes when opening intents from settings
+    @Override
+    public void startActivity(Intent intent, Bundle options) {
+        try {
+            super.startActivity(intent, options);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Failed to launch intent "+intent.toString()+": "+e);
+            Toast.makeText(this, "Impossible de lancer l'action demandée", Toast.LENGTH_SHORT).show();
+        }
     }
 }
