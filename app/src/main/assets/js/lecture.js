@@ -2,6 +2,11 @@
  * Helpers
  */
 
+// Extract reference-ish from a larger string
+// This allows surviving references like "Stabat Mater. Jn 19, 25-27"
+const reference_extractor = /^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$/;
+
+// Upper case the first letter
 String.prototype.capitalize = function() {
   return this.charAt(0).toUpperCase() + this.slice(1)
 }
@@ -13,7 +18,18 @@ var references_elements = document.querySelectorAll('small i');
 for (var i = 0; i < references_elements.length; i++) {
     // Extract reference
     var references_element = references_elements[i];
-    var reference_text = references_element.textContent.slice(1);
+    var reference_full_string = references_element.textContent.slice(1);
+    var reference_parts = reference_full_string.match(reference_extractor);
+    if (!reference_parts) {
+        continue;
+    }
+
+    // Extract reference components
+    var reference_prefix = reference_parts[1];
+    var reference_text = reference_parts[2];
+    var reference_suffix = reference_parts[3];
+
+    // Prepare link
     var reference = reference_text;
 
     // Extract "Cantiques" references
@@ -48,5 +64,5 @@ for (var i = 0; i < references_elements.length; i++) {
     var link = "https://www.aelf.org/bible/"+book_number+book_name.capitalize()+"/"+chapter+"?reference="+verses;
 
     // Inject the link
-    references_element.innerHTML = '— <a href="'+link+'">'+reference_text+'</a>';
+    references_element.innerHTML = '— <a href="'+link+'">'+reference_prefix+reference_text+reference_suffix+'</a>';
 }
