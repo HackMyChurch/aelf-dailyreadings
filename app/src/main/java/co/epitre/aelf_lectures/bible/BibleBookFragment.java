@@ -211,25 +211,27 @@ public class BibleBookFragment extends BibleFragment {
             return null;
         }
 
-        Bundle args = getArguments();
-
-        String separator = "?";
-
+        // Build base route
         int position = mViewPager.getCurrentItem();
         String route = "/bible"+mBibleChapterPagerAdapter.getRoute(position);
 
-        if (args != null && position == args.getInt(BIBLE_CHAPTER_ID, -1)) {
-            route += separator+"query=" + args.getString(BIBLE_SEARCH_QUERY);
+        // Inject specific parameters, if any
+        Bundle args = getArguments();
+        if (args == null) {
+            return route;
+        }
+
+        String query = args.getString(BIBLE_SEARCH_QUERY);
+        String reference = args.getString(BIBLE_REFERENCE);
+        String separator = "?";
+
+        if (query != null ) {
+            route += separator + "query=" + query;
             separator = "&";
         }
 
-        String reference = null;
-        if (args != null) {
-            reference = args.getString(BIBLE_SEARCH_QUERY);
-        }
-
-        if (args != null && reference != null) {
-            route += separator+"reference=" + reference;
+        if (reference != null ) {
+            route += separator + "reference=" + reference;
         }
 
         return route;
