@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.BuildConfig;
 
 
 public abstract class ReadingFragment extends Fragment {
@@ -55,6 +56,11 @@ public abstract class ReadingFragment extends Fragment {
         mWebSettings.setBuiltInZoomControls(false);
         mWebSettings.setJavaScriptEnabled(true);
         mWebSettings.setDomStorageEnabled(true);
+
+        // Enable debug
+        if (BuildConfig.DEBUG) {
+            mWebView.setWebContentsDebuggingEnabled(true);
+        }
 
         // Install theme and styling hooks
         mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
