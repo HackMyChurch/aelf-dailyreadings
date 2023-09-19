@@ -63,7 +63,7 @@ dependencies {
     implementation project(path: ':sqlite3')
 }
 
-task downloadMarkJs(type: DownloadFile) {
+tasks.register('downloadMarkJs', DownloadFile) {
     sourceUrl = 'https://raw.githubusercontent.com/julmot/mark.js/8.11.1/dist/mark.min.js'
     target = new File('./src/main/assets/js/mark.8.11.1.min.js')
 }
