@@ -219,7 +219,7 @@ public class LecturesActivity extends BaseActivity implements
             @Override
             @NonNull
             public WindowInsets onApplyWindowInsets(@NonNull View view, @NonNull WindowInsets windowInsets) {
-                View navigationMenuView = findViewById(R.id.design_navigation_view);
+                View navigationMenuView = findViewById(com.google.android.material.R.id.design_navigation_view);
                 navigationMenuView.setPaddingRelative(0, 0, 0, windowInsets.getSystemWindowInsetBottom());
                 return windowInsets.consumeSystemWindowInsets();
             }
