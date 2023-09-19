@@ -451,16 +451,18 @@ public class LecturesActivity extends BaseActivity implements
             return true;
         }
 
-        switch (item.getItemId()) {
-            case R.id.action_about:
-                DialogsKt.displayAboutDialog(this);
-                return true;
-            case R.id.action_sync_settings:
-                return onSyncPref();
-            case R.id.action_sync_do:
-                return onSyncDo();
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_about) {
+            DialogsKt.displayAboutDialog(this);
+            return true;
+        } else if (itemId == R.id.action_sync_settings) {
+            return onSyncPref();
+        } else if (itemId == R.id.action_sync_do) {
+            return onSyncDo();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

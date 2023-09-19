@@ -381,15 +381,17 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_refresh:
-                return onRefresh("menu");
-            case R.id.action_calendar:
-                return onCalendar();
-            case R.id.action_share:
-                return onShare();
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_refresh) {
+            return onRefresh("menu");
+        } else if (itemId == R.id.action_calendar) {
+            return onCalendar();
+        } else if (itemId == R.id.action_share) {
+            return onShare();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private void updateMenuNetworkVisibility() {

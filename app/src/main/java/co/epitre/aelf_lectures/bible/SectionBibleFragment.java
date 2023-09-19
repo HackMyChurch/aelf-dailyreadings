@@ -196,11 +196,13 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_share:
-                return onShare();
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.action_share) {
+            return onShare();
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private BibleFragment getCurrentBibleFragment() {

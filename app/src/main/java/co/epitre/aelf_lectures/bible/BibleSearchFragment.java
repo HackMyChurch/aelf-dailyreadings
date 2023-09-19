@@ -370,17 +370,16 @@ public class BibleSearchFragment extends BibleFragment implements
 
     @Override
     public void onClick(View view) {
-        switch(view.getId()) {
-            case R.id.radio_sort_bible:
-                if (((RadioButton)view).isChecked()){
-                    setSort(BibleController.Sort.Bible);
-                }
-                break;
-            case R.id.radio_sort_relevance:
-                if (((RadioButton)view).isChecked()){
-                    setSort(BibleController.Sort.Relevance);
-                }
-                break;
+        int viewId = view.getId();
+
+        if (viewId == R.id.radio_sort_bible) {
+            if (((RadioButton)view).isChecked()){
+                setSort(BibleController.Sort.Bible);
+            }
+        } else if (viewId == R.id.radio_sort_relevance) {
+            if (((RadioButton)view).isChecked()){
+                setSort(BibleController.Sort.Relevance);
+            }
         }
     }
 }
