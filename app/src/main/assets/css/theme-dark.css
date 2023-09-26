@@ -12,6 +12,10 @@ font[color='#000000'] {
     color: #f8f7fa;
 }
 
+::selection {
+   background: rgba(239,233,222,.3);
+}
+
 /* Navigation button */
 
 .app-office-navigation a {
