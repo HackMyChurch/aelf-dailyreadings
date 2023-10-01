@@ -32,6 +32,7 @@ public abstract class WebViewPoolBase {
         webSettings.setBuiltInZoomControls(false);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
+        webSettings.setDisabledActionModeMenuItems(WebSettings.MENU_ITEM_WEB_SEARCH);
 
         return webView;
     }

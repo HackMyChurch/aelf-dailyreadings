@@ -34,7 +34,6 @@ public abstract class ReadingFragment extends Fragment {
 
     private LecturesActivity lecturesActivity;
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get context
