@@ -1,11 +1,9 @@
 package co.epitre.aelf_lectures.components;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -24,7 +22,7 @@ public abstract class ReadingFragment extends Fragment {
      * Views
      */
     private View mWebviewPlaceHolder;
-    private WebView mWebView;
+    private AelfWebView mWebView;
 
     /**
      * Internals

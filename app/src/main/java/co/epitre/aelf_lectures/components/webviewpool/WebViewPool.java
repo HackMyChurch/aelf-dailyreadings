@@ -6,6 +6,8 @@ import android.webkit.WebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
+import co.epitre.aelf_lectures.components.AelfWebView;
+
 /**
  * Instanciating a WebView is expensive. This is also something we do on every page slide. This
  * class aims at pooling webviews resources so that we do not instanciate them over and over again.
@@ -17,7 +19,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class WebViewPool extends WebViewPoolBase {
     private static final String TAG = "WebViewPool";
 
-    private final ArrayBlockingQueue<WebView> webViews;
+    private final ArrayBlockingQueue<AelfWebView> webViews;
     private final Context appContext;
 
     //
@@ -42,9 +44,9 @@ public class WebViewPool extends WebViewPoolBase {
     // Interface
     //
 
-    public WebView borrowWebView(Context ctx) {
+    public AelfWebView borrowWebView(Context ctx) {
         // Get available webview or allocate if needed
-        WebView webView = webViews.poll();
+        AelfWebView webView = webViews.poll();
         if (webView == null) {
             webView = createWebView(ctx);
         }
@@ -57,7 +59,7 @@ public class WebViewPool extends WebViewPoolBase {
         return webView;
     }
 
-    public void releaseWebView(WebView webView) {
+    public void releaseWebView(AelfWebView webView) {
         // Swap the context
         MutableContextWrapper mutableContextWrapper = (MutableContextWrapper) webView.getContext();
         mutableContextWrapper.setBaseContext(appContext);
