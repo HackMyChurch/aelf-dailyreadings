@@ -1,11 +1,21 @@
 package co.epitre.aelf_lectures.bible;
 
 import android.os.Bundle;
+import android.view.ActionMode;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
+import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.components.AelfWebView;
 import co.epitre.aelf_lectures.components.ReadingFragment;
 
 
-public class BibleChapterFragment extends ReadingFragment {
+public class BibleChapterFragment extends ReadingFragment implements AelfWebView.ContextMenuListener {
     private static final String TAG = "BibleChapterFragment";
 
     /**
@@ -16,6 +26,17 @@ public class BibleChapterFragment extends ReadingFragment {
     public static final String ARG_REFERENCE = "reference";
     public static final String ARG_BOOK_REF = "book_ref";
     public static final String ARG_CHAPTER = "chapter";
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Create the view
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+
+        // Register context menu listener
+        mWebView.registerContextMenuListener(this);
+
+        return view;
+    }
 
     @Override
     protected void loadText() {
@@ -69,5 +90,22 @@ public class BibleChapterFragment extends ReadingFragment {
 
         // Load content
         this.setWebViewContent(htmlString.toString(), UrlString.toString());
+    }
+
+    @Override
+    public boolean onContextMenuCreate(ActionMode mode, Menu menu) {
+        MenuInflater inflater = mode.getMenuInflater();
+        inflater.inflate(R.menu.context_bible, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onContextMenuItemClicked(ActionMode mode, MenuItem item) {
+        if (item.getItemId() == R.id.action_bookmark) {
+            Toast.makeText(getContext(), "Marque page enregistré!", Toast.LENGTH_SHORT).show();
+            mode.finish();
+            return true;
+        }
+        return false;
     }
 }
