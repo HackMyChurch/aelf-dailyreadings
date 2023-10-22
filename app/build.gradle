@@ -9,8 +9,8 @@ android {
         minSdkVersion 25
         targetSdkVersion 34
         compileOptions {
-            sourceCompatibility JavaVersion.VERSION_18
-            targetCompatibility JavaVersion.VERSION_18
+            sourceCompatibility JavaVersion.VERSION_17
+            targetCompatibility JavaVersion.VERSION_17
         }
     }
     buildTypes {
@@ -34,10 +34,6 @@ android {
         checkReleaseBuilds false
     }
     namespace 'co.epitre.aelf_lectures'
-}
-
-kotlin {
-    jvmToolchain(18)
 }
 
 dependencies {
