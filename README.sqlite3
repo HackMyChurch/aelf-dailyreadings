@@ -16,7 +16,7 @@ Vendor
 ------
 
 ```
-# Disable the undeeded extensions
+# Disable the unneeded extensions
 sed -iE '/DSQLITE_ENABLE_(RTREE|JSON1|FTS3)/d' SQLite_Android_Bindings/sqlite3/src/main/jni/sqlite/Android.mk
 
 # Copy files
@@ -27,4 +27,11 @@ rm -rf sqlite3/src/androidTest
 # Clean temporary files
 rm -rf sqlite-android-dfed6feb2b1a71eb.zip
 rm -rf SQLite_Android_Bindings
+
+# Remove unneeded resources
+rm sqlite3/src/test/java/org/sqlite/database/ExampleUnitTest.java
 ```
+
+Other steps:
+* Add `namespace 'org.sqlite.database'` to `sqlite3/build.gradle`
+* move from `jcenter()` to `mavenCentral()`
