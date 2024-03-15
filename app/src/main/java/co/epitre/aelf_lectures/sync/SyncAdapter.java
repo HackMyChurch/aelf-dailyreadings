@@ -154,7 +154,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // If this is not a manual sync and we are supposed to wait for a wifi network, wait for it
         boolean isManualSync = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
-        boolean wifiOnly = syncPref.getBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, true);
+        boolean wifiOnly = syncPref.getBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
 
         if (wifiOnly && !isManualSync) {
             // Wait for wifi

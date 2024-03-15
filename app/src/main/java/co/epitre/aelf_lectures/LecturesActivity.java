@@ -99,18 +99,6 @@ public class LecturesActivity extends BaseActivity implements
             editor.putInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
             SyncAdapter.triggerSync(this);
             DialogsKt.displayWhatsNewDialog(this);
-        }
-
-        // Create the "WiFi" only setting on upgrade if it does not exist. The idea is that we do not
-        // want to break existing users so that they should default to 'false', wherehas we default new
-        // users to 'true' aka 'wifi only' to save some expensive network usage, especially in Africa.
-        // as a side effect, it is expected to reduce error rates as WiFi is generally more reliable.
-        if(savedVersion > 0) {
-            // This is an *upgrade*
-            if (!settings.contains(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
-                // Do not override setting...
-                editor.putBoolean(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY, false);
-            }
 
             // Purge cache on upgrade (get new Bible index if any, ...)
             deleteCache();
