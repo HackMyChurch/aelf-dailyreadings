@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import com.google.android.material.navigation.NavigationView;
@@ -348,6 +349,15 @@ public class LecturesActivity extends BaseActivity implements
         // Apply settings
         View decorView = window.getDecorView();
         decorView.setSystemUiVisibility(uiOptions);
+    }
+
+    @Override
+    public boolean isInMultiWindowMode() {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return super.isInMultiWindowMode();
+        } else {
+            return false;
+        }
     }
 
     @Override
