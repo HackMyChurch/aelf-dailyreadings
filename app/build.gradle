@@ -47,6 +47,7 @@ dependencies {
 
     // HTTP layer
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:okhttp-tls:4.12.0'
     implementation 'com.squareup.moshi:moshi:1.15.0'
 
     // Foundation
