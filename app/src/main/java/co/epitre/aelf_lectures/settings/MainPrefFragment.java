@@ -5,10 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.Html;
+import android.text.format.Formatter;
 
 import androidx.core.content.FileProvider;
 import androidx.preference.Preference;
@@ -33,13 +35,17 @@ public class MainPrefFragment extends BasePrefFragment {
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_BATTERY);
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
 
-        // Request adding app to doze mode whitelist
+        // Request adding app to doze mode whitelist (Android >= 6.0)
         Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         assert batterySyncPref != null;
-        batterySyncPref.setOnPreferenceClickListener(preference -> {
-            requestDozeModeExemption();
-            return true;
-        });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            batterySyncPref.setOnPreferenceClickListener(preference -> {
+                requestDozeModeExemption();
+                return true;
+            });
+        } else {
+            batterySyncPref.getParent().removePreference(batterySyncPref);
+        }
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
@@ -99,16 +105,18 @@ public class MainPrefFragment extends BasePrefFragment {
             Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             if (batterySyncPref != null) {
-                if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
-                    batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
-                } else {
-                    batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
+                        batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
+                    } else {
+                        batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
+                    }
                 }
             }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {
             long dbSize = LecturesController.getInstance(context).getDatabaseSize();
             Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
-            String summary = "Taille actuelle du cache: "+android.text.format.Formatter.formatFileSize(context, dbSize)+".";
+            String summary = "Taille actuelle du cache: "+ Formatter.formatFileSize(context, dbSize)+".";
             if (dropCachePref != null) {
                 dropCachePref.setSummary(summary);
             }

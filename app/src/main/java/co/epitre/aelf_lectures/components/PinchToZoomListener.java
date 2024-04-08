@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures.components;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -80,7 +81,9 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
         // Start the scale detector
         mScaleDetector = new ScaleGestureDetector(context, new PinchListener());
-        mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
+        }
         mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
 
         // Set initial zoom
