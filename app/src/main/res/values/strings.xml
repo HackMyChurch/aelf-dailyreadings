@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.8.3">
+    <!ENTITY app_version "2.8.4">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -52,8 +52,8 @@
     <string name="dialog_whats_new_content">
         Merci d\'avoir mis à jour votre application \"&app_name;\" !
         \n
-        \nDe petites améliorations discrètes, mais qui font toute la différence
-        sont au programme:
+        \nCette mise à jour lutte contre l\'obsolescence ! L\'application est désormais compatible
+        \navec les vieux téléphones Android 5.0, 5.1, 6.0 et 7.0 abandonnés par leurs fabricants.
         \n
         \n• Il est maintenant possible de désactiver le "zoom à 2 doigts"
         \n• L\'icône de l\'application s\'intègre maintenant en douceur dans les thèmes Android 13
