@@ -32,7 +32,6 @@ import static android.content.Context.ACTIVITY_SERVICE;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
 

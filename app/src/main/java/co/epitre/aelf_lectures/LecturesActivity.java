@@ -90,14 +90,12 @@ public class LecturesActivity extends BaseActivity implements
         Resources res = getResources();
         savedVersion = settings.getInt(SettingsActivity.KEY_APP_VERSION, -1);
 
-
         // upgrade logic, primitive at the moment...
         SharedPreferences.Editor editor = settings.edit();
         if (savedVersion != currentVersion) {
             // update saved version
             editor.putInt(SettingsActivity.KEY_APP_VERSION, currentVersion);
             editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
-            editor.putInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, currentVersion); // Invalidate all readings loaded before this version
             SyncAdapter.triggerSync(this);
             DialogsKt.displayWhatsNewDialog(this);
 

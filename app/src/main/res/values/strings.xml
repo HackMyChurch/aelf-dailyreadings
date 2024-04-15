@@ -10,6 +10,9 @@
     <string name="app_version">&app_version;</string>
     <string name="app_support">&app_support;</string>
 
+    <!-- Version ID to use when querying the API. Only increment when the data format changes to avoid excessive API load -->
+    <item name="api_version" type="integer">76</item>
+
     <!-- Drawer actions -->
     <string name="drawer_open">Ouvrir la liste des offices</string>
     <string name="drawer_close">Fermer la liste des offices</string>

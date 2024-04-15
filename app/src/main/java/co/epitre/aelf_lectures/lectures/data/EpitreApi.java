@@ -174,14 +174,13 @@ public final class EpitreApi {
      * Public API
      */
 
-    public Office getOffice(String officeName, String date) throws IOException {
+    public Office getOffice(String officeName, String date, int apiVersion) throws IOException {
         // Load configuration
         String path = "/%d/office/%s/%s.json?region=%s";
-        int version = preference.getInt("version", -1);
 
         // Build URL
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
-        path = String.format(Locale.US, path, version, officeName, date, region);
+        path = String.format(Locale.US, path, apiVersion, officeName, date, region);
 
         BufferedSource source = null;
         Office office;

@@ -112,10 +112,9 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
 
 
-    synchronized void store(LecturesController.WHAT what, String when, Office office) throws IOException {
+    synchronized void store(LecturesController.WHAT what, String when, Office office, int ApiVersion) throws IOException {
         final String key  = when;
         final String create_date = computeKey(new GregorianCalendar());
-        final long create_version = preference.getInt("version", -1);
 
         // build blob
         final byte[] blob;
@@ -137,7 +136,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
             stmt.bindString(1, key);
             stmt.bindBlob(2, blob);
             stmt.bindString(3, create_date);
-            stmt.bindLong(4, create_version);
+            stmt.bindLong(4, ApiVersion);
 
             stmt.execute();
 

@@ -107,6 +107,7 @@ public final class LecturesController {
      */
     private static final String TAG = "LectureController";
     private SharedPreferences preference = null;
+    private int apiVersion;
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
     private EpitreApi api = null;
@@ -119,6 +120,7 @@ public final class LecturesController {
         api = EpitreApi.getInstance(c);
         cache = new AelfCacheHelper(c);
         preference = PreferenceManager.getDefaultSharedPreferences(c);
+        apiVersion = c.getResources().getInteger(R.integer.api_version);
     }
     public static LecturesController getInstance(Context c) {
         if (LecturesController.instance == null) {
@@ -132,7 +134,7 @@ public final class LecturesController {
     }
 
     public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
-        long minLoadVersion = allowColdCache ? -1 : preference.getInt("min_cache_version", -1);
+        long minLoadVersion = allowColdCache ? -1 : apiVersion;
 
         try {
             return cache.has(what, when, null, minLoadVersion);
@@ -148,7 +150,7 @@ public final class LecturesController {
         long minLoadVersion = -1;
 
         if (!allowColdCache) {
-            minLoadVersion = preference.getInt(SettingsActivity.KEY_APP_CACHE_MIN_VERSION, -1);
+            minLoadVersion = apiVersion;
             minLoadDate = new AelfDate(preference.getLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, 0));
         }
 
@@ -165,11 +167,11 @@ public final class LecturesController {
 
     public Office loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
-        Office office = api.getOffice(what.apiName(), when.toIsoString());
+        Office office = api.getOffice(what.apiName(), when.toIsoString(), apiVersion);
 
         // Cache lectures
         try {
-            cache.store(what, when.toIsoString(), office);
+            cache.store(what, when.toIsoString(), office, apiVersion);
         } catch (IOException e) {
             Log.e(TAG, "Failed to store lecture in cache", e);
         }
