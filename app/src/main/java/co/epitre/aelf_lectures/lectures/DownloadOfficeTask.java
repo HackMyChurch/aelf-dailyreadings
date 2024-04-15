@@ -109,7 +109,7 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
             onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
             return office;
         } catch (IOException e) {
-            Log.e(TAG, "I/O error while loading "+ww.what.urlName()+"/"+ww.when.toIsoString()+": "+e.getMessage(), e);
+            Log.e(TAG, "I/O error while loading "+ww.what.urlName()+"/"+ww.when.toIsoString()+": "+e, e);
             onLectureLoadProgress(LectureLoadProgress.LOAD_FAIL);
             return null;
         }

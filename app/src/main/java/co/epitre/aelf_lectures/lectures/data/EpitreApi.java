@@ -112,7 +112,7 @@ public final class EpitreApi {
 
             builder.sslSocketFactory(certificates.sslSocketFactory(), certificates.trustManager());
         } catch (Exception e) {
-            Log.w(TAG, "Failed to configure custom CA. Ignoring: " + e.getMessage());
+            Log.w(TAG, "Failed to configure custom CA. Ignoring: " + e);
         }
 
         // Configure client timeouts
@@ -193,7 +193,7 @@ public final class EpitreApi {
             source = Objects.requireNonNull(response.body()).source();
             office = officeJsonAdapter.fromJson(source);
         } catch (IOException e) {
-            Log.w(TAG, "Failed to load lectures from network: " + e.getMessage());
+            Log.w(TAG, "Failed to load lectures from network: " + e);
             throw e;
         } catch (Exception e) {
             throw new IOException(e);
