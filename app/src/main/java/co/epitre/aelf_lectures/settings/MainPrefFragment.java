@@ -59,7 +59,7 @@ public class MainPrefFragment extends BasePrefFragment {
         Preference dropCachePref = findPreference(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
         assert dropCachePref != null;
         dropCachePref.setOnPreferenceClickListener(preference -> {
-            dropCache();
+            dropLecturesCacheRequest();
             return true;
         });
 
@@ -120,6 +120,9 @@ public class MainPrefFragment extends BasePrefFragment {
             if (dropCachePref != null) {
                 dropCachePref.setSummary(summary);
             }
+        } else if (key.equals(SettingsActivity.KEY_PREF_REGION)) {
+            // Force a new sync from scratch
+            dropLecturesCache();
         }
 
         super.onSharedPreferenceChanged(sharedPreferences, key);
@@ -190,7 +193,7 @@ public class MainPrefFragment extends BasePrefFragment {
                 .show();
     }
 
-    private void dropCache() {
+    private void dropLecturesCacheRequest() {
         final Context context = getContext();
         if (context == null) {
             return;
@@ -205,21 +208,30 @@ public class MainPrefFragment extends BasePrefFragment {
                                 " Une nouvelle synchronisation sera automatiquement démarrée mais peut prendre du temps suivant votre connexion Internet."
                 ))
                 .setPositiveButton(android.R.string.yes, (dialog, which) -> {
-                    // Kill any running sync
-                    SyncAdapter.killPendingSyncs(context);
-
-                    // Drop the database
-                    try {
-                        LecturesController.getInstance(context).dropDatabase();
-                    } catch (Exception e) {}
-
-                    // Refresh the size
-                    onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
-
-                    // Start a new background sync
-                    SyncAdapter.triggerSync(context);
+                    dropLecturesCache();
                 })
                 .setNegativeButton(android.R.string.no, null)
                 .show();
+    }
+
+    private void dropLecturesCache() {
+        final Context context = getContext();
+        if (context == null) {
+            return;
+        }
+
+        // Kill any running sync
+        SyncAdapter.killPendingSyncs(context);
+
+        // Drop the database
+        try {
+            LecturesController.getInstance(context).dropDatabase();
+        } catch (Exception e) {}
+
+        // Refresh the size
+        onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
+
+        // Start a new background sync
+        SyncAdapter.triggerSync(context);
     }
 }

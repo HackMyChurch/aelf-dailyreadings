@@ -32,7 +32,6 @@ public class SettingsActivity extends BaseActivity {
     public static final String KEY_APP_SYNC_LAST_STOP = "app_sync_last_stop";
     public static final String KEY_APP_SYNC_LAST_ATTEMPT = "app_sync_last_attempt";
     public static final String KEY_APP_SYNC_LAST_SUCCESS = "app_sync_last_success";
-    public static final String KEY_APP_CACHE_MIN_DATE = "min_cache_date";
     public static final String KEY_APP_VERSION = "version";
     public static final String KEY_BIBLE_LAST_PAGE = "bible_last_page";
 

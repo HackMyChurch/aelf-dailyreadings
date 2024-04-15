@@ -542,11 +542,6 @@ public class LecturesActivity extends BaseActivity implements
             SyncAdapter.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_BETA)) {
             SyncAdapter.killPendingSyncs(this);
-        } else if (key.equals(SettingsActivity.KEY_PREF_REGION)) {
-            // Invalidate cache
-            SharedPreferences.Editor editor = settings.edit();
-            editor.putLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, new AelfDate().getTimeInMillis());
-            editor.apply();
         }
     }
 

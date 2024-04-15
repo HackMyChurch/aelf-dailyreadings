@@ -1,8 +1,6 @@
 package co.epitre.aelf_lectures.lectures.data;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.IOException;
@@ -10,7 +8,6 @@ import java.util.GregorianCalendar;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
  * Public data controller --> load either from cache, either from network
@@ -106,7 +103,6 @@ public final class LecturesController {
      * This class is a manager --> Singleton
      */
     private static final String TAG = "LectureController";
-    private SharedPreferences preference = null;
     private int apiVersion;
     private static volatile LecturesController instance = null;
     private AelfCacheHelper cache = null;
@@ -119,7 +115,6 @@ public final class LecturesController {
         ctx = c;
         api = EpitreApi.getInstance(c);
         cache = new AelfCacheHelper(c);
-        preference = PreferenceManager.getDefaultSharedPreferences(c);
         apiVersion = c.getResources().getInteger(R.integer.api_version);
     }
     public static LecturesController getInstance(Context c) {
@@ -137,7 +132,7 @@ public final class LecturesController {
         long minLoadVersion = allowColdCache ? -1 : apiVersion;
 
         try {
-            return cache.has(what, when, null, minLoadVersion);
+            return cache.has(what, when, minLoadVersion);
         } catch (Exception e) {
             Log.e(TAG, "Failed to check if lecture is in cache", e);
             return false;
@@ -146,16 +141,14 @@ public final class LecturesController {
 
     public Office loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
         Office office;
-        AelfDate minLoadDate = null;
         long minLoadVersion = -1;
 
         if (!allowColdCache) {
             minLoadVersion = apiVersion;
-            minLoadDate = new AelfDate(preference.getLong(SettingsActivity.KEY_APP_CACHE_MIN_DATE, 0));
         }
 
         try {
-            office = cache.load(what, when, minLoadDate, minLoadVersion);
+            office = cache.load(what, when, minLoadVersion);
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);

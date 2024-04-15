@@ -13,9 +13,7 @@ import java.util.concurrent.Callable;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.sqlite.database.sqlite.SQLiteDatabase;
@@ -36,7 +34,6 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 4;
     private static final String DB_NAME = "aelf_cache.db";
-    private SharedPreferences preference = null;
     private Context ctx;
 
     private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (" +
@@ -58,7 +55,6 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         if (dbDir != null) {
             dbDir.mkdirs();
         }
-        preference = PreferenceManager.getDefaultSharedPreferences(context);
         ctx = context;
     }
 
@@ -158,21 +154,20 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    synchronized Office load(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) throws IOException {
+    synchronized Office load(LecturesController.WHAT what, GregorianCalendar when, Long minLoadVersion) throws IOException {
         final String key  = computeKey(when);
         final String table_name = what.toString();
-        final String min_create_date = computeKey(minLoadDate);
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
-        Log.i(TAG, "Trying to load lecture from cache create_date>="+min_create_date+" create_version>="+min_create_version);
+        Log.i(TAG, "Trying to load lecture from cache create_version>="+min_create_version);
         return (Office)retry(() -> {
             SQLiteDatabase db = getReadableDatabase();
             Cursor cur = db.query(
                     table_name,                                                // FROM
                     new String[]{"lectures", "create_date", "create_version"}, // SELECT
-                    "`date`=? AND `create_date` >= ? AND create_version >= ?", // WHERE
-                    new String[]{key, min_create_date, min_create_version},    // params
+                    "`date`=? AND create_version >= ?", // WHERE
+                    new String[]{key, min_create_version},    // params
                     null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
             );
 
@@ -199,13 +194,12 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         });
     }
 
-    synchronized boolean has(LecturesController.WHAT what, GregorianCalendar when, GregorianCalendar minLoadDate, Long minLoadVersion) {
-        String min_create_date = computeKey(minLoadDate);
+    synchronized boolean has(LecturesController.WHAT what, GregorianCalendar when, Long minLoadVersion) {
         String min_create_version = String.valueOf(minLoadVersion);
 
-        Log.i(TAG, "Checking if lecture is in cache with create_date>="+min_create_date+" create_version>="+min_create_version);
+        Log.i(TAG, "Checking if lecture is in cache with create_version>="+min_create_version);
         try {
-            return load(what, when, minLoadDate, minLoadVersion) != null;
+            return load(what, when, minLoadVersion) != null;
         } catch (IOException e) {
             return false;
         }

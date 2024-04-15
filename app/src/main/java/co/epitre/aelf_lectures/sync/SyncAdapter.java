@@ -275,6 +275,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 break;
         }
         controller.truncateBefore(minConserv);
+
+        // Finish sync, ensure that next sync will get a clean preference copy
+        System.exit(0);
     }
 
     /**
@@ -342,16 +345,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             return;
         }
 
-        Account account = getSyncAccount(ctx);
-
-        // Cancel sync
-        ContentResolver.cancelSync(account, AUTHORITY);
-
         // Kill any background processes
         ActivityManager am = (ActivityManager)ctx.getSystemService(ACTIVITY_SERVICE);
         String packageName = ctx.getPackageName();
         if (packageName != null && am != null) {
             am.killBackgroundProcesses(packageName);
         }
+
+        // Cancel sync
+        Account account = getSyncAccount(ctx);
+        ContentResolver.cancelSync(account, AUTHORITY);
     }
 }
