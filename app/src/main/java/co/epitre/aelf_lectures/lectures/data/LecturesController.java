@@ -164,7 +164,7 @@ public final class LecturesController {
 
         // Cache lectures
         try {
-            cache.store(what, when.toIsoString(), office, apiVersion);
+            cache.store(what, when, office, apiVersion);
         } catch (IOException e) {
             Log.e(TAG, "Failed to store lecture in cache", e);
         }
@@ -202,13 +202,9 @@ public final class LecturesController {
     }
 
     // re-export cleanup helper
-    public void truncateBefore(GregorianCalendar when) {
-        WHAT[] whatValues = WHAT.values();
-
+    public void truncateBefore(AelfDate when) {
         try {
-            for (WHAT whatValue : whatValues) {
-                cache.truncateBefore(whatValue, when);
-            }
+            cache.truncateBefore(when);
         } catch (IOException e) {
             Log.e(TAG, "Failed to truncate lecture from cache", e);
         }

@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.DialogsKt;
-import co.epitre.aelf_lectures.lectures.data.AelfCacheHelper;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 

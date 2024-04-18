@@ -13,7 +13,6 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -22,7 +21,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.content.res.Resources;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -261,7 +259,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // ** CLEANUP **
-        GregorianCalendar minConserv = new GregorianCalendar();
+        AelfDate minConserv = new AelfDate();
         switch (pConserv) {
             case "semaine":
                 minConserv.add(Calendar.DATE, -7);

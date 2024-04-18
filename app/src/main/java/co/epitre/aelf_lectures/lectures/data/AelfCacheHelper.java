@@ -6,46 +6,40 @@ import java.io.IOException;
 import java.io.File;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.GregorianCalendar;
-import java.util.Objects;
-import java.util.concurrent.Callable;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
 import org.sqlite.database.sqlite.SQLiteDatabase;
-import org.sqlite.database.sqlite.SQLiteException;
 import org.sqlite.database.sqlite.SQLiteOpenHelper;
 import org.sqlite.database.sqlite.SQLiteStatement;
 
 /**
- * Internal cache manager (SQLite). There is one table per office and one line per day.
+ * Internal cache manager (SQLite). There is a single 'lectures' table and one line per office.
  * Each line tracks the
  * - office date
- * - office content (serialized list<LectureItem>)
+ * - office name
+ * - office content (serialized Office)
  * - when this office was loaded               --> used for server initiated invalidation
  * - which version of the application was used --> used for upgrade initiated invalidation
  */
 
 public final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
     private static final String DB_NAME = "aelf_cache.db";
     private Context ctx;
 
-    private static final String DB_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `%s` (" +
-            "date TEXT PRIMARY KEY," +
+    private static final String DB_CACHE_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `lectures` (" +
+            "date TEXT NOT NULL," +
+            "office TEXT NOT NULL,"+
             "lectures BLOB," +
             "create_date TEXT," +
-            "create_version INTEGER" +
+            "create_version INTEGER," +
+            "PRIMARY KEY (date, office)" +
             ")";
-    private static final String DB_TABLE_SET = "INSERT OR REPLACE INTO `%s` VALUES (?,?,?,?)";
-
-    @SuppressLint("SimpleDateFormat")
-    private static final SimpleDateFormat keyFormatter = new SimpleDateFormat("yyyy-MM-dd");
+    private static final String DB_CACHE_ENTRY_SET = "INSERT OR REPLACE INTO `lectures` VALUES (?,?,?,?,?)";
 
     // TODO: prepare requests
 
@@ -63,7 +57,6 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
      */
 
     public void dropDatabase() {
-        close();
         this.ctx.deleteDatabase(DB_NAME);
     }
 
@@ -71,46 +64,8 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         return this.ctx.getDatabasePath(DB_NAME).length();
     }
 
-    @SuppressLint("SimpleDateFormat")
-    private String computeKey(GregorianCalendar when) {
-        if (when == null) {
-            return "0000-00-00";
-        }
-        return keyFormatter.format(when.getTime());
-    }
-
-    // Retry code statement 3 times, recover from sqlite exceptions. Even if everything went well, close
-    // the db in hope to mitigate concurrent access issues.
-    private Object retry(Callable code) throws IOException {
-        long maxAttempts = 3;
-        while (maxAttempts-- > 0) {
-            try {
-                return code.call();
-            } catch (SQLiteException e) {
-                if (maxAttempts > 0) {
-                    // If a migration did not go well, the best we can do is drop the database and re-create
-                    // it from scratch. This is hackish but should allow more or less graceful recoveries.
-                    Log.e(TAG, "Critical database error. Droping + Re-creating", e);
-                    this.dropDatabase();
-                }
-            } catch (java.io.InvalidClassException e) {
-                // Old cache --> act as missing
-                return null;
-            } catch (Exception e) {
-                throw new IOException(e);
-            } finally {
-                close();
-            }
-        }
-
-        return null;
-    }
-
-
-
-    synchronized void store(LecturesController.WHAT what, String when, Office office, int ApiVersion) throws IOException {
-        final String key  = when;
-        final String create_date = computeKey(new GregorianCalendar());
+    synchronized void store(LecturesController.WHAT what, AelfDate when, Office office, int ApiVersion) throws IOException {
+        final String create_date = (new AelfDate()).toIsoString();
 
         // build blob
         final byte[] blob;
@@ -125,76 +80,58 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         }
 
         // insert into the database
-        final String sql = String.format(DB_TABLE_SET, what.toString());
-        retry(() -> {
-            SQLiteStatement stmt;
-            stmt = getWritableDatabase().compileStatement(sql);
-            stmt.bindString(1, key);
-            stmt.bindBlob(2, blob);
-            stmt.bindString(3, create_date);
-            stmt.bindLong(4, ApiVersion);
+        SQLiteStatement stmt;
+        stmt = getWritableDatabase().compileStatement(DB_CACHE_ENTRY_SET);
+        stmt.bindString(1, when.toIsoString());
+        stmt.bindString(2, what.toString());
+        stmt.bindBlob(3, blob);
+        stmt.bindString(4, create_date);
+        stmt.bindLong(5, ApiVersion);
 
-            stmt.execute();
-
-            return null;
-        });
+        stmt.execute();
     }
 
     // cleaner helper method
-    synchronized void truncateBefore(LecturesController.WHAT what, GregorianCalendar when) throws IOException {
-        final String key = computeKey(when);
-        final String table_name = what.toString();
-
-        retry(() -> {
-            SQLiteDatabase db = getWritableDatabase();
-            db.delete(table_name, "`date` < ?", new String[] {key});
-            return null;
-        });
+    synchronized void truncateBefore(AelfDate when) throws IOException {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete("lectures", "`date` < ?", new String[] {when.toIsoString()});
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
     @SuppressWarnings("unchecked")
-    synchronized Office load(LecturesController.WHAT what, GregorianCalendar when, Long minLoadVersion) throws IOException {
-        final String key  = computeKey(when);
-        final String table_name = what.toString();
+    synchronized Office load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
         Log.i(TAG, "Trying to load lecture from cache create_version>="+min_create_version);
-        return (Office)retry(() -> {
-            SQLiteDatabase db = getReadableDatabase();
-            Cursor cur = db.query(
-                    table_name,                                                // FROM
-                    new String[]{"lectures", "create_date", "create_version"}, // SELECT
-                    "`date`=? AND create_version >= ?", // WHERE
-                    new String[]{key, min_create_version},    // params
-                    null, null, null, "1"                                      // GROUP BY, HAVING, ORDER, LIMIT
-            );
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.query(
+                "lectures",
+                new String[]{"lectures", "create_date", "create_version"},
+                "`date`=? AND `office`=? AND create_version >= ?",
+                new String[]{when.toIsoString(), what.toString(), min_create_version},
+                null, null, null, "1"
+        );
 
-            // If there is no result --> exit
-            if(cur == null || cur.getCount() == 0) {
+        // If there is no result --> exit
+
+        try (cur) {
+            if (cur == null || cur.getCount() == 0) {
                 return null;
             }
-
             cur.moveToFirst();
             byte[] blob = cur.getBlob(0);
+            Log.i(TAG, "Loaded lecture from cache create_date=" + cur.getString(1) + " create_version=" + cur.getLong(2));
+            ByteArrayInputStream bis = new ByteArrayInputStream(blob);
+            ObjectInputStream ois = new ObjectInputStream(bis);
 
-            Log.i(TAG, "Loaded lecture from cache create_date="+cur.getString(1)+" create_version="+cur.getLong(2));
-
-            try {
-                ByteArrayInputStream bis = new ByteArrayInputStream(blob);
-                ObjectInputStream ois = new ObjectInputStream(bis);
-
-                return ois.readObject();
-            } catch (ClassNotFoundException | IOException e) {
-                throw e;
-            } finally {
-                cur.close();
-            }
-        });
+            return (Office) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException(e);
+        }
     }
 
-    synchronized boolean has(LecturesController.WHAT what, GregorianCalendar when, Long minLoadVersion) {
+    synchronized boolean has(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) {
         String min_create_version = String.valueOf(minLoadVersion);
 
         Log.i(TAG, "Checking if lecture is in cache with create_version>="+min_create_version);
@@ -208,22 +145,14 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     /**
      * Internal logic
      */
-    
-    private void createCache(SQLiteDatabase db, LecturesController.WHAT what) {
-        String sql = String.format(DB_TABLE_CREATE, what);
-        db.execSQL(sql);
-    }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        for (LecturesController.WHAT what : Objects.requireNonNull(LecturesController.WHAT.class.getEnumConstants())) {
-            createCache(db, what);
-        }
+        db.execSQL(DB_CACHE_TABLE_CREATE);
     }
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         this.dropDatabase(); // This is a cache, we can re-build it
     }
-
 }
