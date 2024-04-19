@@ -131,15 +131,30 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         }
     }
 
-    synchronized boolean has(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) {
-        String min_create_version = String.valueOf(minLoadVersion);
+    synchronized CacheEntryIndexes listCachedEntries(AelfDate since, int minLoadVersion) {
+        final String min_create_version = String.valueOf(minLoadVersion);
 
-        Log.i(TAG, "Checking if lecture is in cache with create_version>="+min_create_version);
-        try {
-            return load(what, when, minLoadVersion) != null;
-        } catch (IOException e) {
-            return false;
+        // load from db
+        Log.i(TAG, "Listing cached entries date>="+since.toIsoString()+" create_version>="+min_create_version);
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur = db.query(
+                "lectures",
+                new String[]{"date", "office"},
+                "`date`>=? AND `create_version` >= ?",
+                new String[]{since.toIsoString(), min_create_version},
+                null, null, null
+        );
+
+        CacheEntryIndexes entries = new CacheEntryIndexes();
+        try (cur) {
+            while (cur.moveToNext()) {
+                String what_str = cur.getString(1);
+                String when_str = cur.getString(0);
+                entries.add(new CacheEntryIndex(what_str, when_str));
+            }
         }
+
+        return entries;
     }
 
     /**

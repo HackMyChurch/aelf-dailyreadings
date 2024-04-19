@@ -2,12 +2,13 @@ package co.epitre.aelf_lectures.sync;
 
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.CacheEntryIndex;
+import co.epitre.aelf_lectures.lectures.data.CacheEntryIndexes;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -74,19 +75,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     // Sync one reading for the day, if it is not yet in the cache or is in the current week.
     private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) throws InterruptedException {
-        // Do we need to refresh
-        if (mController.isLecturesInCache(what, when, false)) {
-            if (when.isWithin7NextDays()) {
-                // We always load for this week to allow corrections made by volunteers to
-                // eventually reach the phones.
-                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" REFRESHING (<7 days)");
-            } else {
-                // This is more than a week ahead and we already have a version in the cache
-                Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
-                return;
-            }
-        }
-
         // Load from the network
         try {
             Log.i(TAG, "Starting sync for " + what.urlName()+" for "+when.toIsoString());
@@ -97,15 +85,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             }
             Log.e(TAG, "I/O error while loading "+what.urlName()+"/"+when.toIsoString()+": "+e, e);
             syncResult.stats.numIoExceptions++;
-        }
-    }
-
-    // Sync all readings for the day
-    private void syncDay(AelfDate when, int max, SyncResult syncResult) throws InterruptedException {
-        syncReading(LecturesController.WHAT.INFORMATIONS, when, syncResult);
-        while(max-- > 0) {
-            LecturesController.WHAT what = LecturesController.WHAT.values()[max];
-            syncReading(what, when, syncResult);
         }
     }
 
@@ -121,12 +100,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // No hard constraint ? Good to go
-        if (networkStatusMonitor.isNetworkAvailable()) {
-            return true;
-        }
-
-        // Sorry. At least, that's better to know.
-        return false;
+        return networkStatusMonitor.isNetworkAvailable();
     }
 
     /**
@@ -191,9 +165,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         // turn params into something usable
         int daysToSync = 0;
-        // FIXME: -1 because 8 is Meta, which is always synced
-        int whatMax = (pLectures.equals("messe-offices"))?LecturesController.WHAT.values().length-1:1;
         long currentTimeMillis = System.currentTimeMillis();
+
+        // Build the list of office to sync
+        LecturesController.WHAT[] whatList;
+        if(pLectures.equals("messe-offices")) {
+            whatList = LecturesController.WHAT.values();
+        } else {
+            whatList = new LecturesController.WHAT[]{LecturesController.WHAT.MESSE, LecturesController.WHAT.INFORMATIONS};
+        }
 
         switch (pDuree) {
             // "auj" and "auj-dim" are legacy, consider them as "semaine"
@@ -210,6 +190,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // ** SYNC **
         String errorName = "success";
         try {
+            // Get current cache status
+            CacheEntryIndexes cachedOffices = mController.listCachedEntries(new AelfDate());
+
             // Pre-Load 'daysToSync'. It is important to create a new date instance. Otherwise, all
             // future would be sharing the same date instance and save more or less on the same day
             // which is not quite good...
@@ -232,7 +215,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // Actual sync
                 AelfDate when = new AelfDate();
                 when.add(Calendar.DATE, i);
-                syncDay(when, whatMax, syncResult);
+
+                // Sync office and information for that day, if needed
+                for (LecturesController.WHAT what: whatList) {
+                    // Do we need to refresh ?
+                    if (cachedOffices.contains(new CacheEntryIndex(what, when))) {
+                        if (when.isWithin7NextDays()) {
+                            // We always load for this week to allow corrections made by volunteers to
+                            // eventually reach the phones.
+                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" REFRESHING (<7 days)");
+                        } else {
+                            // This is more than a week ahead and we already have a version in the cache
+                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
+                            continue;
+                        }
+                    }
+                    syncReading(what, when, syncResult);
+                }
             }
         } catch (InterruptedException e) {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
@@ -242,7 +241,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             throw e;
         }
         finally {
-
             // Track sync status
             Log.d(TAG, "Sync result: "+syncResult.toDebugString());
             if (syncResult.stats.numIoExceptions > 0) {

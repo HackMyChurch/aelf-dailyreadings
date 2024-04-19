@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.GregorianCalendar;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
@@ -128,15 +127,8 @@ public final class LecturesController {
         return LecturesController.instance;
     }
 
-    public boolean isLecturesInCache(WHAT what, AelfDate when, boolean allowColdCache) {
-        long minLoadVersion = allowColdCache ? -1 : apiVersion;
-
-        try {
-            return cache.has(what, when, minLoadVersion);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to check if lecture is in cache", e);
-            return false;
-        }
+    public CacheEntryIndexes listCachedEntries(AelfDate since) {
+        return cache.listCachedEntries(since, apiVersion);
     }
 
     public Office loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
