@@ -4,7 +4,7 @@
 
 // Extract reference-ish from a larger string
 // This allows surviving references like "Stabat Mater. Jn 19, 25-27"
-const reference_extractor = /^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$/;
+const reference_extractor = /^(?<prefix>.*?)(?<reference>(?:[1-3]\s*)?[a-zA-Z]+\w*\s*[0-9]+(?:\s*\([0-9]+\))?(?:,(?:[-\s,.]|(?:[0-9]+[a-z]*))*[a-z0-9]\b)?)(?<suffix>.*?)$/;
 
 // Upper case the first letter
 String.prototype.capitalize = function() {
