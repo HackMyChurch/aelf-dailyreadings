@@ -69,6 +69,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
      * Internal state
      */
     WhatWhen whatwhen = null;
+    private Office office;
     private boolean isLoading = false;
     private boolean isSuccess = true;
     DownloadOfficeTask currentRefresh = null;
@@ -157,8 +158,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         // Reset menu handle in case we come from the 'back' button
         mMenu = null;
 
-        // Load lecture
-        loadLecture(whatwhen);
+        // Do we have a set of lectures to restore or do we need to load them ?
+        if (this.office == null) {
+            // Asynchronously load lecture
+            loadLecture(whatwhen);
+        } else {
+            // Apply the cached lectures
+            this.applyOffice();
+        }
 
         // Return view
         return view;
@@ -354,6 +361,12 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     //
     // Views
     //
+
+    private void applyOffice() {
+        lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office);
+        mViewPager.setAdapter(lecturesPagerAdapter);
+        mViewPager.setCurrentItem(whatwhen.position);
+    }
 
     public void updateCalendarButtonLabel(WhatWhen whatwhen) {
         if(mMenu == null) {
@@ -744,9 +757,8 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             // Set up the ViewPager with the sections adapter.
             try {
                 // 1 slide fragment <==> 1 lecture
-                lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office);
-                mViewPager.setAdapter(lecturesPagerAdapter);
-                mViewPager.setCurrentItem(whatwhen.position);
+                this.office = office;
+                this.applyOffice();
                 setLoading(false);
             } catch (IllegalStateException e) {
                 // Fragment manager has gone away, will reload anyway so silently give up
