@@ -2,6 +2,8 @@ package co.epitre.aelf_lectures.sync;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
@@ -33,13 +35,14 @@ import static android.content.Context.ACTIVITY_SERVICE;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private static final String TAG = "AELFSyncAdapter";
+    static final int SYNC_WORKER_COUNT = 4;
 
     private Context mContext;
     private LecturesController mController;
 
     NetworkStatusMonitor networkStatusMonitor;
 
-    private static final long MAX_RUN_TIME = TimeUnit.MINUTES.toMillis(30);
+    private static final long MAX_RUN_TIME = 30;
 
     /**
      * Sync account related vars
@@ -74,15 +77,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync one reading for the day, if it is not yet in the cache or is in the current week.
-    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult) throws InterruptedException {
+    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult, boolean isManualSync, boolean wifiOnly) {
+        // Check pre-requisites
+        if (syncResult.stats.numIoExceptions > 10) {
+            Log.w(TAG, "Too many errors, cancelling sync");
+            return;
+        } else if (!revalidateConnection(isManualSync, wifiOnly)) {
+            Log.w(TAG, "Network went down, cancelling sync");
+            return;
+        }
+
         // Load from the network
         try {
             Log.i(TAG, "Starting sync for " + what.urlName()+" for "+when.toIsoString());
             mController.loadLecturesFromNetwork(what, when);
         } catch (IOException e) {
-            if (e.getCause() instanceof InterruptedException) {
-                throw (InterruptedException) e.getCause();
-            }
             Log.e(TAG, "I/O error while loading "+what.urlName()+"/"+when.toIsoString()+": "+e, e);
             syncResult.stats.numIoExceptions++;
         }
@@ -163,10 +172,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         LecturesController controller = LecturesController.getInstance(this.getContext());
 
-        // turn params into something usable
-        int daysToSync = 0;
-        long currentTimeMillis = System.currentTimeMillis();
-
         // Build the list of office to sync
         LecturesController.WHAT[] whatList;
         if(pLectures.equals("messe-offices")) {
@@ -175,6 +180,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             whatList = new LecturesController.WHAT[]{LecturesController.WHAT.MESSE, LecturesController.WHAT.INFORMATIONS};
         }
 
+        // Compute the sync period length
+        int daysToSync = 0;
         switch (pDuree) {
             // "auj" and "auj-dim" are legacy, consider them as "semaine"
             case "auj":
@@ -193,26 +200,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             // Get current cache status
             CacheEntryIndexes cachedOffices = mController.listCachedEntries(new AelfDate());
 
+            // Initialize the worker pool
+            ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);
+
             // Pre-Load 'daysToSync'. It is important to create a new date instance. Otherwise, all
             // future would be sharing the same date instance and save more or less on the same day
             // which is not quite good...
             for (int i = 0; i < daysToSync; i++) {
-                // Compute remaining time budget
-                long timeBudget = currentTimeMillis + MAX_RUN_TIME - System.currentTimeMillis();
-
-                // Check error conditions
-                if (syncResult.stats.numIoExceptions > 10) {
-                    Log.w(TAG, "Too many errors, cancelling sync");
-                    break;
-                } else if (!revalidateConnection(isManualSync, wifiOnly)) {
-                    Log.w(TAG, "Network went down, cancelling sync");
-                    break;
-                } else if (timeBudget < 0) {
-                    Log.w(TAG, "Time budget exceeded, cancelling sync");
-                    break;
-                }
-
-                // Actual sync
+                // Enqueue sync tasks for the day
                 AelfDate when = new AelfDate();
                 when.add(Calendar.DATE, i);
 
@@ -223,16 +218,26 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                         if (when.isWithin7NextDays()) {
                             // We always load for this week to allow corrections made by volunteers to
                             // eventually reach the phones.
-                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" REFRESHING (<7 days)");
+                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING REFRESH (<7 days)");
                         } else {
                             // This is more than a week ahead and we already have a version in the cache
                             Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
                             continue;
                         }
                     }
-                    syncReading(what, when, syncResult);
+                    executorService.execute(() -> this.syncReading(what, when, syncResult, isManualSync, wifiOnly));
                 }
             }
+
+            // Execute all tasks and wait for completion
+            executorService.shutdown();
+            boolean success_within_time = executorService.awaitTermination(MAX_RUN_TIME, TimeUnit.MINUTES);
+
+            if(!success_within_time) {
+                Log.w(TAG, "Time budget exceeded, cancelling sync");
+                throw new InterruptedException("Time budget exceeded, cancelling sync");
+            }
+
         } catch (InterruptedException e) {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
             syncResult.stats.numIoExceptions++;
@@ -249,6 +254,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
             // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
             SharedPreferences.Editor editor = syncStat.edit();
+            long currentTimeMillis = System.currentTimeMillis();
             editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
             if (errorName.equals("success")) {
                 editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
