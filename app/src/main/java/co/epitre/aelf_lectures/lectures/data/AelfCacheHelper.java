@@ -27,7 +27,7 @@ import org.sqlite.database.sqlite.SQLiteStatement;
 
 public final class AelfCacheHelper extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
     private static final String DB_NAME = "aelf_cache.db";
     private Context ctx;
 
@@ -35,11 +35,12 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
             "date TEXT NOT NULL," +
             "office TEXT NOT NULL,"+
             "lectures BLOB," +
+            "checksum TEXT," +
             "create_date TEXT," +
             "create_version INTEGER," +
             "PRIMARY KEY (date, office)" +
             ")";
-    private static final String DB_CACHE_ENTRY_SET = "INSERT OR REPLACE INTO `lectures` VALUES (?,?,?,?,?)";
+    private static final String DB_CACHE_ENTRY_SET = "INSERT OR REPLACE INTO `lectures` VALUES (?,?,?,?,?,?)";
 
     // TODO: prepare requests
 
@@ -64,7 +65,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         return this.ctx.getDatabasePath(DB_NAME).length();
     }
 
-    synchronized void store(LecturesController.WHAT what, AelfDate when, Office office, int ApiVersion) throws IOException {
+    synchronized void store(LecturesController.WHAT what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
         final String create_date = (new AelfDate()).toIsoString();
 
         // build blob
@@ -85,8 +86,9 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         stmt.bindString(1, when.toIsoString());
         stmt.bindString(2, what.toString());
         stmt.bindBlob(3, blob);
-        stmt.bindString(4, create_date);
-        stmt.bindLong(5, ApiVersion);
+        stmt.bindString(4, checksum);
+        stmt.bindString(5, create_date);
+        stmt.bindLong(6, ApiVersion);
 
         stmt.execute();
     }
@@ -98,8 +100,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
-    @SuppressWarnings("unchecked")
-    synchronized Office load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
+    synchronized CacheEntry load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
@@ -107,7 +108,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cur = db.query(
                 "lectures",
-                new String[]{"lectures", "create_date", "create_version"},
+                new String[]{"lectures", "checksum", "create_date", "create_version"},
                 "`date`=? AND `office`=? AND create_version >= ?",
                 new String[]{when.toIsoString(), what.toString(), min_create_version},
                 null, null, null, "1"
@@ -121,11 +122,13 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
             }
             cur.moveToFirst();
             byte[] blob = cur.getBlob(0);
-            Log.i(TAG, "Loaded lecture from cache create_date=" + cur.getString(1) + " create_version=" + cur.getLong(2));
+            String checksum = cur.getString(1);
+            Log.i(TAG, "Loaded lecture from cache create_date=" + cur.getString(2) + " create_version=" + cur.getLong(3) + " checksum=" + checksum);
             ByteArrayInputStream bis = new ByteArrayInputStream(blob);
             ObjectInputStream ois = new ObjectInputStream(bis);
 
-            return (Office) ois.readObject();
+            Office office = (Office) ois.readObject();
+            return new CacheEntry(office, checksum);
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -139,7 +142,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cur = db.query(
                 "lectures",
-                new String[]{"date", "office"},
+                new String[]{"date", "office", "checksum"},
                 "`date`>=? AND `create_version` >= ?",
                 new String[]{since.toIsoString(), min_create_version},
                 null, null, null
@@ -150,7 +153,8 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
             while (cur.moveToNext()) {
                 String what_str = cur.getString(1);
                 String when_str = cur.getString(0);
-                entries.add(new CacheEntryIndex(what_str, when_str));
+                String checksum = cur.getString(2);
+                entries.put(new CacheEntryIndex(what_str, when_str), new CacheEntry(null, checksum));
             }
         }
 

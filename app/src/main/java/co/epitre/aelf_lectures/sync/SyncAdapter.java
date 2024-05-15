@@ -214,7 +214,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 // Sync office and information for that day, if needed
                 for (LecturesController.WHAT what: whatList) {
                     // Do we need to refresh ?
-                    if (cachedOffices.contains(new CacheEntryIndex(what, when))) {
+                    if (cachedOffices.containsKey(new CacheEntryIndex(what, when))) {
                         if (when.isWithin7NextDays()) {
                             // We always load for this week to allow corrections made by volunteers to
                             // eventually reach the phones.

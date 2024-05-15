@@ -170,11 +170,31 @@ public final class EpitreApi {
         return client.newCall(request).execute();
     }
 
+    private String extractResponseEtag(Response response) {
+        // In the application, we use the Etag to validate cache entry freshness.
+        // Etags are defined by RFC 7232 section 2.3 and look like W/"ACTUAL-ETAG"
+        // where the W/ prefix is optional. An Etag without a pair of double quotes
+        // is assumed to be a raw value and returned as-is.
+        String raw_etag = response.header("etag");
+        if (raw_etag == null) {
+            return "";
+        }
+
+        int quote_start = raw_etag.indexOf("\"");
+        int quote_end = raw_etag.lastIndexOf("\"");
+
+        if (quote_start == -1 || quote_end == -1) {
+            return raw_etag;
+        }
+
+        return raw_etag.substring(quote_start, quote_end);
+    }
+
     /**
      * Public API
      */
 
-    public Office getOffice(String officeName, String date, int apiVersion) throws IOException {
+    public OfficeResponse getOffice(String officeName, String date, int apiVersion) throws IOException {
         // Load configuration
         String path = "/%d/office/%s/%s.json?region=%s";
 
@@ -183,14 +203,19 @@ public final class EpitreApi {
         path = String.format(Locale.US, path, apiVersion, officeName, date, region);
 
         BufferedSource source = null;
-        Office office;
         try {
             // Issue request
             Response response = InternalGet(path);
 
             // Grab response
             source = Objects.requireNonNull(response.body()).source();
-            office = officeJsonAdapter.fromJson(source);
+            Office office = officeJsonAdapter.fromJson(source);
+
+            // Grab checksum, as an opaque blob
+            String checksum = extractResponseEtag(response);
+
+            // Return
+            return new OfficeResponse(office, checksum);
         } catch (IOException e) {
             Log.w(TAG, "Failed to load lectures from network: " + e);
             throw e;
@@ -201,7 +226,5 @@ public final class EpitreApi {
                 source.close();
             }
         }
-
-        return office;
     }
 }

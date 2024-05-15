@@ -1,6 +1,6 @@
 package co.epitre.aelf_lectures.lectures.data;
 
-import java.util.HashSet;
+import java.util.HashMap;
 
-public final class CacheEntryIndexes extends HashSet<CacheEntryIndex> {
+public final class CacheEntryIndexes extends HashMap<CacheEntryIndex, CacheEntry> {
 }

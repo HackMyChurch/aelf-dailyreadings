@@ -132,7 +132,6 @@ public final class LecturesController {
     }
 
     public Office loadLecturesFromCache(WHAT what, AelfDate when, boolean allowColdCache) throws IOException {
-        Office office;
         long minLoadVersion = -1;
 
         if (!allowColdCache) {
@@ -140,28 +139,30 @@ public final class LecturesController {
         }
 
         try {
-            office = cache.load(what, when, minLoadVersion);
+            CacheEntry cacheEntry = cache.load(what, when, minLoadVersion);
+            if (cacheEntry == null) {
+                return null;
+            }
+            return cacheEntry.office;
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);
             return null;
         }
-
-        return office;
     }
 
     public Office loadLecturesFromNetwork(WHAT what, AelfDate when) throws IOException {
         // Load lectures
-        Office office = api.getOffice(what.apiName(), when.toIsoString(), apiVersion);
+        OfficeResponse response = api.getOffice(what.apiName(), when.toIsoString(), apiVersion);
 
         // Cache lectures
         try {
-            cache.store(what, when, office, apiVersion);
+            cache.store(what, when, response.office, response.checksum, apiVersion);
         } catch (IOException e) {
             Log.e(TAG, "Failed to store lecture in cache", e);
         }
 
-        return office;
+        return response.office;
     }
 
     public Office loadLectures(WHAT what, AelfDate when, boolean useCache) throws IOException {
