@@ -42,9 +42,9 @@ import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SectionFragmentBase;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
-import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -105,7 +105,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             whatwhen = new WhatWhen();
 
             // Restore saved instance state. Especially useful on screen rotate on older phones
-            whatwhen.what = LecturesController.WHAT.values()[savedInstanceState.getInt("what", 0)];
+            whatwhen.what = OfficeTypes.values()[savedInstanceState.getInt("what", 0)];
             whatwhen.position = savedInstanceState.getInt("position", 0);
 
             long timestamp = savedInstanceState.getLong("when", 0);
@@ -126,7 +126,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
             whatwhen.position = 0;
 
             if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
-                whatwhen.what = LecturesController.WHAT.MESSE;
+                whatwhen.what = OfficeTypes.MESSE;
             } else {
                 computeCurrentOffice(true);
             }
@@ -203,7 +203,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
         // Set default values
         whatwhen = new WhatWhen();
-        whatwhen.what = LecturesController.WHAT.MESSE;
+        whatwhen.what = OfficeTypes.MESSE;
         whatwhen.when = new AelfDate();
         whatwhen.position = 0; // 1st lecture of the office
 
@@ -215,14 +215,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
                 // Attempt to parse a legacy URL
                 String office_name = chunks[1].substring(7).toUpperCase();
                 try {
-                    whatwhen.what = LecturesController.WHAT.valueOf(office_name);
+                    whatwhen.what = OfficeTypes.valueOf(office_name);
                 } catch (IllegalArgumentException e) {
                     Log.w(TAG, "Failed to parse office '" + chunks[1] + "', falling back to messe", e);
-                    whatwhen.what = LecturesController.WHAT.MESSE;
+                    whatwhen.what = OfficeTypes.MESSE;
                 }
             } else if (chunks[1].equals("shortcut")) {
                 if (chunks[2].equals("messe")) {
-                    whatwhen.what = LecturesController.WHAT.MESSE;
+                    whatwhen.what = OfficeTypes.MESSE;
                 } else if (chunks[2].equals("office")) {
                     computeCurrentOffice(false);
                 }
@@ -247,10 +247,10 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
                 if (chunks.length >= 4) {
                     String office_name = chunks[3].toUpperCase();
                     try {
-                        whatwhen.what = LecturesController.WHAT.valueOf(office_name);
+                        whatwhen.what = OfficeTypes.valueOf(office_name);
                     } catch (IllegalArgumentException e) {
                         Log.w(TAG, "Failed to parse office '" + chunks[2] + "', falling back to messe", e);
-                        whatwhen.what = LecturesController.WHAT.MESSE;
+                        whatwhen.what = OfficeTypes.MESSE;
                     }
                 }
 
@@ -264,18 +264,18 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     void computeCurrentOffice(boolean includeMass) {
         long hour = whatwhen.when.get(Calendar.HOUR_OF_DAY);
         if (hour < 3) {
-            whatwhen.what = LecturesController.WHAT.COMPLIES;
+            whatwhen.what = OfficeTypes.COMPLIES;
             whatwhen.when.add(GregorianCalendar.DAY_OF_YEAR, -1);
         } else if (hour < 4) {
-            whatwhen.what = LecturesController.WHAT.LECTURES;
+            whatwhen.what = OfficeTypes.LECTURES;
         } else if (hour < 8) {
-            whatwhen.what = LecturesController.WHAT.LAUDES;
+            whatwhen.what = OfficeTypes.LAUDES;
         } else if (hour < 15 && includeMass) {
-            whatwhen.what = LecturesController.WHAT.MESSE;
+            whatwhen.what = OfficeTypes.MESSE;
         } else if (hour < 21) {
-            whatwhen.what = LecturesController.WHAT.VEPRES;
+            whatwhen.what = OfficeTypes.VEPRES;
         } else {
-            whatwhen.what = LecturesController.WHAT.COMPLIES;
+            whatwhen.what = OfficeTypes.COMPLIES;
         }
     }
 
@@ -298,11 +298,11 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         return buildUri(whatwhen.what, whatwhen.when, lecture.getKey());
     }
 
-    public static Uri buildUri(LecturesController.WHAT what) {
+    public static Uri buildUri(OfficeTypes what) {
         return buildUri(what, defaultDate, null);
     }
 
-    public static Uri buildUri(LecturesController.WHAT what, AelfDate when, String key) {
+    public static Uri buildUri(OfficeTypes what, AelfDate when, String key) {
         String url = "http://www.aelf.org/"+when.toIsoString()+"/romain/"+what.urlName();
         if (key != null) {
             url += "#"+key;
@@ -551,7 +551,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         // Build the subject and message
         String message;
         String subject;
-        if (whatwhen.what == LecturesController.WHAT.MESSE && whatwhen.when.isToday()) {
+        if (whatwhen.what == OfficeTypes.MESSE && whatwhen.when.isToday()) {
             // If this is Today's mass, let's be concise
             message = lecture.getShortTitle();
         } else {

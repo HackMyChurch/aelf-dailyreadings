@@ -40,8 +40,7 @@ import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
-import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.LecturesController.WHAT;
+import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
 
@@ -418,7 +417,7 @@ public class LecturesActivity extends BaseActivity implements
         item.setChecked(true);
 
         // Route menu item
-        WHAT what = WHAT.fromMenuId(item.getItemId());
+        OfficeTypes what = OfficeTypes.fromMenuId(item.getItemId());
         Intent intent;
         if (what != null) {
             Uri uri = SectionLecturesFragment.buildUri(what);

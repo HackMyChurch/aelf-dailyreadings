@@ -8,7 +8,7 @@ import java.util.Locale;
  * This class centralizes all helpers around dates like
  * - is it today ?
  * - is it this week ?
- * - is it tomorow ?
+ * - is it tomorrow ?
  * - is it ext sunday ?
  * - ...
  */
@@ -25,7 +25,7 @@ public class AelfDate extends GregorianCalendar {
         super(year, month, day);
     }
 
-    // Timestamp constructor in milisec
+    // Timestamp constructor in millisecond
     public AelfDate(long timestamp) {
         super();
         setTimeInMillis(timestamp);

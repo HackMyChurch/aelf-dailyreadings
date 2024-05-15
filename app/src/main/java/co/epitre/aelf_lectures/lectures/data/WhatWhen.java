@@ -5,7 +5,7 @@ package co.epitre.aelf_lectures.lectures.data;
  */
 
 public class WhatWhen {
-    public LecturesController.WHAT what;
+    public OfficeTypes what;
     public AelfDate when;
     public int position;
     public boolean useCache = true;

@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariantsJsonAdapter;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import com.squareup.moshi.JsonAdapter;
@@ -86,6 +87,7 @@ public final class EpitreApi {
             .add(new LectureVariantsJsonAdapter())
             .build();
     private final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
+    private final JsonAdapter<OfficesChecksums> officesChecksumsJsonAdapter = moshi.adapter(OfficesChecksums.class);
 
     /**
      * Singleton
@@ -196,11 +198,38 @@ public final class EpitreApi {
      * Public API
      */
 
-    public OfficeResponse getOffice(String officeName, String date, int apiVersion) throws IOException {
-        // Load configuration
-        String path = "/%d/office/%s/%s.json?region=%s";
-
+    public OfficesChecksums getOfficesChecksums(String from_date, int days, int apiVersion) throws IOException {
         // Build URL
+        String path = "/%d/office/checksums/%s/%sd?region=%s";
+        String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
+        path = String.format(Locale.US, path, apiVersion, from_date, days, region);
+
+        BufferedSource source = null;
+        try {
+            // Issue request
+            Response response = InternalGet(path);
+
+            // Grab response
+            source = Objects.requireNonNull(response.body()).source();
+            OfficesChecksums officesChecksums = officesChecksumsJsonAdapter.fromJson(source);
+
+            // Return
+            return officesChecksums;
+        } catch (IOException e) {
+            Log.w(TAG, "Failed to load lectures from network: " + e);
+            throw e;
+        } catch (Exception e) {
+            throw new IOException(e);
+        } finally {
+            if(source != null) {
+                source.close();
+            }
+        }
+    }
+
+    public OfficeResponse getOffice(String officeName, String date, int apiVersion) throws IOException {
+        // Build URL
+        String path = "/%d/office/%s/%s.json?region=%s";
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
         path = String.format(Locale.US, path, apiVersion, officeName, date, region);
 

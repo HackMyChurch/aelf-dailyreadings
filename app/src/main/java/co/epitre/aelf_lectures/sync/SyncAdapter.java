@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
@@ -77,7 +78,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     // Sync one reading for the day, if it is not yet in the cache or is in the current week.
-    private void syncReading(LecturesController.WHAT what, AelfDate when, SyncResult syncResult, boolean isManualSync, boolean wifiOnly) {
+    private void syncReading(OfficeTypes what, AelfDate when, SyncResult syncResult, boolean isManualSync, boolean wifiOnly) {
         // Check pre-requisites
         if (syncResult.stats.numIoExceptions > 10) {
             Log.w(TAG, "Too many errors, cancelling sync");
@@ -173,11 +174,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         LecturesController controller = LecturesController.getInstance(this.getContext());
 
         // Build the list of office to sync
-        LecturesController.WHAT[] whatList;
+        OfficeTypes[] whatList;
         if(pLectures.equals("messe-offices")) {
-            whatList = LecturesController.WHAT.values();
+            whatList = OfficeTypes.values();
         } else {
-            whatList = new LecturesController.WHAT[]{LecturesController.WHAT.MESSE, LecturesController.WHAT.INFORMATIONS};
+            whatList = new OfficeTypes[]{OfficeTypes.MESSE, OfficeTypes.INFORMATIONS};
         }
 
         // Compute the sync period length
@@ -212,7 +213,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 when.add(Calendar.DATE, i);
 
                 // Sync office and information for that day, if needed
-                for (LecturesController.WHAT what: whatList) {
+                for (OfficeTypes what: whatList) {
                     // Do we need to refresh ?
                     if (cachedOffices.containsKey(new CacheEntryIndex(what, when))) {
                         if (when.isWithin7NextDays()) {

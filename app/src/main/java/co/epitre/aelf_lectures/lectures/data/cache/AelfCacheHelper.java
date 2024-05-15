@@ -16,7 +16,7 @@ import org.sqlite.database.sqlite.SQLiteOpenHelper;
 import org.sqlite.database.sqlite.SQLiteStatement;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 /**
@@ -69,7 +69,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         return this.ctx.getDatabasePath(DB_NAME).length();
     }
 
-    synchronized public void store(LecturesController.WHAT what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
+    synchronized public void store(OfficeTypes what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
         final String create_date = (new AelfDate()).toIsoString();
 
         // build blob
@@ -104,7 +104,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
-    synchronized public CacheEntry load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
+    synchronized public CacheEntry load(OfficeTypes what, AelfDate when, Long minLoadVersion) throws IOException {
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
