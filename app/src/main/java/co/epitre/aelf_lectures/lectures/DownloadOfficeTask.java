@@ -16,7 +16,7 @@ import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
-import co.epitre.aelf_lectures.lectures.data.Office;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 

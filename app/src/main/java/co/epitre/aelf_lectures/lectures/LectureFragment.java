@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 
 import co.epitre.aelf_lectures.components.ReadingFragment;
-import co.epitre.aelf_lectures.lectures.data.Lecture;
-import co.epitre.aelf_lectures.lectures.data.LectureVariants;
+import co.epitre.aelf_lectures.lectures.data.office.Lecture;
+import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**

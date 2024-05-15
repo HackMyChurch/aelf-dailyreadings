@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.lectures.data;
+package co.epitre.aelf_lectures.lectures.data.office;
 
 import android.text.TextUtils;
 

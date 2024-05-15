@@ -1,4 +1,6 @@
-package co.epitre.aelf_lectures.lectures.data;
+package co.epitre.aelf_lectures.lectures.data.api;
+
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 public final class OfficeResponse {
     public final Office office;

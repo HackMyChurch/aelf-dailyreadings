@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.CacheEntryIndex;
-import co.epitre.aelf_lectures.lectures.data.CacheEntryIndexes;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -198,7 +198,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         String errorName = "success";
         try {
             // Get current cache status
-            CacheEntryIndexes cachedOffices = mController.listCachedEntries(new AelfDate());
+            CacheEntries cachedOffices = mController.listCachedEntries(new AelfDate());
 
             // Initialize the worker pool
             ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);

@@ -1,8 +1,8 @@
 package co.epitre.aelf_lectures.lectures;
 
-import co.epitre.aelf_lectures.lectures.data.Lecture;
-import co.epitre.aelf_lectures.lectures.data.LectureVariants;
-import co.epitre.aelf_lectures.lectures.data.Office;
+import co.epitre.aelf_lectures.lectures.data.office.Lecture;
+import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 import android.os.Bundle;
 

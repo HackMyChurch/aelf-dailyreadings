@@ -7,6 +7,12 @@ import java.io.IOException;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.lectures.data.api.EpitreApi;
+import co.epitre.aelf_lectures.lectures.data.api.OfficeResponse;
+import co.epitre.aelf_lectures.lectures.data.cache.AelfCacheHelper;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 /**
  * Public data controller --> load either from cache, either from network
@@ -127,7 +133,7 @@ public final class LecturesController {
         return LecturesController.instance;
     }
 
-    public CacheEntryIndexes listCachedEntries(AelfDate since) {
+    public CacheEntries listCachedEntries(AelfDate since) {
         return cache.listCachedEntries(since, apiVersion);
     }
 

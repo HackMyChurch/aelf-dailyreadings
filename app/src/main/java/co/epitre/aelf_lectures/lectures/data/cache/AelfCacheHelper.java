@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.lectures.data;
+package co.epitre.aelf_lectures.lectures.data.cache;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,6 +14,10 @@ import android.util.Log;
 import org.sqlite.database.sqlite.SQLiteDatabase;
 import org.sqlite.database.sqlite.SQLiteOpenHelper;
 import org.sqlite.database.sqlite.SQLiteStatement;
+
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 /**
  * Internal cache manager (SQLite). There is a single 'lectures' table and one line per office.
@@ -44,7 +48,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // TODO: prepare requests
 
-    AelfCacheHelper(Context context) {
+    public AelfCacheHelper(Context context) {
         super(context, context.getDatabasePath(DB_NAME).getAbsolutePath(), null, DB_VERSION);
         File dbDir = context.getDatabasePath(DB_NAME).getParentFile();
         if (dbDir != null) {
@@ -65,7 +69,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         return this.ctx.getDatabasePath(DB_NAME).length();
     }
 
-    synchronized void store(LecturesController.WHAT what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
+    synchronized public void store(LecturesController.WHAT what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
         final String create_date = (new AelfDate()).toIsoString();
 
         // build blob
@@ -94,13 +98,13 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     }
 
     // cleaner helper method
-    synchronized void truncateBefore(AelfDate when) throws IOException {
+    synchronized public void truncateBefore(AelfDate when) throws IOException {
         SQLiteDatabase db = getWritableDatabase();
         db.delete("lectures", "`date` < ?", new String[] {when.toIsoString()});
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
-    synchronized CacheEntry load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
+    synchronized public CacheEntry load(LecturesController.WHAT what, AelfDate when, Long minLoadVersion) throws IOException {
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
@@ -134,7 +138,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
         }
     }
 
-    synchronized CacheEntryIndexes listCachedEntries(AelfDate since, int minLoadVersion) {
+    synchronized public CacheEntries listCachedEntries(AelfDate since, int minLoadVersion) {
         final String min_create_version = String.valueOf(minLoadVersion);
 
         // load from db
@@ -148,7 +152,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
                 null, null, null
         );
 
-        CacheEntryIndexes entries = new CacheEntryIndexes();
+        CacheEntries entries = new CacheEntries();
         try (cur) {
             while (cur.moveToNext()) {
                 String what_str = cur.getString(1);

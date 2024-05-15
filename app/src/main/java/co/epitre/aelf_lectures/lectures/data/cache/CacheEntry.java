@@ -1,4 +1,6 @@
-package co.epitre.aelf_lectures.lectures.data;
+package co.epitre.aelf_lectures.lectures.data.cache;
+
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 public class CacheEntry {
     public final Office office;

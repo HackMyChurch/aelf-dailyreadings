@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.lectures.data;
+package co.epitre.aelf_lectures.lectures.data.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,6 +14,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import co.epitre.aelf_lectures.lectures.data.office.LectureVariantsJsonAdapter;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 import com.squareup.moshi.JsonAdapter;
