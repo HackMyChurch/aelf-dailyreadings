@@ -40,6 +40,7 @@ import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncAdapter;
@@ -100,6 +101,11 @@ public class LecturesActivity extends BaseActivity implements
 
             // Purge cache on upgrade (get new Bible index if any, ...)
             deleteCache();
+        }
+
+        if (savedVersion < 78) {
+            // The code was refactored in 78 so that cached items can no longer be restored from the cache
+            LecturesController.getInstance(this).dropDatabase();
         }
 
         // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
