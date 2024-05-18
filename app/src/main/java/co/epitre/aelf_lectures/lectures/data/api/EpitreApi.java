@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
@@ -14,14 +17,10 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import co.epitre.aelf_lectures.lectures.data.office.LectureVariantsJsonAdapter;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
-
-import com.squareup.moshi.JsonAdapter;
-import com.squareup.moshi.Moshi;
-
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -85,19 +84,24 @@ public final class EpitreApi {
     private OkHttpClient client;
     private final Moshi moshi = new Moshi.Builder()
             .add(new LectureVariantsJsonAdapter())
+            .add(new OfficesChecksumsJsonAdapter())
             .build();
-    private final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
-    private final JsonAdapter<OfficesChecksums> officesChecksumsJsonAdapter = moshi.adapter(OfficesChecksums.class);
+    final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
+    final JsonAdapter<OfficesChecksums> officesChecksumsJsonAdapter = moshi.adapter(OfficesChecksums.class);
 
     /**
      * Singleton
      */
 
-    private EpitreApi(Context c) {
+    EpitreApi(Context c) {
         super();
 
         // Get a handle on the preference manager
-        preference = PreferenceManager.getDefaultSharedPreferences(c);
+        // TODO: stop depending on the context / preferences and instead user a wrapper / anti-corruption class so that
+        // this class becomes easier to test.
+        if (c != null) {
+            preference = PreferenceManager.getDefaultSharedPreferences(c);
+        }
 
         // Build the HTTP client
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -198,11 +202,11 @@ public final class EpitreApi {
      * Public API
      */
 
-    public OfficesChecksums getOfficesChecksums(String from_date, int days, int apiVersion) throws IOException {
+    public OfficesChecksums getOfficesChecksums(AelfDate since, int days, int apiVersion) throws IOException {
         // Build URL
         String path = "/%d/office/checksums/%s/%sd?region=%s";
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
-        path = String.format(Locale.US, path, apiVersion, from_date, days, region);
+        path = String.format(Locale.US, path, apiVersion, since.toIsoString(), days, region);
 
         BufferedSource source = null;
         try {
@@ -211,12 +215,14 @@ public final class EpitreApi {
 
             // Grab response
             source = Objects.requireNonNull(response.body()).source();
+
+            // De-Serialize
             OfficesChecksums officesChecksums = officesChecksumsJsonAdapter.fromJson(source);
 
             // Return
             return officesChecksums;
         } catch (IOException e) {
-            Log.w(TAG, "Failed to load lectures from network: " + e);
+            Log.w(TAG, "Failed to load office checksums from network: " + e);
             throw e;
         } catch (Exception e) {
             throw new IOException(e);

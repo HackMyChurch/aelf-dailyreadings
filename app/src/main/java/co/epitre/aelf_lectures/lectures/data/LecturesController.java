@@ -13,6 +13,7 @@ import co.epitre.aelf_lectures.lectures.data.cache.AelfCacheHelper;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
 
 /**
  * Public data controller --> load either from cache, either from network
@@ -51,6 +52,10 @@ public final class LecturesController {
 
     public CacheEntries listCachedEntries(AelfDate since) {
         return cache.listCachedEntries(since, apiVersion);
+    }
+
+    public OfficesChecksums loadOfficesChecksums(AelfDate since, int days) throws IOException {
+        return api.getOfficesChecksums(since, days, apiVersion);
     }
 
     public Office loadLecturesFromCache(OfficeTypes what, AelfDate when, boolean allowColdCache) throws IOException {
