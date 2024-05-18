@@ -1,19 +1,7 @@
 package co.epitre.aelf_lectures.sync;
 
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
-import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
-import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.lectures.data.AelfDate;
-import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
-import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
-import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
-import co.epitre.aelf_lectures.lectures.data.LecturesController;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
+import static android.content.Context.ACCOUNT_SERVICE;
+import static android.content.Context.ACTIVITY_SERVICE;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -26,11 +14,27 @@ import android.content.SharedPreferences;
 import android.content.SyncResult;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import static android.content.Context.ACCOUNT_SERVICE;
-import static android.content.Context.ACTIVITY_SERVICE;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+
+import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
+import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
+import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
 
@@ -43,7 +47,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     NetworkStatusMonitor networkStatusMonitor;
 
-    private static final long MAX_RUN_TIME = 30;
+    private static final long MAX_RUN_TIME = 30*60;
+    private static final long MAX_REQUEST_RUN_TIME = 60;
 
     /**
      * Sync account related vars
@@ -127,6 +132,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             String authority,
             ContentProviderClient provider,
             SyncResult syncResult) {
+        long start = SystemClock.elapsedRealtime();
         Log.i(TAG, "Beginning network synchronization");
 
         // Load preferences, but not yet there value
@@ -198,15 +204,24 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         // ** SYNC **
         String errorName = "success";
         try {
-            // Get current cache status
-            CacheEntries cachedOffices = mController.listCachedEntries(new AelfDate());
-
             // Initialize the worker pool
             ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);
 
-            // Pre-Load 'daysToSync'. It is important to create a new date instance. Otherwise, all
-            // future would be sharing the same date instance and save more or less on the same day
-            // which is not quite good...
+            // Fetch 7 next days offices checksums in the background (can take up to 3-5s when the cache is cold on the server)
+            FutureTask<OfficesChecksums> officesChecksumFetcher = new FutureTask<>(() -> {
+                try {
+                    return mController.loadOfficesChecksums(new AelfDate(), 7);
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to fetch future offices checksums", e);
+                    return null;
+                }
+            });
+            executorService.execute(officesChecksumFetcher);
+
+            // Get current cache status
+            CacheEntries cachedOffices = mController.listCachedEntries(new AelfDate());
+
+            // Schedule sync of all offices that are not yet in the cache
             for (int i = 0; i < daysToSync; i++) {
                 // Enqueue sync tasks for the day
                 AelfDate when = new AelfDate();
@@ -214,25 +229,61 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                 // Sync office and information for that day, if needed
                 for (OfficeTypes what: whatList) {
-                    // Do we need to refresh ?
+                    // Do we need to sync ?
                     if (cachedOffices.containsKey(new CacheEntryIndex(what, when))) {
-                        if (when.isWithin7NextDays()) {
-                            // We always load for this week to allow corrections made by volunteers to
-                            // eventually reach the phones.
-                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING REFRESH (<7 days)");
-                        } else {
-                            // This is more than a week ahead and we already have a version in the cache
-                            Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SKIPPED");
-                            continue;
-                        }
+                        continue;
                     }
+
+                    Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING INITIAL FETCH");
+                    executorService.execute(() -> this.syncReading(what, when, syncResult, isManualSync, wifiOnly));
+                }
+            }
+
+            // Schedule the REFRESH of the offices in the next 7 days if:
+            // - we have a local copy
+            // - this local copy is outdated
+            // - we were able to query the remote server status
+            OfficesChecksums serverChecksums;
+            try {
+                serverChecksums = officesChecksumFetcher.get(MAX_REQUEST_RUN_TIME, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to query server-side offices checksums. Ignoring.", e);
+                serverChecksums = null;
+            }
+
+            for (int i = 0; i < 7 && serverChecksums != null; i++) {
+                // Enqueue sync tasks for the day
+                AelfDate when = new AelfDate();
+                when.add(Calendar.DATE, i);
+
+                // Sync office and information for that day, if needed
+                for (OfficeTypes what: whatList) {
+                    // Only if we have a cache entry (otherwise the loop above already fetched it)
+                    CacheEntry cacheEntry = cachedOffices.get(new CacheEntryIndex(what, when));
+                    if (cacheEntry == null) {
+                        continue;
+                    }
+
+                    // Only if we have a checksum for this day
+                    String serverChecksum = serverChecksums.getOfficeChecksum(what, when);
+                    if (serverChecksum == null) {
+                        continue;
+                    }
+
+                    // And if the checksum is different than the one in cache
+                    if (cacheEntry.checksum.equals(serverChecksum)) {
+                        continue;
+                    }
+
+                    // Schedule refresh
+                    Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING REFRESH (outdated)");
                     executorService.execute(() -> this.syncReading(what, when, syncResult, isManualSync, wifiOnly));
                 }
             }
 
             // Execute all tasks and wait for completion
             executorService.shutdown();
-            boolean success_within_time = executorService.awaitTermination(MAX_RUN_TIME, TimeUnit.MINUTES);
+            boolean success_within_time = executorService.awaitTermination(MAX_RUN_TIME, TimeUnit.SECONDS);
 
             if(!success_within_time) {
                 Log.w(TAG, "Time budget exceeded, cancelling sync");
@@ -280,6 +331,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         controller.truncateBefore(minConserv);
 
         // Finish sync, ensure that next sync will get a clean preference copy
+        long stop = SystemClock.elapsedRealtime();
+        Log.i(TAG, "Sync duration: "+(stop-start)/1000.0+"s");
         System.exit(0);
     }
 

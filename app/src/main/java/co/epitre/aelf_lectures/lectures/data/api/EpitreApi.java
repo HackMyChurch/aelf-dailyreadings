@@ -195,7 +195,7 @@ public final class EpitreApi {
             return raw_etag;
         }
 
-        return raw_etag.substring(quote_start, quote_end);
+        return raw_etag.substring(quote_start+1, quote_end);
     }
 
     /**
