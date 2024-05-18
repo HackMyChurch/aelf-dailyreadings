@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures;
 
-import android.accounts.Account;
 import android.app.ActivityManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,15 +12,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import com.google.android.material.navigation.NavigationView;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -33,6 +23,16 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.navigation.NavigationView;
+
 import java.io.File;
 import java.util.Objects;
 
@@ -43,7 +43,7 @@ import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
-import co.epitre.aelf_lectures.sync.SyncAdapter;
+import co.epitre.aelf_lectures.sync.SyncEngine;
 
 public class LecturesActivity extends BaseActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -53,9 +53,6 @@ public class LecturesActivity extends BaseActivity implements
     /**
      * Global managers / resources
      */
-
-    // Instance fields
-    Account mAccount;
 
     // action bar
     protected ActionBar actionBar;
@@ -96,7 +93,7 @@ public class LecturesActivity extends BaseActivity implements
             // update saved version
             editor.putInt(SettingsActivity.KEY_APP_VERSION, currentVersion);
             editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
-            SyncAdapter.triggerSync(this);
+            SyncEngine.triggerSync(this);
             DialogsKt.displayWhatsNewDialog(this);
 
             // Purge cache on upgrade (get new Bible index if any, ...)
@@ -163,15 +160,6 @@ public class LecturesActivity extends BaseActivity implements
         editor.apply();
         // ---- end upgrade
 
-        // create dummy account for our background sync engine
-        try {
-            mAccount = SyncAdapter.getSyncAccount(this);
-        } catch (SecurityException e) {
-            // WTF ? are denied the tiny subset of autorization we ask for ? Anyway, fallback to best effort
-            Log.w(TAG, "Create/Get sync account was DENIED");
-            mAccount = null;
-        }
-
         // some UI. Most UI init are done in the prev async task
         setContentView(R.layout.activity_lectures);
 
@@ -225,16 +213,10 @@ public class LecturesActivity extends BaseActivity implements
         setTaskDescription(taskDescription);
 
         // Turn on periodic caching
-        if (mAccount != null) {
-            SyncAdapter.configureSync(this);
-
-            // If the account has not been synced in the last 48h OR never be synced at all, force sync
-            long hours = SyncAdapter.getLastSyncSuccessAgeHours(this);
-            if (hours >= 48 || hours < 0) {
-                Log.w(TAG, "Automatic sync has not worked for at least 2 full days, attempting to force sync");
-                SyncAdapter.triggerSync(this);
-            }
-        }
+        // FIXME: register the new sync engine. Some snippets:
+        // - long hours = SyncEngine.getLastSyncSuccessAgeHours(this);
+        // - SyncEngine.configureSync(this);
+        // - SyncEngine.triggerSync(this);
 
         // Route the application
         if (savedInstanceState != null) {
@@ -377,7 +359,7 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     public boolean onSyncDo() {
-        SyncAdapter.triggerSync(this);
+        SyncEngine.triggerSync(this);
         return true;
     }
 
@@ -393,9 +375,6 @@ public class LecturesActivity extends BaseActivity implements
         editor.putString(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER, "");
         editor.putBoolean(SettingsActivity.KEY_PREF_PARTICIPATE_BETA, false);
         editor.putBoolean(SettingsActivity.KEY_PREF_PARTICIPATE_NOCACHE, false);
-
-        // Make sure sync is enabled on device
-        SyncAdapter.configureSync(this);
 
         editor.apply();
 
@@ -542,11 +521,11 @@ public class LecturesActivity extends BaseActivity implements
         super.onSharedPreferenceChanged(sharedPreferences, key);
 
         if (key.equals(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
-            SyncAdapter.killPendingSyncs(this);
+            SyncEngine.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
-            SyncAdapter.killPendingSyncs(this);
+            SyncEngine.killPendingSyncs(this);
         } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_BETA)) {
-            SyncAdapter.killPendingSyncs(this);
+            SyncEngine.killPendingSyncs(this);
         }
     }
 

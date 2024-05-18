@@ -22,7 +22,7 @@ import java.io.IOException;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.DialogsKt;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
-import co.epitre.aelf_lectures.sync.SyncAdapter;
+import co.epitre.aelf_lectures.sync.SyncEngine;
 
 public class MainPrefFragment extends BasePrefFragment {
     @Override
@@ -220,7 +220,7 @@ public class MainPrefFragment extends BasePrefFragment {
         }
 
         // Kill any running sync
-        SyncAdapter.killPendingSyncs(context);
+        SyncEngine.killPendingSyncs(context);
 
         // Drop the database
         try {
@@ -231,6 +231,6 @@ public class MainPrefFragment extends BasePrefFragment {
         onSharedPreferenceChanged(null, SettingsActivity.KEY_PREF_SYNC_DROP_CACHE);
 
         // Start a new background sync
-        SyncAdapter.triggerSync(context);
+        SyncEngine.triggerSync(context);
     }
 }

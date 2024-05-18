@@ -1,17 +1,8 @@
 package co.epitre.aelf_lectures.sync;
 
-import static android.content.Context.ACCOUNT_SERVICE;
-import static android.content.Context.ACTIVITY_SERVICE;
-
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.app.ActivityManager;
-import android.content.AbstractThreadedSyncAdapter;
-import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.SyncResult;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -38,8 +29,8 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 // FIXME: this class is a *mess*. We need to rewrite it !
 
-public class SyncAdapter extends AbstractThreadedSyncAdapter {
-    private static final String TAG = "AELFSyncAdapter";
+public class SyncEngine {
+    private static final String TAG = "AELFSyncEngine";
     static final int SYNC_WORKER_COUNT = 4;
 
     private Context mContext;
@@ -49,46 +40,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final long MAX_RUN_TIME = 30*60;
     private static final long MAX_REQUEST_RUN_TIME = 60;
-
-    /**
-     * Sync account related vars
-     */
-    // The authority for the sync adapter's content provider
-    public static final String AUTHORITY = "co.epitre.aelf"; // DANGER: must be the same as the provider's in the manifest
-    // An account type, in the form of a domain name
-    public static final String ACCOUNT_TYPE = "epitre.co";
-    // The account name
-    public static final String ACCOUNT = "www.aelf.org";
-    // Sync interval in s. ~ 1 Day
     public static final long SYNC_INTERVAL = 60L * 60L * 22L;
 
     /**
      * Constructor. Obtains handle to content resolver for later use.
      */
-    public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
-
+    public SyncEngine(Context context) {
         this.mContext = context;
-        this.mController = LecturesController.getInstance(this.getContext());
+        this.mController = LecturesController.getInstance(context);
 
         // Network state change listener
         networkStatusMonitor = NetworkStatusMonitor.getInstance();
     }
 
-    /**
-     * Constructor. Obtains handle to content resolver for later use.
-     */
-    public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
-        super(context, autoInitialize, allowParallelSyncs);
-    }
-
     // Sync one reading for the day, if it is not yet in the cache or is in the current week.
-    private void syncReading(OfficeTypes what, AelfDate when, SyncResult syncResult, boolean isManualSync, boolean wifiOnly) {
+    private void syncReading(OfficeTypes what, AelfDate when, boolean isManualSync, boolean wifiOnly) {
         // Check pre-requisites
-        if (syncResult.stats.numIoExceptions > 10) {
-            Log.w(TAG, "Too many errors, cancelling sync");
-            return;
-        } else if (!revalidateConnection(isManualSync, wifiOnly)) {
+        if (!revalidateConnection(isManualSync, wifiOnly)) {
             Log.w(TAG, "Network went down, cancelling sync");
             return;
         }
@@ -99,7 +67,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             mController.loadLecturesFromNetwork(what, when);
         } catch (IOException e) {
             Log.e(TAG, "I/O error while loading "+what.urlName()+"/"+when.toIsoString()+": "+e, e);
-            syncResult.stats.numIoExceptions++;
         }
     }
 
@@ -125,13 +92,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
      *  - tomorrow
      *  - next Sunday
      */
-    @Override
-    public void onPerformSync(
-            Account account,
-            Bundle extras,
-            String authority,
-            ContentProviderClient provider,
-            SyncResult syncResult) {
+    public void onPerformSync(Bundle extras) {
         long start = SystemClock.elapsedRealtime();
         Log.i(TAG, "Beginning network synchronization");
 
@@ -153,7 +114,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             } catch (InterruptedException e) {
                 // Reschedule and exit
                 Log.w(TAG, "Interrupted while waiting for WiFi, schedule retry");
-                syncResult.stats.numIoExceptions++;
                 return;
             }
 
@@ -177,7 +137,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.i(TAG, "Pref durée="+pDuree);
         Log.i(TAG, "Pref conservation="+pConserv);
 
-        LecturesController controller = LecturesController.getInstance(this.getContext());
+        LecturesController controller = LecturesController.getInstance(this.mContext);
 
         // Build the list of office to sync
         OfficeTypes[] whatList;
@@ -202,7 +162,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         // ** SYNC **
-        String errorName = "success";
         try {
             // Initialize the worker pool
             ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);
@@ -235,7 +194,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     }
 
                     Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING INITIAL FETCH");
-                    executorService.execute(() -> this.syncReading(what, when, syncResult, isManualSync, wifiOnly));
+                    executorService.execute(() -> this.syncReading(what, when, isManualSync, wifiOnly));
                 }
             }
 
@@ -277,7 +236,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
                     // Schedule refresh
                     Log.i(TAG, what.urlName()+" for "+when.toIsoString()+" SCHEDULING REFRESH (outdated)");
-                    executorService.execute(() -> this.syncReading(what, when, syncResult, isManualSync, wifiOnly));
+                    executorService.execute(() -> this.syncReading(what, when, isManualSync, wifiOnly));
                 }
             }
 
@@ -292,25 +251,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         } catch (InterruptedException e) {
             Log.i(TAG, "Sync was interrupted, scheduling retry");
-            syncResult.stats.numIoExceptions++;
-        } catch (Exception e) {
-            errorName = "error."+e.getClass().getName();
-            throw e;
-        }
-        finally {
-            // Track sync status
-            Log.d(TAG, "Sync result: "+syncResult.toDebugString());
-            if (syncResult.stats.numIoExceptions > 0) {
-                errorName = "io";
-            }
-
+            // FIXME: schedule restart
+        } finally {
             // Internally track last sync data in DEDICATED store to avoid races with user set preferences (last write wins, hence a sync would overwrite any changes...)
             SharedPreferences.Editor editor = syncStat.edit();
             long currentTimeMillis = System.currentTimeMillis();
             editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_ATTEMPT, currentTimeMillis);
-            if (errorName.equals("success")) {
-                editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
-            }
+
+            // FIXME: rework the definition of success
+            editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, currentTimeMillis);
             editor.commit();
         }
 
@@ -356,60 +305,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         return getHoursSincePreference(ctx, SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS);
     }
 
-    public static Account getSyncAccount(Context ctx) {
-        Account newAccount = new Account(ACCOUNT, ACCOUNT_TYPE);
-        AccountManager accountManager = (AccountManager) ctx.getSystemService(ACCOUNT_SERVICE);
-
-        // Create the account explicitly. If account creation fails, it means that it already exists.
-        // In this case, keep and return the dummy instance. We'll need to trigger manual sync
-        try {
-            accountManager.addAccountExplicitly(newAccount, null, null);
-        } catch (SecurityException e) {
-            // This should not fail BUT, there are reports on Android 6.0
-            Log.e(TAG, "getSyncAccount: SecurityException while creating account", e);
-        }
-        return newAccount;
-    }
-
-    public static void configureSync(Context ctx) {
-        Account account = getSyncAccount(ctx);
-
-        ContentResolver.setIsSyncable(account, AUTHORITY, 1);
-        ContentResolver.setSyncAutomatically(account, AUTHORITY, true);
-        ContentResolver.addPeriodicSync(account, AUTHORITY, new Bundle(1), SYNC_INTERVAL);
-    }
-
     public static void triggerSync(Context ctx) {
-        Account account = getSyncAccount(ctx);
-
-        // Pass the settings flags by inserting them in a bundle
-        Bundle settingsBundle = new Bundle();
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
-        settingsBundle.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-        // start sync
-        ContentResolver.requestSync(account, AUTHORITY, settingsBundle);
+        // FIXME: Need to re-implement
     }
 
     // If there is any sync in progress, terminate it. This allows the sync engine to pick up any
     // important preference changes
-    // TODO: use some sort of signaling instead...
     public static void killPendingSyncs(Context ctx) {
-        // Is there a sync in progress ?
-        if (ContentResolver.getCurrentSyncs().isEmpty()) {
-            // There is no sync in progress
-            return;
-        }
-
-        // Kill any background processes
-        ActivityManager am = (ActivityManager)ctx.getSystemService(ACTIVITY_SERVICE);
-        String packageName = ctx.getPackageName();
-        if (packageName != null && am != null) {
-            am.killBackgroundProcesses(packageName);
-        }
-
-        // Cancel sync
-        Account account = getSyncAccount(ctx);
-        ContentResolver.cancelSync(account, AUTHORITY);
+        // FIXME: Need to re-implement
     }
 }
