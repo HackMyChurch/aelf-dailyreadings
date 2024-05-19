@@ -1,18 +1,17 @@
 package co.epitre.aelf_lectures;
 
+import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICIPATE_SERVER;
+
 import android.app.Application;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import androidx.core.app.NotificationCompat;
-import android.util.Log;
 import android.os.Process;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.Validator;
-
-import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICIPATE_SERVER;
+import co.epitre.aelf_lectures.settings.SettingsActivity;
+import co.epitre.aelf_lectures.sync.SyncManager;
 
 
 // Attempt to fix crash on Android 4.4 when upgrading app
@@ -21,9 +20,6 @@ public class LecturesApplication extends Application {
     private static final String TAG = "LecturesApplication";
     private static LecturesApplication instance;
     private SharedPreferences settings;
-
-    public static final int NOTIFICATION_SYNC_PROGRESS = 1;
-    public static final int NOTIFICATION_START_ERROR = 2;
 
     @Override
     public void onCreate() {
@@ -41,6 +37,7 @@ public class LecturesApplication extends Application {
         // Boot application
         initNetworkStatusMonitor();
         isValidServer();
+        initializeSync();
     }
 
     //
@@ -82,15 +79,44 @@ public class LecturesApplication extends Application {
         // Force it back to default
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(KEY_PREF_PARTICIPATE_SERVER, "");
-        editor.commit();
+        editor.apply();
+    }
 
-        // Notify user
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this.getApplicationContext())
-                .setContentTitle("Adresse du serveur corrigée")
-                .setContentText("Vous devriez à nouveau bénéficier des lectures !")
-                .setSmallIcon(android.R.drawable.ic_dialog_info);
+    private void initializeSync() {
+        // Ensure the region is configured
+        if (settings.getString(SettingsActivity.KEY_PREF_REGION, "").isEmpty()) {
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(SettingsActivity.KEY_PREF_REGION, getDefaultRegionFromLocale());
+            editor.apply();
+        }
 
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(NOTIFICATION_START_ERROR, mBuilder.build());
+        // Boot the sync
+        SyncManager syncManager = SyncManager.getInstance(this);
+
+        // If the sync has not run for more than 2 days, expedite
+        long lastSyncAge = syncManager.getLastSyncSuccessAgeHours();
+        if (lastSyncAge > 48 || lastSyncAge == -1) {
+            Log.w(TAG, "Sync has not run for "+lastSyncAge+" hours. Expediting.");
+            syncManager.triggerSync();
+        }
+    }
+
+    private String getDefaultRegionFromLocale() {
+        String locale = getResources().getConfiguration().locale.getCountry();
+
+        // Make a reasonable region guess
+        return switch (locale) {
+            case "FR" -> "france";
+            case "BE" -> "belgique";
+            case "LU" -> "luxembourg";
+            case "CA" -> "canada";
+            case "CH" -> "suisse";
+            case "DZ", "AO", "AC", "BJ", "BW", "BF", "BI", "CM", "CV", "CF", "TD", "KM", "CG", "CD",
+                 "CI", "DG", "DJ", "EG", "GQ", "ER", "ET", "FK", "GA", "GH", "GI", "GN", "GW", "KE",
+                 "LS", "LR", "LY", "MG", "MW", "ML", "MR", "MU", "YT", "MA", "MZ", "NA", "NE", "NG",
+                 "RE", "RW", "SH", "ST", "SN", "SC", "SL", "SO", "ZA", "SD", "SZ", "TZ", "GM", "TG",
+                 "TA", "TN", "UG", "EH", "ZM", "ZW" -> "afrique";
+            default -> "romain";
+        };
     }
 }

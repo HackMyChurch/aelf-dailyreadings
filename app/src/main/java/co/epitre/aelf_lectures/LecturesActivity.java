@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -43,7 +42,7 @@ import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
-import co.epitre.aelf_lectures.sync.SyncEngine;
+import co.epitre.aelf_lectures.sync.SyncManager;
 
 public class LecturesActivity extends BaseActivity implements
         NavigationView.OnNavigationItemSelectedListener {
@@ -84,7 +83,6 @@ public class LecturesActivity extends BaseActivity implements
         currentVersion = packageInfo.versionCode;
 
         // load saved version, if any
-        Resources res = getResources();
         savedVersion = settings.getInt(SettingsActivity.KEY_APP_VERSION, -1);
 
         // upgrade logic, primitive at the moment...
@@ -93,7 +91,6 @@ public class LecturesActivity extends BaseActivity implements
             // update saved version
             editor.putInt(SettingsActivity.KEY_APP_VERSION, currentVersion);
             editor.putInt(SettingsActivity.KEY_APP_PREVIOUS_VERSION, savedVersion);
-            SyncEngine.triggerSync(this);
             DialogsKt.displayWhatsNewDialog(this);
 
             // Purge cache on upgrade (get new Bible index if any, ...)
@@ -103,29 +100,6 @@ public class LecturesActivity extends BaseActivity implements
         if (savedVersion < 78) {
             // The code was refactored in 78 so that cached items can no longer be restored from the cache
             LecturesController.getInstance(this).dropDatabase();
-        }
-
-        // Create the "Region" setting from the locale, if it does not exist and invalidate the cache
-        if (settings.getString(SettingsActivity.KEY_PREF_REGION, "").equals("")) {
-            // Get locale
-            String locale = res.getConfiguration().locale.getCountry();
-            String region = "romain";
-
-            // Make a reasonable region guess
-            switch (locale) {
-                case "FR": region = "france";     break;
-                case "BE": region = "belgique";   break;
-                case "LU": region = "luxembourg"; break;
-                case "CA": region = "canada";     break;
-                case "CH": region = "suisse";     break;
-                default:
-                    if ("DZ AO AC BJ BW BF BI CM CV CF TD KM CG CD CI DG DJ EG GQ ER ET FK GA GH GI GN GW KE LS LR LY MG MW ML MR MU YT MA MZ NA NE NG RE RW SH ST SN SC SL SO ZA SD SZ TZ GM TG TA TN UG EH ZM ZW".contains(locale)) {
-                        region = "afrique";
-                    } else {
-                        region = "romain";
-                    }
-            }
-            editor.putString(SettingsActivity.KEY_PREF_REGION, region);
         }
 
         // migrate SettingsActivity.KEY_PREF_DISP_FONT_SIZE from text to int
@@ -211,12 +185,6 @@ public class LecturesActivity extends BaseActivity implements
         int appColor = getResources().getColor(R.color.dark_aelf_primary_dark);
         ActivityManager.TaskDescription taskDescription = new ActivityManager.TaskDescription(appName, appIcon, appColor);
         setTaskDescription(taskDescription);
-
-        // Turn on periodic caching
-        // FIXME: register the new sync engine. Some snippets:
-        // - long hours = SyncEngine.getLastSyncSuccessAgeHours(this);
-        // - SyncEngine.configureSync(this);
-        // - SyncEngine.triggerSync(this);
 
         // Route the application
         if (savedInstanceState != null) {
@@ -359,7 +327,7 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     public boolean onSyncDo() {
-        SyncEngine.triggerSync(this);
+        SyncManager.getInstance(this).triggerSync();
         return true;
     }
 
@@ -512,21 +480,6 @@ public class LecturesActivity extends BaseActivity implements
 
         // All good
         return true;
-    }
-
-    // Detect important / global option change
-    // FIXME: this should probably be in the application. Should also move the account managment there
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        super.onSharedPreferenceChanged(sharedPreferences, key);
-
-        if (key.equals(SettingsActivity.KEY_PREF_SYNC_WIFI_ONLY)) {
-            SyncEngine.killPendingSyncs(this);
-        } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER)) {
-            SyncEngine.killPendingSyncs(this);
-        } else if (key.equals(SettingsActivity.KEY_PREF_PARTICIPATE_BETA)) {
-            SyncEngine.killPendingSyncs(this);
-        }
     }
 
     /*

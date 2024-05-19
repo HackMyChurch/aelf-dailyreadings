@@ -55,6 +55,9 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp-tls:4.12.0'
     implementation 'com.squareup.moshi:moshi:1.15.0'
 
+    // Synchronization
+    implementation "androidx.work:work-runtime:2.9.0"
+
     // Foundation
     implementation 'org.greenrobot:eventbus:3.3.1'
 
