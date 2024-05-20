@@ -29,11 +29,10 @@ import co.epitre.aelf_lectures.lectures.data.office.Office;
  * - which version of the application was used --> used for upgrade initiated invalidation
  */
 
-public final class AelfCacheHelper extends SQLiteOpenHelper {
+public final class Cache extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
     private static final int DB_VERSION = 6;
     private static final String DB_NAME = "aelf_cache.db";
-    private Context ctx;
 
     private static final String DB_CACHE_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `lectures` (" +
             "date TEXT NOT NULL," +
@@ -48,13 +47,21 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
 
     // TODO: prepare requests
 
-    public AelfCacheHelper(Context context) {
-        super(context, context.getDatabasePath(DB_NAME).getAbsolutePath(), null, DB_VERSION);
-        File dbDir = context.getDatabasePath(DB_NAME).getParentFile();
-        if (dbDir != null) {
-            dbDir.mkdirs();
+    public Cache(Context context) {
+        super(
+                context,
+                context.getDatabasePath(DB_NAME).getAbsolutePath(),
+                null,
+                DB_VERSION,
+                DB_VERSION, // We do not support upgrades. Drop on upgrade.
+                null // Default error handler: Drop the database when corrupted
+        );
+
+        SQLiteDatabase db = getWritableDatabase();
+        File dbFile = new File(db.getPath());
+        if (dbFile.getParentFile() != null) {
+            dbFile.getParentFile().mkdirs();
         }
-        ctx = context;
     }
 
     /**
@@ -62,11 +69,16 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
      */
 
     public void dropDatabase() {
-        this.ctx.deleteDatabase(DB_NAME);
+        SQLiteDatabase db = getWritableDatabase();
+        File databaseFile = new File(db.getPath());
+        db.close();
+        SQLiteDatabase.deleteDatabase(databaseFile);
     }
 
     public long getDatabaseSize() {
-        return this.ctx.getDatabasePath(DB_NAME).length();
+        SQLiteDatabase db = getReadableDatabase();
+        File databaseFile = new File(db.getPath());
+        return databaseFile.length();
     }
 
     synchronized public void store(OfficeTypes what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
@@ -177,6 +189,6 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        this.dropDatabase(); // This is a cache, we can re-build it
+        // no-op: The database is automatically dropped on upgrade by the base class
     }
 }

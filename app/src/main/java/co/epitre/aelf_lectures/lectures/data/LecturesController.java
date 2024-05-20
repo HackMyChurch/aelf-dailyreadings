@@ -9,7 +9,7 @@ import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.lectures.data.api.EpitreApi;
 import co.epitre.aelf_lectures.lectures.data.api.OfficeResponse;
-import co.epitre.aelf_lectures.lectures.data.cache.AelfCacheHelper;
+import co.epitre.aelf_lectures.lectures.data.cache.Cache;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
@@ -27,7 +27,7 @@ public final class LecturesController {
     private static final String TAG = "LectureController";
     private int apiVersion;
     private static volatile LecturesController instance = null;
-    private AelfCacheHelper cache = null;
+    private Cache cache = null;
     private EpitreApi api = null;
     Context ctx;
 
@@ -36,7 +36,7 @@ public final class LecturesController {
 
         ctx = c;
         api = EpitreApi.getInstance(c);
-        cache = new AelfCacheHelper(c);
+        cache = new Cache(c);
         apiVersion = c.getResources().getInteger(R.integer.api_version);
     }
     public static LecturesController getInstance(Context c) {
