@@ -70,7 +70,7 @@ public final class LecturesController {
             if (cacheEntry == null) {
                 return null;
             }
-            return cacheEntry.office;
+            return cacheEntry.office();
         } catch (RuntimeException e) {
             // gracefully recover when DB stream outdated/corrupted by refreshing
             Log.e(TAG, "Loading lecture from cache crashed ! Recovery by refreshing...", e);

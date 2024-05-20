@@ -246,7 +246,7 @@ public class SyncWorker extends Worker {
                 }
 
                 // And if the checksum is different than the one in cache
-                if (cacheEntry.checksum.equals(serverChecksum)) {
+                if (cacheEntry.checksum().equals(serverChecksum)) {
                     continue;
                 }
 
