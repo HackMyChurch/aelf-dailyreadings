@@ -1,12 +1,5 @@
 package co.epitre.aelf_lectures.lectures.data.cache;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.File;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
@@ -14,6 +7,13 @@ import android.util.Log;
 import org.sqlite.database.sqlite.SQLiteDatabase;
 import org.sqlite.database.sqlite.SQLiteOpenHelper;
 import org.sqlite.database.sqlite.SQLiteStatement;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
@@ -101,6 +101,7 @@ public final class AelfCacheHelper extends SQLiteOpenHelper {
     synchronized public void truncateBefore(AelfDate when) throws IOException {
         SQLiteDatabase db = getWritableDatabase();
         db.delete("lectures", "`date` < ?", new String[] {when.toIsoString()});
+        db.execSQL("VACUUM");
     }
 
     // cast is not checked when decoding the blob but we where responsible for its creation so... dont care
