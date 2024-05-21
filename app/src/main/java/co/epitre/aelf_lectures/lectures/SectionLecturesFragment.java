@@ -366,6 +366,8 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office);
         mViewPager.setAdapter(lecturesPagerAdapter);
         mViewPager.setCurrentItem(whatwhen.position);
+
+        refreshUI(whatwhen);
     }
 
     public void updateCalendarButtonLabel(WhatWhen whatwhen) {
