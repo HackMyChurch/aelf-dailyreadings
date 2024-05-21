@@ -92,11 +92,16 @@ public class Lecture implements Serializable {
         bodyBuilder.append(this.text);
 
         if (this.antienne != null && !this.antienne.isEmpty()) {
-            // Insert the "Gloria Patri", unless Dn 3 which implies it.
+            // Insert the doxology, unless Dn 3 which implies it.
             if (this.reference != null && !this.reference.equals("Dn 3")) {
-                bodyBuilder.append("<div class=\"gloria_patri\"><span tabindex=\"0\" id=\"");
+                bodyBuilder.append("<p class=\"doxology\">");
+                bodyBuilder.append("<span tabindex=\"0\" id=\"");
                 bodyBuilder.append(this.key);
-                bodyBuilder.append("-gloria_patri\" class=\"line\">Gloire au Père, ...</span></div>");
+                bodyBuilder.append("-doxology\" class=\"line\">Gloire au Père, et au Fils, et au Saint-Esprit,</span>");
+                bodyBuilder.append("<span tabindex=\"0\" id=\"");
+                bodyBuilder.append(this.key);
+                bodyBuilder.append("-doxology\" class=\"line\">pour les siècles des siècles. Amen.</span>");
+                bodyBuilder.append("</p>");
             }
 
             bodyBuilder.append("<div class=\"antienne\"><span tabindex=\"0\" id=\"");
