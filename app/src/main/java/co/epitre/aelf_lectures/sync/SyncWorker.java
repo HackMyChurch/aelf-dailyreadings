@@ -27,8 +27,8 @@ import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
-import co.epitre.aelf_lectures.lectures.data.office.OfficeChecksum;
-import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
+import co.epitre.aelf_lectures.lectures.data.office.OfficeMetadata;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesMetadata;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
@@ -141,7 +141,7 @@ public class SyncWorker extends Worker {
         ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);
 
         // Schedule task to load this week's offices checksum (up to 5 sec when the server cache is cold)
-        FutureTask<OfficesChecksums> officesChecksumFetcher = new FutureTask<>(this::loadOfficesChecksums);
+        FutureTask<OfficesMetadata> officesChecksumFetcher = new FutureTask<>(this::loadOfficesMetadata);
         executorService.execute(officesChecksumFetcher);
 
         // Get current cache status
@@ -190,11 +190,11 @@ public class SyncWorker extends Worker {
         return Result.success();
     }
 
-    private OfficesChecksums loadOfficesChecksums() {
+    private OfficesMetadata loadOfficesMetadata() {
         try {
-            return mController.loadOfficesChecksums(new AelfDate(), 7);
+            return mController.loadOfficesMetadata(new AelfDate(), 7);
         } catch (IOException e) {
-            Log.e(TAG, "Failed to fetch future offices checksums", e);
+            Log.e(TAG, "Failed to fetch future offices metadata", e);
             return null;
         }
     }
@@ -218,8 +218,8 @@ public class SyncWorker extends Worker {
         }
     }
 
-    private void enqueueCacheRefreshTasks(FutureTask<OfficesChecksums> officesChecksumFetcher, OfficeTypes[] officeTypesToSync, CacheEntries cachedOffices, ExecutorService executorService) {
-        OfficesChecksums serverChecksums;
+    private void enqueueCacheRefreshTasks(FutureTask<OfficesMetadata> officesChecksumFetcher, OfficeTypes[] officeTypesToSync, CacheEntries cachedOffices, ExecutorService executorService) {
+        OfficesMetadata serverChecksums;
         try {
             serverChecksums = officesChecksumFetcher.get(MAX_REQUEST_RUN_TIME, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -241,18 +241,18 @@ public class SyncWorker extends Worker {
                 }
 
                 // Only if we have a checksum for this day
-                OfficeChecksum serverChecksum = serverChecksums.getOfficeChecksum(what, when);
-                if (serverChecksum == null) {
+                OfficeMetadata serverOfficeMetadata = serverChecksums.getOfficeChecksum(what, when);
+                if (serverOfficeMetadata == null) {
                     continue;
                 }
 
                 // And if the checksum is different than the one in cache
-                if (cacheEntry.checksum().equals(serverChecksum.checksum())) {
+                if (cacheEntry.checksum().equals(serverOfficeMetadata.checksum())) {
                     continue;
                 }
 
                 // Finally, only update if the server entry is more recent
-                if(serverChecksum.generationDate().isValid() && serverChecksum.generationDate().before(cacheEntry.creationDate())) {
+                if(serverOfficeMetadata.generationDate().isValid() && serverOfficeMetadata.generationDate().before(cacheEntry.creationDate())) {
                     continue;
                 }
 

@@ -9,7 +9,7 @@ import java.io.IOException;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
-import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesMetadata;
 
 class EpitreApiTest {
     @Test
@@ -37,7 +37,7 @@ class EpitreApiTest {
         }""";
 
         EpitreApi api = new EpitreApi(null);
-        OfficesChecksums officesChecksums = api.officesChecksumsJsonAdapter.fromJson(json_input);
+        OfficesMetadata officesMetadata = api.officesChecksumsJsonAdapter.fromJson(json_input);
 
         // Note: Months are 0-indexed
         AelfDate target_date = new AelfDate(2024, 4, 14);
@@ -45,11 +45,11 @@ class EpitreApiTest {
         // Sanity test (deeper tests are already where they belong)
         assertEquals(
                 "0326067588ea4e14b3cea8d8139ad910b191d20d6e7477789bf1c76f5e5b1749",
-                officesChecksums.getOfficeChecksum(OfficeTypes.COMPLIES, target_date).checksum()
+                officesMetadata.getOfficeChecksum(OfficeTypes.COMPLIES, target_date).checksum()
         );
         assertEquals(
                 new IsoDate(2024, 4, 20, 18, 7, 54),
-                officesChecksums.getOfficeChecksum(OfficeTypes.COMPLIES, target_date).generationDate()
+                officesMetadata.getOfficeChecksum(OfficeTypes.COMPLIES, target_date).generationDate()
         );
     }
 }

@@ -11,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
-import co.epitre.aelf_lectures.lectures.data.office.OfficeChecksum;
+import co.epitre.aelf_lectures.lectures.data.office.OfficeMetadata;
 
-public class OfficeChecksumJsonAdapterTest {
+public class OfficeMetadataJsonAdapterTest {
     @Test
     void deserialize() throws IOException {
         String json_input = """
@@ -25,19 +25,19 @@ public class OfficeChecksumJsonAdapterTest {
         Moshi moshi = new Moshi.Builder()
                 .add(new OfficeChecksumJsonAdapter())
                 .build();
-        JsonAdapter<OfficeChecksum> adapter = moshi.adapter(OfficeChecksum.class);
-        OfficeChecksum officeChecksum = adapter.fromJson(json_input);
+        JsonAdapter<OfficeMetadata> adapter = moshi.adapter(OfficeMetadata.class);
+        OfficeMetadata officeMetadata = adapter.fromJson(json_input);
 
-        assertNotNull(officeChecksum);
+        assertNotNull(officeMetadata);
 
         assertEquals(
                 "0326067588ea4e14b3cea8d8139ad910b191d20d6e7477789bf1c76f5e5b1749",
-                officeChecksum.checksum()
+                officeMetadata.checksum()
         );
 
         assertEquals(
                 new IsoDate(2024, 4, 20, 18, 7, 54),
-                officeChecksum.generationDate()
+                officeMetadata.generationDate()
         );
     }
 }

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
-import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
+import co.epitre.aelf_lectures.lectures.data.office.OfficesMetadata;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -89,7 +89,7 @@ public final class EpitreApi {
             .add(new OfficeChecksumJsonAdapter())
             .build();
     final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
-    final JsonAdapter<OfficesChecksums> officesChecksumsJsonAdapter = moshi.adapter(OfficesChecksums.class);
+    final JsonAdapter<OfficesMetadata> officesChecksumsJsonAdapter = moshi.adapter(OfficesMetadata.class);
 
     /**
      * Singleton
@@ -214,9 +214,9 @@ public final class EpitreApi {
      * Public API
      */
 
-    public OfficesChecksums getOfficesChecksums(AelfDate since, int days, int apiVersion) throws IOException {
+    public OfficesMetadata getOfficesMetadata(AelfDate since, int days, int apiVersion) throws IOException {
         // Build URL
-        String path = "/%d/office/checksums/%s/%sd?region=%s";
+        String path = "/%d/offices/metadata/%s/%sd?region=%s";
         String region = preference.getString(SettingsActivity.KEY_PREF_REGION, "romain");
         path = String.format(Locale.US, path, apiVersion, since.toIsoString(), days, region);
 
@@ -229,10 +229,10 @@ public final class EpitreApi {
             source = Objects.requireNonNull(response.body()).source();
 
             // De-Serialize
-            OfficesChecksums officesChecksums = officesChecksumsJsonAdapter.fromJson(source);
+            OfficesMetadata officesMetadata = officesChecksumsJsonAdapter.fromJson(source);
 
             // Return
-            return officesChecksums;
+            return officesMetadata;
         } catch (IOException e) {
             Log.w(TAG, "Failed to load office checksums from network: " + e);
             throw e;

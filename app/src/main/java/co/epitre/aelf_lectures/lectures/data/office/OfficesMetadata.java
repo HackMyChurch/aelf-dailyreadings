@@ -5,16 +5,16 @@ import java.util.Map;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 
-public class OfficesChecksums {
+public class OfficesMetadata {
     // Lightweight wrapper for Json of the form YYYY-MM-DD --> OfficeName --> checksum map
-    private final Map<String, Map<String, OfficeChecksum>> checksums;
+    private final Map<String, Map<String, OfficeMetadata>> checksums;
 
-    public OfficesChecksums(Map<String, Map<String, OfficeChecksum>> checksums) {
+    public OfficesMetadata(Map<String, Map<String, OfficeMetadata>> checksums) {
         this.checksums = checksums;
     }
 
-    public OfficeChecksum getOfficeChecksum(OfficeTypes office, AelfDate date) {
-        Map<String, OfficeChecksum> officeChecksums = checksums.get(date.toIsoString());
+    public OfficeMetadata getOfficeChecksum(OfficeTypes office, AelfDate date) {
+        Map<String, OfficeMetadata> officeChecksums = checksums.get(date.toIsoString());
         if (officeChecksums == null) {
             return null;
         }

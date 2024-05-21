@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
 
-public record OfficeChecksum(
+public record OfficeMetadata(
         @NonNull String checksum,
         @NonNull IsoDate generationDate
 ) {}
