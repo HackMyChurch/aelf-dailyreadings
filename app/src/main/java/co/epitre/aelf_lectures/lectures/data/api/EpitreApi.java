@@ -2,8 +2,11 @@ package co.epitre.aelf_lectures.lectures.data.api;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
@@ -17,11 +20,13 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+import co.epitre.aelf_lectures.BuildConfig;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.office.OfficesMetadata;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -126,10 +131,21 @@ public final class EpitreApi {
         }
 
         // Configure client timeouts
-        builder.connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
-               .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
-               .readTimeout   (60, TimeUnit.SECONDS)
-               .retryOnConnectionFailure(true);
+        builder
+                .connectTimeout(30, TimeUnit.SECONDS) // Was 60 seconds
+                .writeTimeout  (60, TimeUnit.SECONDS) // Was 10 minutes
+                .readTimeout   (60, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
+                .addInterceptor(new Interceptor() {
+                    @NonNull
+                    @Override
+                    public Response intercept(@NonNull Chain chain) throws IOException {
+                        return chain.proceed(chain.request()
+                                .newBuilder()
+                                .header("User-Agent", buildUserAgent())
+                                .build());
+                    }
+                });
 
         // Instanciate the HTTP client
         this.client = builder.build();
@@ -144,6 +160,18 @@ public final class EpitreApi {
             }
         }
         return EpitreApi.instance;
+    }
+
+    private String buildUserAgent() {
+        return String.format(Locale.ROOT,
+                "%s %s (%s); %s %s; Android %s",
+                BuildConfig.APPLICATION_ID,
+                BuildConfig.VERSION_CODE,
+                BuildConfig.BUILD_TYPE,
+                Build.MANUFACTURER,
+                Build.MODEL,
+                Build.VERSION.RELEASE
+        );
     }
 
     /**
