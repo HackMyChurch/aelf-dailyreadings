@@ -55,13 +55,12 @@
     <string name="dialog_whats_new_content">
         Merci d\'avoir mis à jour votre application \"&app_name;\" !
         \n
-        \nCette mise à jour lutte contre l\'obsolescence ! L\'application est désormais compatible
-        \navec les vieux téléphones Android 5.0, 5.1, 6.0 et 7.0 abandonnés par leurs fabricants.
+        \nEn apparence petite et discrète, cette mise à jour vient avec un tout nouveau moteur de
+        \nsynchronisation. Concrètement, cela corrige à la racine les soucis de synchronisation
+        \nremontés ces dernières années. (si vous avez toujours un problème hors connexion,
+        \ncontactez-nous depuis les préférences de l\'application)
         \n
-        \n• Il est maintenant possible de désactiver le "zoom à 2 doigts"
-        \n• L\'icône de l\'application s\'intègre maintenant en douceur dans les thèmes Android 13
-        \n• Le mode "plein écran", qui n\'est plus nécessaire, a été retiré
-        \n• Le code de l\'application a été dépoussiéré et mis à jour, fidèlement
+        \nOh, et revenir en arrière depuis la Bible vers un office arrive maintenant au bon endroit.
         \n
         \nEt toujours la parole de Dieu, rien que la parole de Dieu. Gratuitement, car nous avons
         reçu gratuitement. Sans espionner, car c\'est dans le secret que l\'on prie.
