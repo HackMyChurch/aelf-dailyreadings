@@ -94,14 +94,14 @@ public class Lecture implements Serializable {
         if (this.antienne != null && !this.antienne.isEmpty()) {
             // Insert the doxology, unless Dn 3 which implies it.
             if (this.reference != null && !this.reference.equals("Dn 3")) {
-                bodyBuilder.append("<p class=\"doxology\">");
+                bodyBuilder.append("<div class=\"doxology\"><p>");
                 bodyBuilder.append("<span tabindex=\"0\" id=\"");
                 bodyBuilder.append(this.key);
-                bodyBuilder.append("-doxology\" class=\"line\">Gloire au Père, et au Fils, et au Saint-Esprit,</span>");
+                bodyBuilder.append("-doxology-1\" class=\"line line-wrap\">Gloire au Père, et au Fils, et au Saint-Esprit,</span>");
                 bodyBuilder.append("<span tabindex=\"0\" id=\"");
                 bodyBuilder.append(this.key);
-                bodyBuilder.append("-doxology\" class=\"line\">pour les siècles des siècles. Amen.</span>");
-                bodyBuilder.append("</p>");
+                bodyBuilder.append("-doxology-2\" class=\"line line-wrap\">pour les siècles des siècles. Amen.</span>");
+                bodyBuilder.append("</p></div>");
             }
 
             bodyBuilder.append("<div class=\"antienne\"><span tabindex=\"0\" id=\"");
