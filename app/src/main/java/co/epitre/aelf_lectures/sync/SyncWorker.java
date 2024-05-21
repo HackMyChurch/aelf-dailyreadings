@@ -168,13 +168,14 @@ public class SyncWorker extends Worker {
             this.errors.incrementAndGet();
         } finally {
             long stop = SystemClock.elapsedRealtime();
+            long lastSyncAttempt = System.currentTimeMillis();
             Log.i(TAG, "Sync duration: "+(stop-start)/1000.0+"s");
 
             SharedPreferences.Editor editor = this.mSyncStats.edit();
-            editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_ATTEMPT, stop);
+            editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_ATTEMPT, lastSyncAttempt);
 
             if (this.errors.get() == 0) {
-                editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, stop);
+                editor.putLong(SettingsActivity.KEY_APP_SYNC_LAST_SUCCESS, lastSyncAttempt);
             }
 
             editor.apply();
