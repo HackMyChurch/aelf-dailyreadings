@@ -14,8 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.GregorianCalendar;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.IsoDate;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 
@@ -81,8 +83,8 @@ public final class Cache extends SQLiteOpenHelper {
         return databaseFile.length();
     }
 
-    synchronized public void store(OfficeTypes what, AelfDate when, Office office, String checksum, int ApiVersion) throws IOException {
-        final String create_date = (new AelfDate()).toIsoString();
+    synchronized public void store(OfficeTypes what, AelfDate when, Office office, String checksum, IsoDate createDate, int ApiVersion) throws IOException {
+        final String create_date = createDate.toString();
 
         // build blob
         final byte[] blob;
@@ -144,8 +146,10 @@ public final class Cache extends SQLiteOpenHelper {
             ByteArrayInputStream bis = new ByteArrayInputStream(blob);
             ObjectInputStream ois = new ObjectInputStream(bis);
 
+            IsoDate creationDate = new IsoDate(cur.getString(2));
+
             Office office = (Office) ois.readObject();
-            return new CacheEntry(office, checksum);
+            return new CacheEntry(office, checksum, creationDate);
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -159,7 +163,7 @@ public final class Cache extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cur = db.query(
                 "lectures",
-                new String[]{"date", "office", "checksum"},
+                new String[]{"date", "office", "checksum", "create_date"},
                 "`date`>=? AND `create_version` >= ?",
                 new String[]{since.toIsoString(), min_create_version},
                 null, null, null
@@ -171,7 +175,8 @@ public final class Cache extends SQLiteOpenHelper {
                 String what_str = cur.getString(1);
                 String when_str = cur.getString(0);
                 String checksum = cur.getString(2);
-                entries.put(new CacheEntryIndex(what_str, when_str), new CacheEntry(null, checksum));
+                String createDate_str = cur.getString(3);
+                entries.put(new CacheEntryIndex(what_str, when_str), new CacheEntry(null, checksum, new IsoDate(createDate_str)));
             }
         }
 

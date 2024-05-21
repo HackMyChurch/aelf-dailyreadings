@@ -27,6 +27,7 @@ import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntries;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntry;
 import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
+import co.epitre.aelf_lectures.lectures.data.office.OfficeChecksum;
 import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -240,13 +241,18 @@ public class SyncWorker extends Worker {
                 }
 
                 // Only if we have a checksum for this day
-                String serverChecksum = serverChecksums.getOfficeChecksum(what, when);
+                OfficeChecksum serverChecksum = serverChecksums.getOfficeChecksum(what, when);
                 if (serverChecksum == null) {
                     continue;
                 }
 
                 // And if the checksum is different than the one in cache
-                if (cacheEntry.checksum().equals(serverChecksum)) {
+                if (cacheEntry.checksum().equals(serverChecksum.checksum())) {
+                    continue;
+                }
+
+                // Finally, only update if the server entry is more recent
+                if(serverChecksum.generationDate().isValid() && serverChecksum.generationDate().before(cacheEntry.creationDate())) {
                     continue;
                 }
 

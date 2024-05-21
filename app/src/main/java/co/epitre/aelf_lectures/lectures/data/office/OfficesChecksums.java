@@ -7,14 +7,14 @@ import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
 
 public class OfficesChecksums {
     // Lightweight wrapper for Json of the form YYYY-MM-DD --> OfficeName --> checksum map
-    private final Map<String, Map<String, String>> checksums;
+    private final Map<String, Map<String, OfficeChecksum>> checksums;
 
-    public OfficesChecksums(Map<String, Map<String, String>> checksums) {
+    public OfficesChecksums(Map<String, Map<String, OfficeChecksum>> checksums) {
         this.checksums = checksums;
     }
 
-    public String getOfficeChecksum(OfficeTypes office, AelfDate date) {
-        Map<String, String> officeChecksums = checksums.get(date.toIsoString());
+    public OfficeChecksum getOfficeChecksum(OfficeTypes office, AelfDate date) {
+        Map<String, OfficeChecksum> officeChecksums = checksums.get(date.toIsoString());
         if (officeChecksums == null) {
             return null;
         }

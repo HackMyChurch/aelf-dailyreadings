@@ -84,12 +84,12 @@ public final class LecturesController {
 
         // Cache lectures
         try {
-            cache.store(what, when, response.office, response.checksum, apiVersion);
+            cache.store(what, when, response.office(), response.checksum(), response.generationDate(), apiVersion);
         } catch (IOException e) {
             Log.e(TAG, "Failed to store lecture in cache", e);
         }
 
-        return response.office;
+        return response.office();
     }
 
     public Office loadLectures(OfficeTypes what, AelfDate when, boolean useCache) throws IOException {

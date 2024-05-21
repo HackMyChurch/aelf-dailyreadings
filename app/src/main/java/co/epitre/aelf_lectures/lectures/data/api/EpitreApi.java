@@ -18,6 +18,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
+import co.epitre.aelf_lectures.lectures.data.IsoDate;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.office.OfficesChecksums;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -85,6 +86,7 @@ public final class EpitreApi {
     private final Moshi moshi = new Moshi.Builder()
             .add(new LectureVariantsJsonAdapter())
             .add(new OfficesChecksumsJsonAdapter())
+            .add(new OfficeChecksumJsonAdapter())
             .build();
     final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
     final JsonAdapter<OfficesChecksums> officesChecksumsJsonAdapter = moshi.adapter(OfficesChecksums.class);
@@ -198,6 +200,16 @@ public final class EpitreApi {
         return raw_etag.substring(quote_start+1, quote_end);
     }
 
+    private IsoDate extractResponseDate(Response response) {
+        // Extract the Date HTTP header or fallback on the current date
+        String raw_date = response.header("Last-Modified");
+        if (raw_date == null) {
+            return new IsoDate();
+        }
+
+        return new IsoDate(raw_date);
+    }
+
     /**
      * Public API
      */
@@ -248,11 +260,12 @@ public final class EpitreApi {
             source = Objects.requireNonNull(response.body()).source();
             Office office = officeJsonAdapter.fromJson(source);
 
-            // Grab checksum, as an opaque blob
+            // Grab checksum and generation date
             String checksum = extractResponseEtag(response);
+            IsoDate generationDate = extractResponseDate(response);
 
             // Return
-            return new OfficeResponse(office, checksum);
+            return new OfficeResponse(office, checksum, generationDate);
         } catch (IOException e) {
             Log.w(TAG, "Failed to load lectures from network: " + e);
             throw e;
