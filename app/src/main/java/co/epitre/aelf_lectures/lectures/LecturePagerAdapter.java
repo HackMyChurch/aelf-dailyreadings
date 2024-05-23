@@ -1,20 +1,18 @@
 package co.epitre.aelf_lectures.lectures;
 
-import co.epitre.aelf_lectures.lectures.data.office.Lecture;
-import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
-import co.epitre.aelf_lectures.lectures.data.office.Office;
-
 import android.os.Bundle;
+import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import android.util.Log;
-import android.util.SparseIntArray;
-import android.view.ViewGroup;
 
 import java.util.List;
+
+import co.epitre.aelf_lectures.lectures.data.office.Lecture;
+import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 /**
  * Adapter, return a fragment for each lecture / slide.
@@ -110,15 +108,5 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
             lectureFragment.loadText();
         }
         return POSITION_UNCHANGED;
-    }
-
-    @Override
-    public void finishUpdate(@NonNull ViewGroup container) {
-        // https://stackoverflow.com/questions/41650721/attempt-to-invoke-virtual-method-android-os-handler-android-support-v4-app-frag
-        try{
-            super.finishUpdate(container);
-        } catch (NullPointerException nullPointerException){
-            Log.w(TAG, "Catch the NullPointerException in FragmentPagerAdapter.finishUpdate");
-        }
     }
 }

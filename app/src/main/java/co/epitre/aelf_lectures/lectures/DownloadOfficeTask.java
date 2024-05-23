@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures.lectures;
 
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -12,13 +11,13 @@ import android.util.Log;
 
 import java.io.IOException;
 
-import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
-import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.lectures.data.WhatWhen;
+import co.epitre.aelf_lectures.lectures.data.office.Office;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
@@ -125,11 +124,6 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
         // Never consider sub optimal settings as the cause of the problems if the reading is more than 20 days ahead
         if(ww.when.dayBetween(new AelfDate()) > 20) {
             return false;
-        }
-
-        // Always consider as sub-optimal is global sync is disabled
-        if(!ContentResolver.getMasterSyncAutomatically()) {
-            return true;
         }
 
         // Starting from there, we'll need settings

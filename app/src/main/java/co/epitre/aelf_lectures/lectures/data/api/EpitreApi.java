@@ -92,6 +92,7 @@ public final class EpitreApi {
             .add(new LectureVariantsJsonAdapter())
             .add(new OfficesChecksumsJsonAdapter())
             .add(new OfficeChecksumJsonAdapter())
+            .add(new LectureAntiennePositionJsonAdapter())
             .build();
     final JsonAdapter<Office> officeJsonAdapter = moshi.adapter(Office.class);
     final JsonAdapter<OfficesMetadata> officesChecksumsJsonAdapter = moshi.adapter(OfficesMetadata.class);

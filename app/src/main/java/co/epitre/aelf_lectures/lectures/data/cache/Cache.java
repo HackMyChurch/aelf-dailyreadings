@@ -12,9 +12,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.GregorianCalendar;
 
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.IsoDate;
@@ -150,7 +150,7 @@ public final class Cache extends SQLiteOpenHelper {
 
             Office office = (Office) ois.readObject();
             return new CacheEntry(office, checksum, creationDate);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | InvalidClassException e) {
             throw new IOException(e);
         }
     }

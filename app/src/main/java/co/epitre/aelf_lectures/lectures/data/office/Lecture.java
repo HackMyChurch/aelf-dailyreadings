@@ -2,11 +2,33 @@ package co.epitre.aelf_lectures.lectures.data.office;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import com.squareup.moshi.Json;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public class Lecture implements Serializable {
+    public enum AntiennePosition {
+        NONE, INITIAL, FINAL, BOTH;
+
+        public static AntiennePosition fromString(String raw) {
+            raw = raw.toUpperCase();
+            for (AntiennePosition pos : AntiennePosition.values()) {
+                if (pos.name().equals(raw)) {
+                    return pos;
+                }
+            }
+            return AntiennePosition.NONE;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+    }
     String key;
     @Json(name = "key.orig") String keyOrig;
     String type;
@@ -14,6 +36,8 @@ public class Lecture implements Serializable {
     @Json(name = "short_title") String shortTitle;
     @Json(name = "long_title")  String longTitle;
     @Json(name = "variant_title")  String variantTitle;
+    @Json(name = "has_antienne")  AntiennePosition hasAntienne = AntiennePosition.BOTH;
+    @Json(name = "has_doxology")  boolean hasDoxology;
     String reference;
     String antienne;
     String verset;
@@ -81,7 +105,7 @@ public class Lecture implements Serializable {
             bodyBuilder.append("<div style=\"clear: both;\"></div>");
         }
 
-        if (this.antienne != null && !this.antienne.isEmpty()) {
+        if (this.should_display_initial_antienne()) {
             bodyBuilder.append("<div class=\"antienne\"><span tabindex=\"0\" id=\"");
             bodyBuilder.append(this.key);
             bodyBuilder.append("-antienne-1\" class=\"line\"><span class=\"antienne-title\">Antienne&nbsp;:</span> ");
@@ -91,37 +115,54 @@ public class Lecture implements Serializable {
 
         bodyBuilder.append(this.text);
 
-        if (this.antienne != null && !this.antienne.isEmpty()) {
-            // Insert the doxology, unless Dn 3 which implies it.
-            if (this.reference != null && !this.reference.equals("Dn 3")) {
-                bodyBuilder.append("<div class=\"doxology\"><p>");
-                bodyBuilder.append("<span tabindex=\"0\" id=\"");
-                bodyBuilder.append(this.key);
-                bodyBuilder.append("-doxology-1\" class=\"line line-wrap\">Gloire au Père, et au Fils, et au Saint-Esprit,</span>");
-                bodyBuilder.append("<span tabindex=\"0\" id=\"");
-                bodyBuilder.append(this.key);
-                bodyBuilder.append("-doxology-2\" class=\"line line-wrap\">pour les siècles des siècles. Amen.</span>");
-                bodyBuilder.append("</p></div>");
-            }
+        if (this.should_display_doxology()) {
+            bodyBuilder.append("<div class=\"doxology\"><p>");
+            bodyBuilder.append("<span tabindex=\"0\" id=\"");
+            bodyBuilder.append(this.key);
+            bodyBuilder.append("-doxology-1\" class=\"line line-wrap\">Gloire au Père, et au Fils, et au Saint-Esprit,</span>");
+            bodyBuilder.append("<span tabindex=\"0\" id=\"");
+            bodyBuilder.append(this.key);
+            bodyBuilder.append("-doxology-2\" class=\"line line-wrap\">pour les siècles des siècles. Amen.</span>");
+            bodyBuilder.append("</p></div>");
+        }
 
+        if (this.should_display_final_antienne()) {
             bodyBuilder.append("<div class=\"antienne\"><span tabindex=\"0\" id=\"");
             bodyBuilder.append(this.key);
             bodyBuilder.append("-antienne-2\" class=\"line\"><span class=\"antienne-title\">Antienne&nbsp;:</span> ");
             bodyBuilder.append(TextUtils.htmlEncode(this.antienne));
             bodyBuilder.append("</span></div>");
         }
+
         if (this.verset != null && !this.verset.isEmpty()) {
-            bodyBuilder.append("<blockquote class=\"verset\">");
+            bodyBuilder.append("<p class=\"verset\">");
             bodyBuilder.append(this.verset);
-            bodyBuilder.append("</blockquote>");
+            bodyBuilder.append("</p>");
         }
+
         if (this.repons != null && !this.repons.isEmpty()) {
-            bodyBuilder.append("<blockquote class=\"repons\">");
+            bodyBuilder.append("<p class=\"repons\">");
             bodyBuilder.append(this.repons);
-            bodyBuilder.append("</blockquote>");
+            bodyBuilder.append("</p>");
         }
 
         this.html = bodyBuilder.toString();
         return this.html;
+    }
+
+    /**
+     * Predicates
+     */
+
+    private boolean should_display_initial_antienne() {
+        return this.antienne != null && (this.hasAntienne == AntiennePosition.INITIAL || this.hasAntienne == AntiennePosition.BOTH);
+    }
+
+    private boolean should_display_final_antienne() {
+        return this.antienne != null && (this.hasAntienne == AntiennePosition.FINAL || this.hasAntienne == AntiennePosition.BOTH);
+    }
+
+    private boolean should_display_doxology() {
+        return this.hasDoxology;
     }
 }
