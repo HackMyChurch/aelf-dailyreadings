@@ -18,6 +18,7 @@ import androidx.preference.SeekBarPreference;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Locale;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.DialogsKt;
@@ -141,8 +142,16 @@ public class MainPrefFragment extends BasePrefFragment {
         }
 
         // Generate mail with attached logs
-        String to[] = {getString(R.string.app_support)};
-        String subject = "Application " + getString(R.string.app_name) + " (version: " + getString(R.string.app_version) + ")";
+        String[] to = {getString(R.string.app_support)};
+        String subject = String.format(Locale.ROOT,
+                "Application %s %s (%s %s, Android %s, %s)",
+                getString(R.string.app_name),
+                getString(R.string.app_version),
+                Build.MANUFACTURER,
+                Build.MODEL,
+                Build.VERSION.RELEASE,
+                getResources().getConfiguration().locale.getDisplayCountry()
+        );
         String packageName = context.getApplicationContext().getPackageName();
         Uri logcatURI = null;
         try {
