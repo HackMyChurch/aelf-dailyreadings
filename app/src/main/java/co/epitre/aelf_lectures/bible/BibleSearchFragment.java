@@ -252,7 +252,7 @@ public class BibleSearchFragment extends BibleFragment implements
 
             @Override
             public boolean onMenuItemActionCollapse(@NonNull MenuItem item) {
-                activity.onBackPressed();
+                getParentFragmentManager().popBackStack();
                 return false;
             }
         });

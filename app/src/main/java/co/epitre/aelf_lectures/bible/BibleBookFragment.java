@@ -303,16 +303,17 @@ public class BibleBookFragment extends BibleFragment {
     public void onStart() {
         super.onStart();
 
+        if (activity == null) {
+            return;
+        }
+
         // Enable "home" button to get back to the menu
-        if (activity != null) {
-            activity.setHomeButtonEnabled(true, new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (activity != null) {
-                        activity.onBackPressed();
-                    }
-                }
+        if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+            activity.setHomeButtonEnabled(true, v -> {
+                getParentFragmentManager().popBackStack();
             });
+        } else {
+            activity.setHomeButtonEnabled(false, null);
         }
     }
 
@@ -320,9 +321,11 @@ public class BibleBookFragment extends BibleFragment {
     public void onStop() {
         super.onStop();
 
-        // Reset the home button state
-        if (activity != null) {
-            activity.setHomeButtonEnabled(false, null);
+        if (activity == null) {
+            return;
         }
+
+        // Reset the home button state
+        activity.setHomeButtonEnabled(false, null);
     }
 }

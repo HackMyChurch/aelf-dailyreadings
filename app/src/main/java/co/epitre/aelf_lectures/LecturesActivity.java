@@ -411,14 +411,6 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     @Override
-    public void onBackPressed() {
-        SectionFragmentBase fragment = getCurrentSectionFragment();
-        if (fragment == null || !fragment.onBackPressed()) {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
     public boolean dispatchTouchEvent(MotionEvent event) {
         try {
             return super.dispatchTouchEvent(event);

@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -283,8 +284,26 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
     @Override
-    public boolean onBackPressed() {
-        return mFragmentManager.popBackStackImmediate();
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        FragmentActivity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+
+        activity.getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mFragmentManager.getBackStackEntryCount() > 0) {
+                    // Move back in the current stack
+                    mFragmentManager.popBackStack();
+                } else {
+                    // Delete parent fragment
+                    getParentFragmentManager().popBackStack();
+                }
+            }
+        });
     }
 
     //

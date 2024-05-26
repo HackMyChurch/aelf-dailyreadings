@@ -2,16 +2,17 @@ package co.epitre.aelf_lectures;
 
 import android.net.Uri;
 import android.os.Bundle;
-import com.google.android.material.navigation.NavigationView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.ActionBar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.navigation.NavigationView;
 
 /**
  * Created by jean-tiare on 7/01/18.
@@ -59,8 +60,6 @@ public abstract class SectionFragmentBase extends Fragment {
     }
 
     public void onSearch(String query) {}
-
-    public boolean onBackPressed() {return false;}
 
     //
     // Option menu (TODO: move to base class + overload)
