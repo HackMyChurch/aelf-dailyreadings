@@ -99,19 +99,23 @@ public class SectionBibleFragment extends SectionFragmentBase {
     }
 
     private void onHome() {
-        // Inject a "home" page in the back stack
-        onLink(null);
-
         // Load the last visited uri
-        String lastPage = settings.getString(SettingsActivity.KEY_BIBLE_LAST_PAGE, null);
+        String lastPageStr = settings.getString(SettingsActivity.KEY_BIBLE_LAST_PAGE, null);
+        if (lastPageStr == null) {
+            lastPageStr = "https://www.aelf.org/bible";
+        }
 
-        // Should stay on the home ? do nothing.
-        if (lastPage == null || lastPage.equals(getUri().toString())) {
-            return;
+        // Parse and extract the path
+        Uri lastPage = Uri.parse(lastPageStr);
+        String lastPagePath = lastPage.getPath();
+
+        // Inject a "home" page in the back stack, unless requesting the home page
+        if (lastPagePath != null && !lastPagePath.equals("/bible")) {
+            onLink(null);
         }
 
         // Restore last viewed page
-        onLink(Uri.parse(lastPage));
+        onLink(lastPage);
     }
 
     @Override
