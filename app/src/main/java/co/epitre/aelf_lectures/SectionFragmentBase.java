@@ -8,6 +8,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.fragment.app.Fragment;
@@ -69,5 +70,12 @@ public abstract class SectionFragmentBase extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
+    }
+
+    protected void setDrawerHeaderView(@LayoutRes int res) {
+        while(drawerView.getHeaderCount() > 0) {
+            drawerView.removeHeaderView(drawerView.getHeaderView(0));
+        }
+        drawerView.inflateHeaderView(res);
     }
 }

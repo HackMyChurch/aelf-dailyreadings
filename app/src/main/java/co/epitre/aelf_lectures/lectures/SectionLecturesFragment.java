@@ -135,6 +135,9 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_offices, container, false);
 
+        // Set the drawer header
+        setDrawerHeaderView(R.layout.navigation_drawer_header_offices);
+
         // Get view handles
         mViewPager = view.findViewById(R.id.pager);
         mTabLayout = view.findViewById(R.id.pager_title_strip);

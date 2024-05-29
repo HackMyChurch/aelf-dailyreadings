@@ -65,6 +65,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
 
         // Make sure to select the menu entry
         drawerView.setCheckedItem(R.id.nav_bible);
+        setDrawerHeaderView(R.layout.navigation_drawer_header_bible);
 
         // Get fragment manager
         mFragmentManager = getChildFragmentManager();
