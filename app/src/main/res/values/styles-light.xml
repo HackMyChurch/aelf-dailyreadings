@@ -1,5 +1,8 @@
 <resources>
     <style name="AelfAppBaseThemeLight" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Logo -->
+        <item name="drawableAelfLogo">@drawable/aelf_logo_light</item>
+
         <!-- Shell / Native theme colors -->
         <item name="colorAccent">@color/light_aelf_accent</item>
         <item name="colorAccentDark">@color/light_aelf_accent_dark</item>
@@ -10,9 +13,19 @@
         <!-- Lecture colors -->
         <item name="colorLectureText">@color/light_aelf_lecture_text</item>
         <item name="colorLectureBackground">@color/light_aelf_lecture_background</item>
+        <item name="colorLectureBackgroundDarker">@color/light_aelf_lecture_background_darker</item>
         <item name="colorLectureAccent">@color/light_aelf_accent</item>
         <item name="android:actionMenuTextColor">@color/white</item>
         <item name="toolbarNavigationButtonStyle">@style/Widget.AppCompat.Toolbar.Button.Navigation</item>
+
+        <!-- Liturgical colors -->
+        <item name="colorLiturgicalWhite">@color/light_liturgical_white</item>
+        <item name="colorLiturgicalGreen">@color/light_liturgical_green</item>
+        <item name="colorLiturgicalRed">@color/light_liturgical_red</item>
+        <item name="colorLiturgicalPurple">@color/light_liturgical_purple</item>
+        <item name="colorLiturgicalPink">@color/light_liturgical_pink</item>
+        <item name="colorLiturgicalBlack">@color/light_liturgical_black</item>
+        <item name="colorLiturgicalUnknown">@color/light_liturgical_unknown</item>
 
         <!-- Component styles -->
         <item name="actionBarStyle">@style/AelfActionBarLight</item>

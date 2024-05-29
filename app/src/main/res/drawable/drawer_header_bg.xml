@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item>
+        <shape android:shape="rectangle">
+            <stroke android:width="1dp" android:color="?attr/colorLectureText" />
+        </shape>
+    </item>
+    <item android:bottom="1dp">
+        <shape>
+            <gradient
+                android:type="radial"
+                android:centerX="0.2"
+                android:centerY="0.2"
+                android:gradientRadius="300dp"
+                android:startColor="?attr/colorLectureBackground"
+                android:endColor="?attr/colorLectureBackgroundDarker"
+                />
+        </shape>
+    </item>
+</layer-list>

@@ -1,5 +1,8 @@
 <resources>
     <style name="AelfAppBaseThemeDark" parent="Theme.AppCompat.NoActionBar">
+        <!-- Logo -->
+        <item name="drawableAelfLogo">@drawable/aelf_logo_dark</item>
+
         <!-- Shell / Native theme colors -->
         <item name="colorAccent">@color/dark_aelf_accent</item>
         <item name="colorAccentDark">@color/dark_aelf_accent_dark</item>
@@ -11,8 +14,18 @@
         <!-- Lecture colors -->
         <item name="colorLectureText">@color/dark_aelf_lecture_text</item>
         <item name="colorLectureBackground">@color/dark_aelf_lecture_background</item>
+        <item name="colorLectureBackgroundDarker">@color/dark_aelf_lecture_background_darker</item>
         <item name="colorLectureAccent">@color/dark_aelf_accent</item>
 
+        <!-- Liturgical colors -->
+        <item name="colorLiturgicalWhite">@color/dark_liturgical_white</item>
+        <item name="colorLiturgicalGreen">@color/dark_liturgical_green</item>
+        <item name="colorLiturgicalRed">@color/dark_liturgical_red</item>
+        <item name="colorLiturgicalPurple">@color/dark_liturgical_purple</item>
+        <item name="colorLiturgicalPink">@color/dark_liturgical_pink</item>
+        <item name="colorLiturgicalBlack">@color/dark_liturgical_black</item>
+        <item name="colorLiturgicalUnknown">@color/dark_liturgical_unknown</item>
+        
         <!-- Component styles -->
         <item name="toolbarStyle">@style/AelfActionBarDark</item>
         <item name="tabstripStyle">@style/AelfTabStripDark</item>

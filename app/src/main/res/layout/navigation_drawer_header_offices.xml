@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/drawer_header_bg"
+    android:minHeight="160dp"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="69dp"
+            android:layout_height="69dp"
+            android:scaleType="centerInside"
+            android:translationX="-8dp"
+            app:srcCompat="?attr/drawableAelfLogo" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="8dp">
+
+            <TextView
+                android:id="@+id/drawer_header_liturgical_day"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:gravity="bottom"
+                android:maxHeight="40dp"
+                android:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu"
+                android:textColor="?attr/colorLectureText"
+                android:textSize="34dp"
+                app:autoSizeMaxTextSize="34dp"
+                app:autoSizeMinTextSize="16dp"
+                app:autoSizeTextType="uniform" />
+
+            <TextView
+                android:id="@+id/drawer_header_liturgical_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-4dp"
+                android:fontFamily="sans-serif-light"
+                android:text="Année B — Semaine IV"
+                android:textColor="?attr/colorLectureText"
+                android:textSize="14dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/drawer_header_liturgical_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="16dp"
+        android:showDividers="middle">
+        <!-- Only for the preview. Automatically removed by the code -->
+        <include layout="@layout/navigation_drawer_liturgical_options_fragment" />
+    </LinearLayout>
+
+</LinearLayout>

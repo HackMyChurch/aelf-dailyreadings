@@ -1,55 +1,55 @@
 /* General theme */
 
 body {
-    background-color: rgba(19, 23, 31, 1);
-    color: rgba(239,233,222,0.87);
+    background-color: #1d1e23;
+    color: #f8f7fa;
 }
 
 font[color='#cc0000'], font[color='#ff0000'], font[color='#CC0000'], font[color='#FF0000'] {
-    color: rgba(249, 120, 126, 1);
+    color: #f9787e;
 }
 font[color='#000000'] {
-    color: rgba(239,233,222,0.87);
+    color: #f8f7fa;
 }
 
 /* Navigation button */
 
 .app-office-navigation a {
-    color: rgba(239,233,222,0.87);
-    border-color: rgba(239,233,222,0.87);
+    color: #f8f7fa;
+    border-color: #f8f7fa;
 }
 
 .app-office-navigation a:active, .app-office-navigation a.active {
-    color: rgba(239,233,222,0.87);
-    background-color: rgba(19, 23, 31, 1);
+    color: #f8f7fa;
+    background-color: #1d1e23;
 }
 
 /* Verse styling with optional line-wrap support */
 
 .verse {
-    color: rgba(249, 120, 126, 1);
+    color: #f9787e;
 }
 
 /* Mark currently selected verse */
 
 .line:focus {
-    border-left-color: rgba(249, 120, 126, 1);
+    border-left-color: #f9787e;
 }
 
 /* Antiennes */
 
 .antienne-title {
-   color: rgba(249, 120, 126, 1);
+   color: #f9787e;
 }
 
 /* Highlight search keyword */
 
 mark {
-    color: rgba(239,233,222,0.87);
+    color: #f8f7fa;
 }
 
 /* Highlight reference verse */
 
 .highlight {
-    background-color: rgba(249, 120, 126, .2);
+    background-color: #f9787e33;
 }
