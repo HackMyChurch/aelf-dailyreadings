@@ -63,10 +63,6 @@ class OfficesMetadataJsonAdapterTest {
                 officesMetadata.getOfficeChecksum(OfficeTypes.COMPLIES, target_date).generationDate()
         );
         assertEquals(
-                "e18f20be64ea16794168c5545425f10ebceeff125c206be2c45de2b4038726a4",
-                officesMetadata.getOfficeChecksum(OfficeTypes.INFORMATIONS, target_date).checksum()
-        );
-        assertEquals(
                 "db8fbc6478911b24fc1369518e0406bee2ddda7bb30a7c5ac43d0cb19715b89e",
                 officesMetadata.getOfficeChecksum(OfficeTypes.MESSE, target_date).checksum()
         );

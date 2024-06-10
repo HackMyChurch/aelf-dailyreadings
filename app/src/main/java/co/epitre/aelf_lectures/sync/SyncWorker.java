@@ -75,7 +75,7 @@ public class SyncWorker extends Worker {
         if(configValue.equals("messe-offices")) {
             return OfficeTypes.values();
         } else {
-            return new OfficeTypes[]{OfficeTypes.MESSE, OfficeTypes.INFORMATIONS};
+            return new OfficeTypes[]{OfficeTypes.MESSE};
         }
     }
 

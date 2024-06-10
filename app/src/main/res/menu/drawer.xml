@@ -4,12 +4,6 @@
         android:id="@+id/nav_mass"
         android:title="@string/nav_mass"
         android:checkable="true" />
-    <!-- TODO: make it a header instead -->
-    <item
-        android:id="@+id/nav_information"
-        android:title="@string/nav_informations"
-        android:checkable="true" />
-
     <item
         android:id="@+id/nav_bible"
         android:title="@string/nav_bible"

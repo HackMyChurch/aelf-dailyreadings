@@ -16,8 +16,7 @@ public enum OfficeTypes {
     SEXTE(4, R.id.nav_sexte, "lectures_sexte"),
     NONE(5, R.id.nav_none, "lectures_none"),
     VEPRES(6, R.id.nav_vepres, "lectures_vepres"),
-    COMPLIES(7, R.id.nav_complies, "lectures_complies"),
-    INFORMATIONS(8, R.id.nav_information, "lectures_informations");
+    COMPLIES(7, R.id.nav_complies, "lectures_complies");
 
     private String name = "";
     private int position = 0; // FIXME: remove field

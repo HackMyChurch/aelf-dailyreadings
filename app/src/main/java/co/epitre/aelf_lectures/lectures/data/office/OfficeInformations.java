@@ -1,8 +1,11 @@
 package co.epitre.aelf_lectures.lectures.data.office;
 
+import androidx.annotation.NonNull;
+
 import com.squareup.moshi.Json;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OfficeInformations implements Serializable {
@@ -43,7 +46,10 @@ public class OfficeInformations implements Serializable {
         };
     }
 
-    public List<OfficeLiturgyOption> getLiturgyOptions() {
+    @NonNull public List<OfficeLiturgyOption> getLiturgyOptions() {
+        if (liturgyOptions == null) {
+            return new ArrayList<>();
+        }
         return liturgyOptions;
     }
 }

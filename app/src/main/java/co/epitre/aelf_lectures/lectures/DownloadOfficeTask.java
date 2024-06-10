@@ -142,8 +142,7 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
 
         // Are we trying to load an office but only pre-load mass ?
         if(
-                ww.what != OfficeTypes.MESSE && ww.what != OfficeTypes.INFORMATIONS &&
-                !preference.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
+                ww.what != OfficeTypes.MESSE && !preference.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe-offices")
         ) {
             return true;
         }
