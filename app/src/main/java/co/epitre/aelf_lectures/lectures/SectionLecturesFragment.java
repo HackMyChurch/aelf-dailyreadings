@@ -374,7 +374,12 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         if(mMenu == null) {
             return;
         }
+
         MenuItem calendarItem = mMenu.findItem(R.id.action_calendar);
+        if (calendarItem == null) {
+            return;
+        }
+
         calendarItem.setTitle(whatwhen.when.toShortPrettyString());
     }
 
@@ -415,8 +420,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         }
 
         boolean visible = networkStatusMonitor.isNetworkAvailable();
-        mMenu.findItem(R.id.action_refresh).setVisible(visible);
-        mMenu.findItem(R.id.action_sync_do).setVisible(visible);
+
+        for (int menu_id: new int[]{R.id.action_refresh, R.id.action_sync_do}) {
+            MenuItem item = mMenu.findItem(menu_id);
+            if (item == null) {
+                return;
+            }
+            item.setVisible(visible);
+        }
     }
 
     //
@@ -647,33 +658,35 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         final Button cancelButton = view.findViewById(R.id.cancelButton);
         final int colorAccent = colorValue.data;
 
-        loadingOverlay.post(new Runnable() {
-            public void run() {
-                if(loading) {
-                    Animation fadeIn = new AlphaAnimation(0, 1);
-                    fadeIn.setInterpolator(new DecelerateInterpolator());
-                    fadeIn.setStartOffset(500);
-                    fadeIn.setDuration(500);
+        if(loadingOverlay == null || loadingIndicator == null || cancelButton == null) {
+            return;
+        }
 
-                    Animation buttonFadeIn = new AlphaAnimation(0, 1);
-                    buttonFadeIn.setInterpolator(new DecelerateInterpolator());
-                    buttonFadeIn.setStartOffset(2500);
-                    buttonFadeIn.setDuration(500);
+        loadingOverlay.post(() -> {
+            if(loading) {
+                Animation fadeIn = new AlphaAnimation(0, 1);
+                fadeIn.setInterpolator(new DecelerateInterpolator());
+                fadeIn.setStartOffset(500);
+                fadeIn.setDuration(500);
 
-                    loadingIndicator.getIndeterminateDrawable().setColorFilter(colorAccent, android.graphics.PorterDuff.Mode.MULTIPLY);
-                    cancelButton.setVisibility(View.VISIBLE);
-                    cancelButton.setAnimation(buttonFadeIn);
-                    loadingOverlay.setVisibility(View.VISIBLE);
-                    loadingOverlay.setAnimation(fadeIn);
-                } else {
-                    Animation fadeOut = new AlphaAnimation(1, 0);
-                    fadeOut.setInterpolator(new DecelerateInterpolator());
-                    fadeOut.setDuration(250);
+                Animation buttonFadeIn = new AlphaAnimation(0, 1);
+                buttonFadeIn.setInterpolator(new DecelerateInterpolator());
+                buttonFadeIn.setStartOffset(2500);
+                buttonFadeIn.setDuration(500);
 
-                    cancelButton.setVisibility(View.GONE);
-                    loadingOverlay.setVisibility(View.INVISIBLE);
-                    loadingOverlay.setAnimation(fadeOut);
-                }
+                loadingIndicator.getIndeterminateDrawable().setColorFilter(colorAccent, android.graphics.PorterDuff.Mode.MULTIPLY);
+                cancelButton.setVisibility(View.VISIBLE);
+                cancelButton.setAnimation(buttonFadeIn);
+                loadingOverlay.setVisibility(View.VISIBLE);
+                loadingOverlay.setAnimation(fadeIn);
+            } else {
+                Animation fadeOut = new AlphaAnimation(1, 0);
+                fadeOut.setInterpolator(new DecelerateInterpolator());
+                fadeOut.setDuration(250);
+
+                cancelButton.setVisibility(View.GONE);
+                loadingOverlay.setVisibility(View.INVISIBLE);
+                loadingOverlay.setAnimation(fadeOut);
             }
         });
     }
