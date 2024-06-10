@@ -2,6 +2,9 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdk 34
+    // When bumping, make sure to update https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/co.epitre.aelf_lectures.yml
+    // Version/name mapping is available on https://github.com/android/ndk/releases. In this case, r26b.
+    ndkVersion '26.1.10909125'
 
     defaultConfig {
         minSdkVersion 21
