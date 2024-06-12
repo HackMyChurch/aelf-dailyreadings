@@ -6,8 +6,9 @@ import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Process;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.Validator;

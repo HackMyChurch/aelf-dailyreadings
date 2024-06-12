@@ -3,10 +3,10 @@ package co.epitre.aelf_lectures.lectures.data.api;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;

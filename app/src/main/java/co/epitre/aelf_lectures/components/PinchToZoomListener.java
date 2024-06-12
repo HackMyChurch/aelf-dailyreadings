@@ -3,13 +3,13 @@ package co.epitre.aelf_lectures.components;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 

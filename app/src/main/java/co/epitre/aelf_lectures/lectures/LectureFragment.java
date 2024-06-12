@@ -4,11 +4,12 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
+
+import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.components.ReadingFragment;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;

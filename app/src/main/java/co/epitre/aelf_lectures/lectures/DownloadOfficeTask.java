@@ -6,7 +6,7 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.util.Log;
 
 import java.io.IOException;

@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -28,6 +27,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.ListPopupWindow;
+import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
@@ -37,16 +37,16 @@ import java.util.GregorianCalendar;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import co.epitre.aelf_lectures.components.DatePickerFragment;
-import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.SectionFragmentBase;
+import co.epitre.aelf_lectures.components.DatePickerFragment;
+import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
+import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
-import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
