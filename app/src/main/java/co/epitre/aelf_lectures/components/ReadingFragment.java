@@ -46,7 +46,7 @@ public abstract class ReadingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get context
         this.lecturesActivity = (LecturesActivity) getActivity();
-        this.settings = androidx.preference.PreferenceManager.getDefaultSharedPreferences(requireContext());
+        this.settings = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
 
         // Build UI
         View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);

@@ -77,7 +77,7 @@ public class PinchToZoomListener implements View.OnTouchListener, SharedPreferen
 
     public PinchToZoomListener(Context context) {
         // Get preference store
-        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
 
         // Start the scale detector
         mScaleDetector = new ScaleGestureDetector(context, new PinchListener());

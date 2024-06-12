@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncManager;
@@ -40,6 +41,7 @@ public class LecturesApplication extends Application {
         initNetworkStatusMonitor();
         isValidServer();
         initializeSync();
+        LecturesController.getInstance(this);
 
         // Enable strict mode, after startup, unless release
         maybeEnableStrictMode();

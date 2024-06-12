@@ -58,7 +58,7 @@ public class SectionBibleFragment extends SectionFragmentBase {
         BibleController.getInstance();
 
         // Load settings
-        settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        settings = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_bible, container, false);

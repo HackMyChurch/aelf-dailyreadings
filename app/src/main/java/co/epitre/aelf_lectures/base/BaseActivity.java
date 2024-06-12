@@ -31,7 +31,7 @@ public class BaseActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Get the preferences
-        this.settings = PreferenceManager.getDefaultSharedPreferences(this);
+        this.settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         // Install theme before anything else
         nightMode = this.shouldNightMode(this.getDesiredDisplayMode());

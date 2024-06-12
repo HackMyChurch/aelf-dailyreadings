@@ -45,7 +45,7 @@ public class LectureFragment extends ReadingFragment implements
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Register preference listener
-        preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
         preferences.registerOnSharedPreferenceChangeListener(this);
 
         return super.onCreateView(inflater, container, savedInstanceState);

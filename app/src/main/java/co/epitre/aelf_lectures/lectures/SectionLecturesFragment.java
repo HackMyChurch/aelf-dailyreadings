@@ -95,7 +95,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
         // Load settings
         Resources res = getResources();
-        settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+        settings = PreferenceManager.getDefaultSharedPreferences(activity.getApplicationContext());
 
         // Select where to go from here
         Uri uri = activity.getIntent().getData();
