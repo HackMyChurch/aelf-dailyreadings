@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--
+        Allow unsecure HTTP to connect to a local server
+        Enable profiler
+    -->
+    <application
+        android:usesCleartextTraffic="true"
+    >
+        <profileable android:shell="true"/>
+    </application>
+</manifest>
