@@ -5,6 +5,7 @@ import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICI
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.os.Process;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -38,6 +39,9 @@ public class LecturesApplication extends Application {
         initNetworkStatusMonitor();
         isValidServer();
         initializeSync();
+
+        // Enable strict mode, after startup, unless release
+        maybeEnableStrictMode();
     }
 
     //
@@ -118,5 +122,27 @@ public class LecturesApplication extends Application {
                  "TA", "TN", "UG", "EH", "ZM", "ZW" -> "afrique";
             default -> "romain";
         };
+    }
+
+    private void maybeEnableStrictMode() {
+        // Only in debug mode
+        if (!BuildConfig.DEBUG) {
+            return;
+        }
+
+        // Enable strict mode, unless in production mode
+        Log.w(TAG, "Enabling strict mode");
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyFlashScreen()
+                .penaltyLog()
+                .build());
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+        super.onCreate();
     }
 }
