@@ -33,7 +33,7 @@ import co.epitre.aelf_lectures.lectures.data.office.Office;
 
 public final class Cache extends SQLiteOpenHelper {
     private static final String TAG = "AELFCacheHelper";
-    private static final int DB_VERSION = 6;
+    private static final int DB_VERSION = 7; // Increment when data incompatibilities are introduced
     private static final String DB_NAME = "aelf_cache.db";
 
     private static final String DB_CACHE_TABLE_CREATE = "CREATE TABLE IF NOT EXISTS `lectures` (" +

@@ -22,6 +22,10 @@ public class Office implements Serializable {
      */
     private transient List<LectureVariants> lectures;
 
+    public final OfficeInformations getInformations() {
+        return informations;
+    }
+
     public final List<OfficeVariant> getVariants() {
         return variants;
     }
