@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Light theme -->
+    <color name="light_liturgical_white">#ffffffff</color>
+    <color name="light_liturgical_green">#319464</color>
+    <color name="light_liturgical_red">#ffbf2529</color>
+    <color name="light_liturgical_purple">#ff991e66</color>
+    <color name="light_liturgical_pink">#EB3FC5</color>
+    <color name="light_liturgical_black">#ff050505</color>
+    <color name="light_liturgical_unknown">#00000000</color>
+
+    <!-- Dark theme -->
+    <color name="dark_liturgical_white">#ffffffff</color>
+    <color name="dark_liturgical_green">#27754F</color>
+    <color name="dark_liturgical_red">#ffd7464e</color>
+    <color name="dark_liturgical_purple">#ff991e66</color>
+    <color name="dark_liturgical_pink">#EB3FC5</color>
+    <color name="dark_liturgical_black">#ff050505</color>
+    <color name="dark_liturgical_unknown">#00000000</color>
+</resources>
