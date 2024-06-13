@@ -72,10 +72,29 @@ public abstract class SectionFragmentBase extends Fragment {
         mMenu = menu;
     }
 
+    protected View inflateDrawerHeaderView(@LayoutRes int res) {
+        LayoutInflater inflater = getLayoutInflater();
+        return inflater.inflate(res, drawerView, false);
+    }
+
     protected void setDrawerHeaderView(@LayoutRes int res) {
+        View view = inflateDrawerHeaderView(res);
+        if (view != null) {
+            setDrawerHeaderView(view);
+        }
+    }
+
+    protected void setDrawerHeaderView(@NonNull View view) {
         while(drawerView.getHeaderCount() > 0) {
             drawerView.removeHeaderView(drawerView.getHeaderView(0));
         }
-        drawerView.inflateHeaderView(res);
+        drawerView.addHeaderView(view);
+    }
+
+    protected View getDrawerHeaderView() {
+        if(drawerView.getHeaderCount() == 0) {
+            return null;
+        }
+        return drawerView.getHeaderView(0);
     }
 }

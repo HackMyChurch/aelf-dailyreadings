@@ -1,5 +1,7 @@
 package co.epitre.aelf_lectures.lectures;
 
+import static co.epitre.aelf_lectures.base.Utils.Capitalize;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -21,10 +23,13 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.ListPopupWindow;
 import androidx.preference.PreferenceManager;
@@ -47,6 +52,8 @@ import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
+import co.epitre.aelf_lectures.lectures.data.office.OfficeInformations;
+import co.epitre.aelf_lectures.lectures.data.office.OfficeLiturgyOption;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
@@ -134,9 +141,6 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_section_offices, container, false);
-
-        // Set the drawer header
-        setDrawerHeaderView(R.layout.navigation_drawer_header_offices);
 
         // Get view handles
         mViewPager = view.findViewById(R.id.pager);
@@ -384,6 +388,104 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         }
 
         calendarItem.setTitle(whatwhen.when.toShortPrettyString());
+    }
+
+    private void updateDrawerHeader() {
+        View drawerHeaderView = inflateDrawerHeaderView(R.layout.navigation_drawer_header_offices);
+
+        // Make sure we have a header
+        if (drawerHeaderView == null) {
+            return;
+        }
+
+        // Get Informations, load stub on error so that screen is updated
+        OfficeInformations informations = null;
+
+        if (office != null) {
+            informations = office.getInformations();
+        }
+
+        if (informations == null) {
+            informations = new OfficeInformations();
+        }
+
+        // Get a handle on the views
+        TextView liturgicalDayView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_day);
+        TextView liturgicalTimeView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_time);
+        LinearLayout liturgicalOptionsListView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_options);
+
+        // Set the day
+        liturgicalDayView.setText(Capitalize(informations.getLiturgicalDay()));
+
+        // Set the time view
+        String year = informations.getLiturgicalYear();
+        String psalterWeek = informations.getRomanPsalterWeek();
+        StringBuilder builder = new StringBuilder();
+
+        if (year != null) {
+            builder.append("Année ");
+            builder.append(Capitalize(year));
+        }
+
+        if (year != null && psalterWeek != null) {
+            builder.append(" — ");
+        }
+
+        if (psalterWeek != null) {
+            builder.append("Semaine ");
+            builder.append(psalterWeek);
+        }
+
+        liturgicalTimeView.setText(builder.toString());
+
+        // Set the liturgy options
+        liturgicalOptionsListView.removeAllViews();
+        for (OfficeLiturgyOption liturgyOption: informations.getLiturgyOptions()) {
+            // Inflate view
+            View liturgicalOptionView = getLayoutInflater().inflate(
+                    R.layout.navigation_drawer_liturgical_options_fragment,
+                    liturgicalOptionsListView,
+                    false
+            );
+
+            // Set the fields
+            View liturgicalColorView = liturgicalOptionView.findViewById(R.id.drawer_header_liturgical_color);
+            TextView liturgicalDayTitleView = liturgicalOptionView.findViewById(R.id.drawer_header_liturgical_day_title);
+            TextView liturgicalDayDegreeView = liturgicalOptionView.findViewById(R.id.drawer_header_liturgical_day_degree);
+
+            liturgicalDayTitleView.setText(Capitalize(liturgyOption.getName()));
+            liturgicalDayDegreeView.setText(liturgyOption.getDegree());
+
+            switch (liturgyOption.getColor()) {
+                case "blanc":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalWhite));
+                    break;
+                case "vert":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalGreen));
+                    break;
+                case "rouge":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalRed));
+                    break;
+                case "violet":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalPurple));
+                    break;
+                case "rose":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalPink));
+                    break;
+                case "noir":
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalBlack));
+                    break;
+                default:
+                    liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalUnknown));
+                    break;
+            }
+
+            // Attach option
+            liturgicalOptionsListView.addView(liturgicalOptionView);
+        }
+
+        // Set the drawer header
+        setDrawerHeaderView(drawerHeaderView);
     }
 
     //
@@ -638,6 +740,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         actionBar.setTitle(whatwhen.what.actionBarName());
         drawerView.setCheckedItem(whatwhen.what.getMenuId());
         updateCalendarButtonLabel(whatwhen);
+        updateDrawerHeader();
     }
 
     protected void setLoading(final boolean loading) {
@@ -789,5 +892,21 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         }
     }
 
+    //
+    // Utils
+    //
+
+    @ColorInt
+    int getThemeColorAttribute(int resid) {
+        Context ctx = getContext();
+        if (ctx == null) {
+            return 0;
+        }
+
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = ctx.getTheme();
+        theme.resolveAttribute(resid, typedValue, true);
+        return typedValue.data;
+    }
 
 }
