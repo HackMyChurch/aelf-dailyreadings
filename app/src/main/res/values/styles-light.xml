@@ -34,6 +34,7 @@
         <item name="flatRadioButtonStyle">@style/AelfSearchRadioButtonsLight</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_light</item>
         <item name="drawableButtonShape">@drawable/button_shape_light</item>
+        <item name="drawableDrawerHeaderBg">@drawable/drawer_header_bg_light</item>
 
         <!-- Animations -->
         <item name="android:windowAnimationStyle">@style/windowCrossFade</item>

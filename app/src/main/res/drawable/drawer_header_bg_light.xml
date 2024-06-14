@@ -12,8 +12,8 @@
                 android:centerX="0.2"
                 android:centerY="0.2"
                 android:gradientRadius="300dp"
-                android:startColor="?attr/colorLectureBackground"
-                android:endColor="?attr/colorLectureBackgroundDarker"
+                android:startColor="@color/light_aelf_lecture_background"
+                android:endColor="@color/light_aelf_lecture_background_darker"
                 />
         </shape>
     </item>

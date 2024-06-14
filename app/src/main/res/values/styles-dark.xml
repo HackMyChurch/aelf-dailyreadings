@@ -33,6 +33,7 @@
         <item name="listPopupWindowStyle">@style/AelfListPopupWindow</item>
         <item name="drawableMenuItemBg">@drawable/menu_item_bg_dark</item>
         <item name="drawableButtonShape">@drawable/button_shape_dark</item>
+        <item name="drawableDrawerHeaderBg">@drawable/drawer_header_bg_dark</item>
 
         <!-- Animations -->
         <item name="android:windowAnimationStyle">@style/windowCrossFade</item>

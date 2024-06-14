@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="160dp"
-    android:background="@drawable/drawer_header_bg"
+    android:background="?attr/drawableDrawerHeaderBg"
     android:foregroundTintMode="multiply"
     android:orientation="horizontal">
 
@@ -14,10 +14,10 @@
         android:scaleType="centerInside"
         android:scaleX="1.6"
         android:scaleY="1.6"
-        app:tint="?attr/colorLectureText"
         android:translationX="-100dp"
         android:translationY="36dp"
-        app:srcCompat="@drawable/ic_logo_bible_mask" />
+        app:srcCompat="@drawable/ic_logo_bible_mask"
+        app:tint="?attr/colorLectureText" />
 
     <LinearLayout
         android:layout_width="match_parent"

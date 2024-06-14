@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/drawer_header_bg"
+    android:background="?attr/drawableDrawerHeaderBg"
     android:minHeight="160dp"
     android:orientation="vertical"
     android:paddingHorizontal="16dp"

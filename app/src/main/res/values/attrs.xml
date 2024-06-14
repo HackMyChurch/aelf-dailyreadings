@@ -22,8 +22,9 @@
     <attr name="tabstripStyle" format="reference"/>
     <attr name="flatRadioButtonStyle" format="reference"/>
 
-    <!-- Drawables (workaround unsupported color references with API < 21) -->
+    <!-- Drawables (workaround unsupported color references with API < 21 and Android < 10 for radial gradients) -->
     <attr name="drawableAelfLogo" format="reference"/>
     <attr name="drawableMenuItemBg" format="reference"/>
     <attr name="drawableButtonShape" format="reference"/>
+    <attr name="drawableDrawerHeaderBg" format="reference"/>
 </resources>
