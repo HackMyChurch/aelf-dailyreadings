@@ -138,7 +138,10 @@ public class SyncWorker extends Worker {
         Log.i(TAG, "Pref conservation_cutoff="+retentionCutoffDate.toIsoString());
 
         // Initialize the worker pool
-        ExecutorService executorService = Executors.newFixedThreadPool(SYNC_WORKER_COUNT);
+        ExecutorService executorService = Executors.newFixedThreadPool(
+                SYNC_WORKER_COUNT,
+                new SyncThreadFactory(Thread.MIN_PRIORITY)
+        );
 
         // Schedule task to load this week's offices checksum (up to 5 sec when the server cache is cold)
         FutureTask<OfficesMetadata> officesChecksumFetcher = new FutureTask<>(this::loadOfficesMetadata);
