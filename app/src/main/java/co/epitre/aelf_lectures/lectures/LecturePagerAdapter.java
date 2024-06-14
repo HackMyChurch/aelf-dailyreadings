@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import java.util.List;
 
+import co.epitre.aelf_lectures.lectures.data.WhatWhen;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
 import co.epitre.aelf_lectures.lectures.data.office.Office;
@@ -21,17 +22,21 @@ public class LecturePagerAdapter extends FragmentStatePagerAdapter {
     public static final String TAG = "LecturePagerAdapter";
 
     private Office mOffice;
+    private WhatWhen mWhatWhen;
     private SparseIntArray mVariantIds = new SparseIntArray(10);
 
-    public LecturePagerAdapter(FragmentManager fm, Office office) {
+    public LecturePagerAdapter(FragmentManager fm, Office office, WhatWhen whatWhen) {
         super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mOffice = office;
+        mWhatWhen = whatWhen;
     }
 
     @Override
     @NonNull
     public Fragment getItem(int position) {
         Bundle args = new Bundle();
+        args.putString(LectureFragment.ARG_WHAT, mWhatWhen.what.urlName());
+        args.putString(LectureFragment.ARG_WHEN, mWhatWhen.when.toIsoString());
         args.putInt(LectureFragment.ARG_POSITION, position);
         args.putInt(LectureFragment.ARG_VARIANT, mVariantIds.get(position, 0));
 
