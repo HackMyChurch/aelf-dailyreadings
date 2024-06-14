@@ -37,6 +37,7 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
         if (position == mHighlightChapterId) {
             args.putString(BibleChapterFragment.ARG_HIGHLIGHT, mHighlightQuery);
         }
+        args.putString(BibleChapterFragment.ARG_BOOK_REF, mBibleBookEntry.getBookRef());
         args.putString(BibleChapterFragment.ARG_CHAPTER, chapter.getChapterRef());
         args.putString(BibleChapterFragment.ARG_REFERENCE, mReference);
         fragment.setArguments(args);

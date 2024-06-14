@@ -378,7 +378,7 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     //
 
     private void applyOffice() {
-        lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office);
+        lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office, whatwhen.copy());
         mViewPager.setAdapter(lecturesPagerAdapter);
         mViewPager.setCurrentItem(whatwhen.position);
 

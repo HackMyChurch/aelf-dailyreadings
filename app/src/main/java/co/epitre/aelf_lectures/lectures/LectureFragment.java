@@ -28,6 +28,8 @@ public class LectureFragment extends ReadingFragment implements
      */
     public static final String ARG_POSITION = "position";
     public static final String ARG_VARIANT = "variant";
+    public static final String ARG_WHAT = "office";
+    public static final String ARG_WHEN = "date";
 
     private SharedPreferences preferences;
 
@@ -61,6 +63,8 @@ public class LectureFragment extends ReadingFragment implements
         // Get the lecture
         int position = args.getInt(ARG_POSITION);
         int variant = args.getInt(ARG_VARIANT);
+        String officeName = args.getString(ARG_WHAT, "");
+        String officeDate = args.getString(ARG_WHEN, "");
 
         SectionLecturesFragment parent = (SectionLecturesFragment)getParentFragment();
         if (parent == null) {
@@ -102,7 +106,21 @@ public class LectureFragment extends ReadingFragment implements
             reading = reading.replaceAll("</?u>", "");
         }
 
+        // Build history URL
+        StringBuilder UrlString = new StringBuilder();
+        if (!officeName.isEmpty()) {
+            UrlString.append("aelf:office/");
+            UrlString.append(officeDate);
+            UrlString.append("/");
+            UrlString.append("/");
+            UrlString.append(officeName);
+            UrlString.append("/");
+            UrlString.append(position);
+            UrlString.append("#variant=");
+            UrlString.append(variant);
+        }
+
         // load content
-        this.setWebViewContent(reading, null);
+        this.setWebViewContent(reading, UrlString.toString());
     }
 }
