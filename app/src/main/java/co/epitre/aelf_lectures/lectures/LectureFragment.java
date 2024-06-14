@@ -54,7 +54,7 @@ public class LectureFragment extends ReadingFragment implements
     @Override
     protected void loadText() {
         Bundle args = getArguments();
-        if (mWebView == null || args == null) {
+        if (args == null) {
             return;
         }
 
@@ -103,7 +103,6 @@ public class LectureFragment extends ReadingFragment implements
         }
 
         // load content
-        mWebView.loadDataWithBaseURL("file:///android_asset/", reading, "text/html", "utf-8", null);
-        mWebView.setBackgroundColor(0x00000000);
+        this.setWebViewContent(reading, null);
     }
 }
