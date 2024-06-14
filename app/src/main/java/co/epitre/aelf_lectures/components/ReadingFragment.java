@@ -1,7 +1,6 @@
 package co.epitre.aelf_lectures.components;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +9,9 @@ import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import co.epitre.aelf_lectures.LecturesActivity;
@@ -30,14 +32,14 @@ public abstract class ReadingFragment extends Fragment {
     /**
      * Views
      */
-    protected WebView mWebView;
+    private View mWebviewPlaceHolder;
+    private WebView mWebView;
     private WebSettings mWebSettings;
 
     /**
      * Internals
      */
 
-    private SharedPreferences settings;
     private LecturesActivity lecturesActivity;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -45,34 +47,9 @@ public abstract class ReadingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Get context
         this.lecturesActivity = (LecturesActivity) getActivity();
-        this.settings = androidx.preference.PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
 
         // Build UI
-        View rootView = inflater.inflate(R.layout.fragment_lecture, container, false);
-        mWebView = rootView.findViewById(R.id.LectureView);
-        mWebView.clearCache(true);
-        mWebSettings = mWebView.getSettings();
-        mWebSettings.setBuiltInZoomControls(false);
-        mWebSettings.setJavaScriptEnabled(true);
-        mWebSettings.setDomStorageEnabled(true);
-
-        // Install theme and styling hooks
-        mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
-
-        // Install Zoom support
-        mWebView.setOnTouchListener(new ReadingFragment.ReadingPinchToZoomListener());
-
-        // Accessibility: enable (best effort)
-        try {
-            mWebView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-        } catch (NoClassDefFoundError e) {
-            Log.w(TAG, "Accessibility support is not available on this device");
-        }
-
-        // Load content
-        loadText();
-
-        return rootView;
+        return inflater.inflate(R.layout.fragment_lecture, container, false);
     }
 
     protected class ReadingPinchToZoomListener extends PinchToZoomListener {
@@ -141,13 +118,101 @@ public abstract class ReadingFragment extends Fragment {
         }
     }
 
-    /**
+    protected void setWebViewContent(@NonNull String content, String historyURL) {
+        if (mWebView == null) {
+            return;
+        }
+
+        mWebView.loadDataWithBaseURL(
+                "file:///android_asset/",
+                content,
+                "text/html",
+                "utf-8",
+                historyURL
+        );
+    }
+
+    /*
+     * Lifecycle
+     */
+
+    @Override
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
+
+        // Allocate and install the WebView
+        mWebView = new WebView(requireContext());
+        mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
+
+        // Initialize the webview
+        mWebView.setBackgroundColor(0x00000000);
+        mWebView.clearCache(true);
+        mWebSettings = mWebView.getSettings();
+        mWebSettings.setBuiltInZoomControls(false);
+        mWebSettings.setJavaScriptEnabled(true);
+        mWebSettings.setDomStorageEnabled(true);
+
+        // Install theme and styling hooks
+        mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
+
+        // Install Zoom support
+        mWebView.setOnTouchListener(new ReadingFragment.ReadingPinchToZoomListener());
+
+        // Accessibility: enable (best effort)
+        try {
+            mWebView.setAccessibilityDelegate(new View.AccessibilityDelegate());
+        } catch (NoClassDefFoundError e) {
+            Log.w(TAG, "Accessibility support is not available on this device");
+        }
+
+        // Load content
+        loadText();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Get rootView
+        View rootView = getView();
+        if (rootView == null) {
+            return;
+        }
+
+        // Release WebView references, allow them to be garbage collected
+        replaceView(R.id.LectureView, rootView, mWebviewPlaceHolder);
+        mWebviewPlaceHolder = null;
+        mWebView = null;
+        mWebSettings = null;
+    }
+
+    /*
      * Internal tools
      */
 
     protected String getThemeCss() {
         String themeName = this.lecturesActivity.getNightMode() ? "dark":"light";
         return "css/theme-"+themeName+".css";
+    }
+
+    private View replaceView(@IdRes int id, View rootView, View newView) {
+        // Locate view location
+        View oldView = rootView.findViewById(id);
+        ViewGroup parentView = (ViewGroup)oldView.getParent();
+        int viewIndex = parentView.indexOfChild(oldView);
+
+        // Preserve IDs
+        newView.setId(oldView.getId());
+
+        // Swap views, preserving layout
+        parentView.removeView(oldView);
+        parentView.addView(
+                newView,
+                viewIndex,
+                oldView.getLayoutParams()
+        );
+
+        return oldView;
     }
 
     /**

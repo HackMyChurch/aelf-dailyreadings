@@ -43,7 +43,6 @@ public class BibleChapterFragment extends ReadingFragment {
         htmlString.append("</body></html>");
 
         // Load content
-        mWebView.loadDataWithBaseURL("file:///android_asset/", htmlString.toString(), "text/html", "utf-8", null);
-        mWebView.setBackgroundColor(0x00000000);
+        this.setWebViewContent(htmlString.toString(), null);
     }
 }
