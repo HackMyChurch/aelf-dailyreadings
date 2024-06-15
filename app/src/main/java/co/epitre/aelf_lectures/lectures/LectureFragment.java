@@ -53,9 +53,8 @@ public class LectureFragment extends ReadingFragment implements
 
     @Override
     protected void loadText() {
-        Context context = getActivity();
         Bundle args = getArguments();
-        if (context == null || mWebView == null || args == null) {
+        if (mWebView == null || args == null) {
             return;
         }
 
