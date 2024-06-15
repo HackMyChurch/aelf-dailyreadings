@@ -339,6 +339,14 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Detach adapter to fix leaks on back navigation
+        mViewPager.setAdapter(null);
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
