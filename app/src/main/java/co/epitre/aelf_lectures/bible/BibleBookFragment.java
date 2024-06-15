@@ -328,4 +328,12 @@ public class BibleBookFragment extends BibleFragment {
         // Reset the home button state
         activity.setHomeButtonEnabled(false, null);
     }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        // Detach adapter to fix leaks on back navigation
+        mViewPager.setAdapter(null);
+    }
 }
