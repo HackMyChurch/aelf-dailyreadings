@@ -119,7 +119,6 @@ public class SectionBibleFragment extends SectionFragmentBase {
         onLink(lastPage);
     }
 
-    @Override
     public void onLink(Uri uri) {
         if (mFragmentManager == null) {
             return;
