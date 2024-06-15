@@ -55,10 +55,6 @@ public abstract class SectionFragmentBase extends Fragment {
         return true;
     }
 
-    public void onLink(Uri link) {
-        // NOOP
-    }
-
     public void onSearch(String query) {}
 
     //

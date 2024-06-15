@@ -622,11 +622,6 @@ public class SectionLecturesFragment extends SectionFragmentBase implements
         activity.onIntent(intent);
     }
 
-    public void onLink(Uri link) {
-        parseIntentUri(link);
-        loadLecture(whatwhen);
-    }
-
     //
     // Loader
     //
