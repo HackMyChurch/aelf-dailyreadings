@@ -42,14 +42,14 @@ public class BibleChapterFragment extends ReadingFragment {
         htmlString.append("<link href=\"");
         htmlString.append(getThemeCss());
         htmlString.append("\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
-        htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</head><body>");
         htmlString.append(body);
         htmlString.append("<script>");
-        htmlString.append("var highlight='"+highlight.replace("'", "")+"';\n");
-        htmlString.append("var reference='"+reference.replace("'", "")+"';\n");
-        htmlString.append("var current_chapter='"+chapter.replace("'", "")+"';\n");
+        htmlString.append("var highlight='").append(highlight.replace("'", "")).append("';\n");
+        htmlString.append("var reference='").append(reference.replace("'", "")).append("';\n");
+        htmlString.append("var current_chapter='").append(chapter.replace("'", "")).append("';\n");
         htmlString.append("</script>");
+        htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("<script src=\"js/chapter.js\" charset=\"utf-8\"></script>\n");
         htmlString.append("</body></html>");
 
