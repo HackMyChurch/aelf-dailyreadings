@@ -24,7 +24,7 @@
             android:id="@+id/drawer_header_liturgical_day_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="La Sainte Trinité"
+            tools:text="La Sainte Trinité"
             android:textColor="?attr/colorLectureText"
             android:textSize="14dp" />
 
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="-4dp"
             android:fontFamily="sans-serif-light"
-            android:text="Solennité"
+            tools:text="Solennité"
             android:textColor="?attr/colorLectureText"
             android:textSize="12dp"
             android:textStyle="italic" />

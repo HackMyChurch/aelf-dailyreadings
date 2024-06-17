@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/drawableDrawerHeaderBg"
     android:minHeight="160dp"
     android:orientation="vertical"
@@ -36,7 +37,7 @@
                 android:fontFamily="sans-serif-condensed-medium"
                 android:gravity="bottom"
                 android:maxHeight="40dp"
-                android:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu"
+                tools:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu"
                 android:textColor="?attr/colorLectureText"
                 android:textSize="34dp"
                 app:autoSizeMaxTextSize="34dp"
@@ -49,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-4dp"
                 android:fontFamily="sans-serif-light"
-                android:text="Année B — Semaine IV"
+                tools:text="Année B — Semaine IV"
                 android:textColor="?attr/colorLectureText"
                 android:textSize="14dp" />
 
@@ -63,8 +64,6 @@
         android:orientation="vertical"
         android:paddingTop="16dp"
         android:showDividers="middle">
-        <!-- Only for the preview. Automatically removed by the code -->
-        <include layout="@layout/navigation_drawer_liturgical_options_fragment" />
     </LinearLayout>
 
 </LinearLayout>

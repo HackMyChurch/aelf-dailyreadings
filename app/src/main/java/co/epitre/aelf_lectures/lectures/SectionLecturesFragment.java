@@ -406,16 +406,33 @@ public class SectionLecturesFragment extends SectionFragment implements
             return;
         }
 
-        // Get Informations, load stub on error so that screen is updated
-        OfficeInformations informations = null;
-
-        if (office != null) {
-            informations = office.getInformations();
+        if (isLoading) {
+            updateDrawerHeaderLoading(drawerHeaderView);
+        } else if (isSuccess && office != null && office.getInformations() != null) {
+            updateDrawerHeaderNominal(drawerHeaderView);
+        } else {
+            updateDrawerHeaderError(drawerHeaderView);
         }
 
-        if (informations == null) {
-            informations = new OfficeInformations();
-        }
+        // Set the drawer header
+        setDrawerHeaderView(drawerHeaderView);
+    }
+
+    private void updateDrawerHeaderLoading(View drawerHeaderView) {
+        TextView liturgicalDayView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_day);
+        liturgicalDayView.setText(Capitalize("Chargement..."));
+    }
+
+    private void updateDrawerHeaderError(View drawerHeaderView) {
+        TextView liturgicalDayView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_day);
+        TextView liturgicalTimeView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_time);
+        liturgicalDayView.setText(Capitalize("Erreur"));
+        liturgicalTimeView.setText("Cet office n'est pas dans notre calendrier");
+    }
+
+    private void updateDrawerHeaderNominal(View drawerHeaderView) {
+        // Get Informations
+        OfficeInformations informations = office.getInformations();
 
         // Get a handle on the views
         TextView liturgicalDayView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_day);
@@ -491,9 +508,6 @@ public class SectionLecturesFragment extends SectionFragment implements
             // Attach option
             liturgicalOptionsListView.addView(liturgicalOptionView);
         }
-
-        // Set the drawer header
-        setDrawerHeaderView(drawerHeaderView);
     }
 
     //
@@ -771,6 +785,8 @@ public class SectionLecturesFragment extends SectionFragment implements
             return;
         }
 
+        refreshUI(whatwhen);
+
         loadingOverlay.post(() -> {
             if(loading) {
                 Animation fadeIn = new AlphaAnimation(0, 1);
@@ -803,9 +819,6 @@ public class SectionLecturesFragment extends SectionFragment implements
     public void loadLecture(WhatWhen whatwhen) {
         // Cancel any pending load
         cancelLectureLoad();
-
-        // Refresh UI
-        refreshUI(whatwhen);
 
         // Set the new date as the default (manual action)
         defaultDate = whatwhen.when;
