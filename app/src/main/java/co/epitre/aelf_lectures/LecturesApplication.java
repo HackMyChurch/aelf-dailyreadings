@@ -11,6 +11,7 @@ import android.util.Log;
 import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
+import co.epitre.aelf_lectures.components.WebViewPool;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -21,7 +22,12 @@ import co.epitre.aelf_lectures.utils.HardwareDetection;
 // Attempt to fix crash on Android 4.4 when upgrading app
 // http://stackoverflow.com/questions/40069273/unable-to-get-provider-rarely-crash-on-kitkat
 public class LecturesApplication extends Application {
+    // General configuration
     private static final String TAG = "LecturesApplication";
+    private static final int INITIAL_WEB_VIEWS = 4; // Typical observed, when swiping
+    private static final int MAX_WEB_VIEW = 6; // Maximum observed, when jumping in the Bible
+
+    // Resources
     private static LecturesApplication instance;
     private SharedPreferences settings;
 
@@ -40,6 +46,7 @@ public class LecturesApplication extends Application {
 
         // Boot application
         HardwareDetection.getGuessedPerformanceClass(this);
+        WebViewPool.Initialize(this, INITIAL_WEB_VIEWS, MAX_WEB_VIEW);
         initNetworkStatusMonitor();
         isValidServer();
         initializeSync();
