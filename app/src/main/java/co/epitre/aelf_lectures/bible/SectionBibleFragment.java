@@ -26,7 +26,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.SectionFragmentBase;
+import co.epitre.aelf_lectures.base.SectionFragment;
 import co.epitre.aelf_lectures.bible.data.BibleController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
@@ -35,7 +35,7 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
  * Created by jean-tiare on 12/03/18.
  */
 
-public class SectionBibleFragment extends SectionFragmentBase {
+public class SectionBibleFragment extends SectionFragment {
     public static final String TAG = "SectionBibleFragment";
 
     public SectionBibleFragment(){

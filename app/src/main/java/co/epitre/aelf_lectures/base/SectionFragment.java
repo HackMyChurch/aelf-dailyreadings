@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures;
+package co.epitre.aelf_lectures.base;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,11 +15,14 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.navigation.NavigationView;
 
+import co.epitre.aelf_lectures.LecturesActivity;
+import co.epitre.aelf_lectures.R;
+
 /**
  * Created by jean-tiare on 7/01/18.
  */
 
-public abstract class SectionFragmentBase extends Fragment {
+public abstract class SectionFragment extends Fragment {
 
     /**
      * Global Views

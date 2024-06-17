@@ -43,7 +43,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.SectionFragmentBase;
+import co.epitre.aelf_lectures.base.SectionFragment;
 import co.epitre.aelf_lectures.components.DatePickerFragment;
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.lectures.data.AelfDate;
@@ -60,7 +60,7 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
  * Created by jean-tiare on 05/12/17.
  */
 
-public class SectionLecturesFragment extends SectionFragmentBase implements
+public class SectionLecturesFragment extends SectionFragment implements
         LectureLoadProgressListener,
         DatePickerFragment.CalendarDialogListener,
         NetworkStatusMonitor.NetworkStatusChangedListener

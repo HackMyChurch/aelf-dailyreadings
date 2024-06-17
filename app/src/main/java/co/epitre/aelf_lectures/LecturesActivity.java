@@ -37,6 +37,7 @@ import java.util.Objects;
 
 import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.base.DialogsKt;
+import co.epitre.aelf_lectures.base.SectionFragment;
 import co.epitre.aelf_lectures.bible.SectionBibleFragment;
 import co.epitre.aelf_lectures.lectures.SectionLecturesFragment;
 import co.epitre.aelf_lectures.lectures.data.OfficeTypes;
@@ -243,11 +244,11 @@ public class LecturesActivity extends BaseActivity implements
         return true;
     }
 
-    private SectionFragmentBase getCurrentSectionFragment() {
-        return (SectionFragmentBase) getSupportFragmentManager().findFragmentById(R.id.section_container);
+    private SectionFragment getCurrentSectionFragment() {
+        return (SectionFragment) getSupportFragmentManager().findFragmentById(R.id.section_container);
     }
 
-    private void setSection(SectionFragmentBase fragment) {
+    private void setSection(SectionFragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.section_container, fragment);
