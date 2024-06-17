@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.8.6">
+    <!ENTITY app_version "2.8.7">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -63,8 +63,8 @@
         \nEn plus de cela:
         \n• Revenir en arrière depuis la Bible vers un office arrive maintenant au bon endroit.
         \n• La doxologie et les antiennes sont maintenant là où on les attend.
-        \n• Un rare crash au chargement des offices a été corrigé.
         \n• La Bible a été synchronisée avec le site officiel.
+        \n• Correction de crash et amélioration des performances.
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
         \ndevenir meilleure !
