@@ -133,7 +133,7 @@ public abstract class ReadingFragment extends Fragment {
         super.onViewCreated(rootView, savedInstanceState);
 
         // Allocate and install the WebView
-        mWebView = new WebView(requireContext());
+        mWebView = WebViewPool.getInstance().borrowWebView(requireContext());
         mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
 
         // Initialize the webview
@@ -173,6 +173,7 @@ public abstract class ReadingFragment extends Fragment {
 
         // Release WebView references, allow them to be garbage collected
         replaceView(R.id.LectureView, rootView, mWebviewPlaceHolder);
+        WebViewPool.getInstance().releaseWebView(mWebView);
         mWebviewPlaceHolder = null;
         mWebView = null;
         mWebSettings = null;
