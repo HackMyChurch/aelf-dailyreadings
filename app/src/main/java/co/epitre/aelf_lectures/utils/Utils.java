@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.base;
+package co.epitre.aelf_lectures.utils;
 
 public class Utils {
     static public String Capitalize(String str) {

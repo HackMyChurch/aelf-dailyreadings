@@ -1,6 +1,6 @@
 package co.epitre.aelf_lectures.lectures;
 
-import static co.epitre.aelf_lectures.base.Utils.Capitalize;
+import static co.epitre.aelf_lectures.utils.Utils.Capitalize;
 
 import android.content.Context;
 import android.content.Intent;
