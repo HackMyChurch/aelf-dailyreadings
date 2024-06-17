@@ -15,6 +15,7 @@ import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncManager;
+import co.epitre.aelf_lectures.utils.HardwareDetection;
 
 
 // Attempt to fix crash on Android 4.4 when upgrading app
@@ -38,6 +39,7 @@ public class LecturesApplication extends Application {
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Boot application
+        HardwareDetection.getGuessedPerformanceClass(this);
         initNetworkStatusMonitor();
         isValidServer();
         initializeSync();
