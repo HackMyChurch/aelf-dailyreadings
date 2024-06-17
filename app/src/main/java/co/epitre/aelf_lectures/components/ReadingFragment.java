@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures.components;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -132,30 +131,15 @@ public abstract class ReadingFragment extends Fragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        // Allocate and install the WebView
+        // Get and install the WebView
         mWebView = WebViewPool.getInstance().borrowWebView(requireContext());
         mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
-
-        // Initialize the webview
-        mWebView.setBackgroundColor(0x00000000);
-        mWebView.clearCache(true);
-        mWebSettings = mWebView.getSettings();
-        mWebSettings.setBuiltInZoomControls(false);
-        mWebSettings.setJavaScriptEnabled(true);
-        mWebSettings.setDomStorageEnabled(true);
 
         // Install theme and styling hooks
         mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
 
         // Install Zoom support
         mWebView.setOnTouchListener(new ReadingFragment.ReadingPinchToZoomListener());
-
-        // Accessibility: enable (best effort)
-        try {
-            mWebView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-        } catch (NoClassDefFoundError e) {
-            Log.w(TAG, "Accessibility support is not available on this device");
-        }
 
         // Load content
         loadText();

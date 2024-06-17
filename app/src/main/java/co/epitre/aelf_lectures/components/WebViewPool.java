@@ -2,6 +2,9 @@ package co.epitre.aelf_lectures.components;
 
 import android.content.Context;
 import android.content.MutableContextWrapper;
+import android.util.Log;
+import android.view.View;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -15,6 +18,8 @@ import java.util.concurrent.ArrayBlockingQueue;
  * - https://medium.com/microsoft-mobile-engineering/clean-android-webview-caching-9b871b3579f3
  */
 public class WebViewPool {
+    private static final String TAG = "WebViewPool";
+
     private static volatile WebViewPool instance;
 
     private final ArrayBlockingQueue<WebView> webViews;
@@ -32,6 +37,10 @@ public class WebViewPool {
         for (int i = 0; i < initialCapacity; i++) {
             webViews.add(createWebView());
         }
+
+        // Clear the (application wide) webview cache
+        WebView webView = webViews.peek();
+        webView.clearCache(true);
     }
 
     public static void Initialize(Context appContext, int initialCapacity, int maxCapacity) {
@@ -82,6 +91,22 @@ public class WebViewPool {
 
     private WebView createWebView() {
         Context WebViewContext = new MutableContextWrapper(appContext);
-        return new WebView(WebViewContext);
+        WebView webView = new WebView(WebViewContext);
+
+        // Common setup
+        webView.setBackgroundColor(0x00000000);
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setBuiltInZoomControls(false);
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+
+        // Accessibility: enable (best effort)
+        try {
+            webView.setAccessibilityDelegate(new View.AccessibilityDelegate());
+        } catch (NoClassDefFoundError e) {
+            Log.w(TAG, "Accessibility support is not available on this device");
+        }
+
+        return webView;
     }
 }
