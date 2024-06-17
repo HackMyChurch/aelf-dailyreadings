@@ -30,6 +30,7 @@ import co.epitre.aelf_lectures.lectures.data.cache.CacheEntryIndex;
 import co.epitre.aelf_lectures.lectures.data.office.OfficeMetadata;
 import co.epitre.aelf_lectures.lectures.data.office.OfficesMetadata;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
+import co.epitre.aelf_lectures.utils.HardwareDetection;
 
 /**
  * This class is the core of the sync engine. This is where the actual requests are triggered.
@@ -37,9 +38,9 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 public class SyncWorker extends Worker {
     // General configuration
     private static final String TAG = "SyncWorker";
-    private static final int SYNC_WORKER_COUNT = 4;
     private static final long MAX_RUN_TIME = 30*60;
     private static final long MAX_REQUEST_RUN_TIME = 60;
+    private final int max_worker_count;
 
     // Resources
     private final Resources mResources;
@@ -63,6 +64,15 @@ public class SyncWorker extends Worker {
         // Load preferences
         this.mSyncPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         this.mSyncStats = context.getSharedPreferences("sync-stats", Context.MODE_PRIVATE);
+
+        // Compute desired worker count based on device performance*
+        HardwareDetection.PerformanceClass performanceClass = HardwareDetection.getGuessedPerformanceClass(context);
+        max_worker_count = switch (performanceClass) {
+            case UNKNOWN, LOW -> 1;
+            case AVERAGE -> 2;
+            case HIGH -> 4;
+        };
+        Log.i(TAG, "Sync will run with "+max_worker_count+" workers. Performance class is "+performanceClass);
     }
 
     private String getStringPreference(String key, int defId) {
@@ -139,7 +149,7 @@ public class SyncWorker extends Worker {
 
         // Initialize the worker pool
         ExecutorService executorService = Executors.newFixedThreadPool(
-                SYNC_WORKER_COUNT,
+                max_worker_count,
                 new SyncThreadFactory(Thread.MIN_PRIORITY)
         );
 
