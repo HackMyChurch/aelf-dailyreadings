@@ -133,6 +133,7 @@ public abstract class ReadingFragment extends Fragment {
 
         // Get and install the WebView
         mWebView = WebViewPool.getInstance().borrowWebView(requireContext());
+        mWebSettings = mWebView.getSettings();
         mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
 
         // Install theme and styling hooks
