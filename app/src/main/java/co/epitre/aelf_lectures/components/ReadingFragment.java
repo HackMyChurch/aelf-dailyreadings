@@ -89,8 +89,9 @@ public abstract class ReadingFragment extends Fragment {
 
         // Release WebView references, allow them to be garbage collected
         replaceView(R.id.LectureView, rootView, mWebviewPlaceHolder);
-        WebViewPool.getInstance().releaseWebView(mWebView);
         mWebView.setOnTouchListener(null);
+        mWebView.setWebViewClient(null);
+        WebViewPool.getInstance().releaseWebView(mWebView);
         mWebviewPlaceHolder = null;
         mWebView = null;
     }
