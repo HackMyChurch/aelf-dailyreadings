@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import androidx.annotation.IdRes;
@@ -25,7 +24,6 @@ public abstract class ReadingFragment extends Fragment {
      */
     private View mWebviewPlaceHolder;
     private WebView mWebView;
-    private WebSettings mWebSettings;
 
     /**
      * Internals
@@ -41,72 +39,6 @@ public abstract class ReadingFragment extends Fragment {
 
         // Build UI
         return inflater.inflate(R.layout.fragment_lecture, container, false);
-    }
-
-    protected class ReadingPinchToZoomListener extends PinchToZoomListener {
-        private ViewGroup mParent;
-
-        ReadingPinchToZoomListener() {
-            super(ReadingFragment.this.getContext());
-            mParent = (ViewGroup)mWebView.getParent();
-
-            mParent.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-                @Override
-                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    int width = right - left;
-                    int oldWidth = oldRight - oldLeft;
-
-                    // On width change
-                    if (width != oldWidth) {
-                        onZoomEnd(getCurrentZoomLevel());
-                    }
-                }
-            });
-        }
-
-        private void setCurrentZoom(int zoom) {
-            if (mWebSettings == null || mParent == null || !isAdded()) {
-                return;
-            }
-
-            // Get the base width
-            int base_width = (int)(450 * getResources().getDisplayMetrics().density);
-
-            // Get current parent width
-            int parent_width = mParent.getMeasuredWidth();
-            if (parent_width == 0) {
-                return; // Fast path: not yet visible
-            }
-
-            // Compute new width
-            int current_width = mWebView.getMeasuredWidth();
-            int new_width = base_width * zoom / 100;
-            if (new_width > parent_width) {
-                new_width = parent_width;
-            }
-
-            // Apply new width and zoom
-            mWebSettings.setTextZoom(zoom);
-            if (current_width != new_width) {
-                ViewGroup.LayoutParams params = mWebView.getLayoutParams();
-                params.width = new_width;
-                mWebView.setLayoutParams(params);
-            }
-        }
-
-        public int onZoomStart() {
-            return super.onZoomStart();
-        }
-
-        public void onZoomEnd(int zoomLevel) {
-            super.onZoomEnd(zoomLevel);
-            setCurrentZoom(zoomLevel);
-        }
-
-        public void onZoom(int zoomLevel) {
-            super.onZoom(zoomLevel);
-            setCurrentZoom(zoomLevel);
-        }
     }
 
     protected void setWebViewContent(@NonNull String content, String historyURL) {
@@ -133,14 +65,13 @@ public abstract class ReadingFragment extends Fragment {
 
         // Get and install the WebView
         mWebView = WebViewPool.getInstance().borrowWebView(requireContext());
-        mWebSettings = mWebView.getSettings();
         mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
 
         // Install theme and styling hooks
         mWebView.setWebViewClient(new ReadingWebViewClient(lecturesActivity, mWebView));
 
         // Install Zoom support
-        mWebView.setOnTouchListener(new ReadingFragment.ReadingPinchToZoomListener());
+        mWebView.setOnTouchListener(new ReadingPinchToZoomListener(getContext(), mWebView));
 
         // Load content
         loadText();
@@ -159,9 +90,9 @@ public abstract class ReadingFragment extends Fragment {
         // Release WebView references, allow them to be garbage collected
         replaceView(R.id.LectureView, rootView, mWebviewPlaceHolder);
         WebViewPool.getInstance().releaseWebView(mWebView);
+        mWebView.setOnTouchListener(null);
         mWebviewPlaceHolder = null;
         mWebView = null;
-        mWebSettings = null;
     }
 
     /*
