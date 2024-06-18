@@ -68,9 +68,8 @@ public class SyncWorker extends Worker {
         // Compute desired worker count based on device performance*
         HardwareDetection.PerformanceClass performanceClass = HardwareDetection.getGuessedPerformanceClass(context);
         max_worker_count = switch (performanceClass) {
-            case UNKNOWN, LOW -> 1;
-            case AVERAGE -> 2;
-            case HIGH -> 4;
+            case UNKNOWN, LOW, AVERAGE -> 1;
+            case HIGH -> 2;
         };
         Log.i(TAG, "Sync will run with "+max_worker_count+" workers. Performance class is "+performanceClass);
     }

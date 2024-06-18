@@ -10,6 +10,8 @@ import android.util.Log;
 
 import androidx.preference.PreferenceManager;
 
+import java.util.concurrent.TimeUnit;
+
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.components.WebViewPool;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
@@ -111,8 +113,11 @@ public class LecturesApplication extends Application {
 
         // If the sync has not run for more than 2 days, expedite
         long lastSyncAge = syncManager.getLastSyncSuccessAgeHours();
-        if (lastSyncAge > 48 || lastSyncAge == -1) {
-            Log.w(TAG, "Sync has not run for "+lastSyncAge+" hours. Expediting.");
+        if (lastSyncAge > 7*24) {
+            Log.w(TAG, "Sync has not run for more than a week ("+lastSyncAge+" hours). Scheduling with low delay.");
+            syncManager.triggerSync(1, TimeUnit.MINUTES);
+        } else if (lastSyncAge > 48) {
+            Log.w(TAG, "Sync has not run for "+lastSyncAge+" hours. Scheduling.");
             syncManager.triggerSync();
         }
     }

@@ -34,6 +34,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.base.BaseActivity;
 import co.epitre.aelf_lectures.base.DialogsKt;
@@ -325,7 +326,7 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     public boolean onSyncDo() {
-        SyncManager.getInstance(this).triggerSync();
+        SyncManager.getInstance(this).triggerSync(5, TimeUnit.SECONDS);
         return true;
     }
 

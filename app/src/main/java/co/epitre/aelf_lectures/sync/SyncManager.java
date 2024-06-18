@@ -27,6 +27,7 @@ public class SyncManager implements SharedPreferences.OnSharedPreferenceChangeLi
     public static final String SYNC_JOB_EXPEDITED_NAME = "aelf-office-sync-expedited";
     public static final long SYNC_INTERVAL_PERIOD = 24L;
     public static final long SYNC_INTERVAL_JITTER = 6L;
+    public static final long SYNC_INITIAL_DELAY_MINUTES = 5L;
 
     // Resources
     private static volatile SyncManager instance;
@@ -116,18 +117,32 @@ public class SyncManager implements SharedPreferences.OnSharedPreferenceChangeLi
     }
 
     public void triggerSync() {
+        triggerSync(SYNC_INITIAL_DELAY_MINUTES, TimeUnit.MINUTES);
+    }
+
+    public void triggerSync(long initialDelay, TimeUnit initialDelayUnit) {
         // Build the job specification
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        OneTimeWorkRequest expeditedSyncRequest = new OneTimeWorkRequest.Builder(SyncWorker.class)
+        OneTimeWorkRequest.Builder syncRequestBuilder = new OneTimeWorkRequest.Builder(SyncWorker.class)
                 .addTag(SYNC_JOB_TAG)
-                .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-                .setConstraints(constraints)
-                .build();
+                .setConstraints(constraints);
+
+        if (initialDelay > 0) {
+            Log.i(TAG, "Scheduling sync in "+initialDelay+" "+initialDelayUnit.toString());
+            syncRequestBuilder.setInitialDelay(initialDelay, initialDelayUnit);
+        } else {
+            Log.i(TAG, "Scheduling immediate sync");
+            syncRequestBuilder.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST);
+        }
 
         // Enqueue
-        this.mWorkManager.enqueueUniqueWork(SYNC_JOB_EXPEDITED_NAME, ExistingWorkPolicy.APPEND_OR_REPLACE, expeditedSyncRequest);
+        this.mWorkManager.enqueueUniqueWork(
+                SYNC_JOB_EXPEDITED_NAME,
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                syncRequestBuilder.build()
+        );
     }
 }
