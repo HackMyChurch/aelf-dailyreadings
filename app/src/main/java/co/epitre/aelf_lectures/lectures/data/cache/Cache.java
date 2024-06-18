@@ -64,6 +64,10 @@ public final class Cache extends SQLiteOpenHelper {
         if (dbFile.getParentFile() != null) {
             dbFile.getParentFile().mkdirs();
         }
+
+        // Optimize performances (https://developer.android.com/topic/performance/sqlite-performance-best-practices)
+        db.enableWriteAheadLogging();
+        db.execSQL("PRAGMA synchronous = NORMAL");
     }
 
     /**
