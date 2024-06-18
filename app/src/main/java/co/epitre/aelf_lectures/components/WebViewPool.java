@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.components;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.MutableContextWrapper;
 import android.util.Log;
@@ -8,6 +9,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
+
+import co.epitre.aelf_lectures.base.VirtualDisplayMutableContextWrapper;
 
 /**
  * Instanciating a WebView is expensive. This is also something we do on every page slide. This
@@ -89,8 +92,9 @@ public class WebViewPool {
     // Internals
     //
 
+    @SuppressLint("SetJavaScriptEnabled")
     private WebView createWebView() {
-        Context WebViewContext = new MutableContextWrapper(appContext);
+        Context WebViewContext = new VirtualDisplayMutableContextWrapper(appContext);
         WebView webView = new WebView(WebViewContext);
 
         // Common setup
