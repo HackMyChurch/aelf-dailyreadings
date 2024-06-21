@@ -193,8 +193,10 @@ public class BibleBookFragment extends BibleFragment {
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
         mTabLayout.setTabIndicatorFullWidth(true);
 
-        // Setup the chapter selection menu
-        mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
+        // Setup the chapter selection menu IF there is more than one chapter
+        if (mBibleChapterPagerAdapter.getCount() > 1) {
+            mTabLayout.addOnTabSelectedListener(new ChapterSelectionListener());
+        }
 
         // Select requested chapter
         mViewPager.setCurrentItem(bibleChapterId);
