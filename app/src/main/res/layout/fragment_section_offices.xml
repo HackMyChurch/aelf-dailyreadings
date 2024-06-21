@@ -25,7 +25,9 @@
                 android:id="@+id/pager_title_strip"
                 style="?attr/tabstripStyle"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:tabGravity="center"
+                app:tabMode="scrollable" />
         </co.epitre.aelf_lectures.lectures.LectureViewPager>
     </androidx.appcompat.widget.LinearLayoutCompat>
 
