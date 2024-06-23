@@ -11,7 +11,6 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.OutOfQuotaPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
@@ -126,23 +125,18 @@ public class SyncManager implements SharedPreferences.OnSharedPreferenceChangeLi
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
-        OneTimeWorkRequest.Builder syncRequestBuilder = new OneTimeWorkRequest.Builder(SyncWorker.class)
+        Log.i(TAG, "Scheduling sync in "+initialDelay+" "+initialDelayUnit.toString());
+        OneTimeWorkRequest syncRequest = new OneTimeWorkRequest.Builder(SyncWorker.class)
                 .addTag(SYNC_JOB_TAG)
-                .setConstraints(constraints);
-
-        if (initialDelay > 0) {
-            Log.i(TAG, "Scheduling sync in "+initialDelay+" "+initialDelayUnit.toString());
-            syncRequestBuilder.setInitialDelay(initialDelay, initialDelayUnit);
-        } else {
-            Log.i(TAG, "Scheduling immediate sync");
-            syncRequestBuilder.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST);
-        }
+                .setInitialDelay(initialDelay, initialDelayUnit)
+                .setConstraints(constraints)
+                .build();
 
         // Enqueue
         this.mWorkManager.enqueueUniqueWork(
                 SYNC_JOB_EXPEDITED_NAME,
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
-                syncRequestBuilder.build()
+                syncRequest
         );
     }
 }
