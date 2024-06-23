@@ -158,14 +158,8 @@ public class SectionLecturesFragment extends SectionFragment implements
         // Reset menu handle in case we come from the 'back' button
         mMenu = null;
 
-        // Do we have a set of lectures to restore or do we need to load them ?
-        if (this.office == null) {
-            // Asynchronously load lecture
-            loadLecture(whatwhen);
-        } else {
-            // Apply the cached lectures
-            this.applyOffice();
-        }
+        // Asynchronously load lectures
+        loadLecture();
 
         // Return view
         return view;
@@ -536,7 +530,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         } else {
             whatwhen.position = 0;
         }
-        loadLecture(whatwhen);
+        loadLecture();
         return true;
     }
 
@@ -694,7 +688,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         });
     }
 
-    public void loadLecture(WhatWhen whatwhen) {
+    public void loadLecture() {
         // Cancel any pending load
         cancelLectureLoad();
 
@@ -759,17 +753,11 @@ public class SectionLecturesFragment extends SectionFragment implements
         this.isSuccess = isSuccess;
 
         try {
-            whatwhen.position = -1;
-
             // If we have an anchor, attempt to find corresponding position
             if (isSuccess) {
                 if (whatwhen.anchor != null && office != null) {
                     whatwhen.position = office.getLecturePosition(whatwhen.anchor);
                 }
-            }
-
-            if (whatwhen.position == -1) {
-                whatwhen.position = 0;
             }
 
             // Set up the ViewPager with the sections adapter.
