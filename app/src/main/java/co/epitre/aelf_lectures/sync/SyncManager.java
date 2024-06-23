@@ -6,6 +6,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
+import androidx.work.Configuration;
 import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.ExistingWorkPolicy;
@@ -42,6 +43,12 @@ public class SyncManager implements SharedPreferences.OnSharedPreferenceChangeLi
         super();
         this.mContext = context.getApplicationContext();
         this.mSyncPrefs = PreferenceManager.getDefaultSharedPreferences(this.mContext);
+        if (!WorkManager.isInitialized()) {
+            // Attempt to workaround IllegalStateException: WorkManager is not initialized properly.
+            // on Itel itel-A665L / Android 13 (SDK 33)
+            // cf. https://play.google.com/console/u/0/developers/7638290669081425144/app/4975758405726891388/vitals/crashes/82a8911e66a8a4ec34ac3380b1695a53/details?versionCode=81
+            WorkManager.initialize(this.mContext, new Configuration.Builder().build());
+        }
         this.mWorkManager = WorkManager.getInstance(this.mContext);
 
         // Ensure the sync request is enqueued
