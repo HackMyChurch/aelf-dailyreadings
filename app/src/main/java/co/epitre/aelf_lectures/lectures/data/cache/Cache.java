@@ -59,11 +59,14 @@ public final class Cache extends SQLiteOpenHelper {
                 null // Default error handler: Drop the database when corrupted
         );
 
-        SQLiteDatabase db = getWritableDatabase();
-        File dbFile = new File(db.getPath());
+        // Create the database parent folders if needed
+        File dbFile = context.getDatabasePath(DB_NAME);
         if (dbFile.getParentFile() != null) {
             dbFile.getParentFile().mkdirs();
         }
+
+        // Initialize the database
+        SQLiteDatabase db = getWritableDatabase();
 
         // Optimize performances (https://developer.android.com/topic/performance/sqlite-performance-best-practices)
         db.enableWriteAheadLogging();
