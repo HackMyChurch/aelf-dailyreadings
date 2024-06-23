@@ -79,6 +79,7 @@ public class SectionLecturesFragment extends SectionFragment implements
     private Office office;
     private boolean isLoading = false;
     private boolean isSuccess = true;
+    private int position = 0;
     DownloadOfficeTask currentRefresh = null;
     Lock preventCancel = new ReentrantLock();
 
@@ -113,7 +114,7 @@ public class SectionLecturesFragment extends SectionFragment implements
 
             // Restore saved instance state. Especially useful on screen rotate on older phones
             whatwhen.what = OfficeTypes.values()[savedInstanceState.getInt("what", 0)];
-            whatwhen.position = savedInstanceState.getInt("position", 0);
+            position = savedInstanceState.getInt("position", 0);
 
             long timestamp = savedInstanceState.getLong("when", 0);
             if (timestamp == 0) {
@@ -130,7 +131,7 @@ public class SectionLecturesFragment extends SectionFragment implements
 
             // Load the lectures for now.
             whatwhen.when = new AelfDate();
-            whatwhen.position = 0;
+            position = 0;
 
             if (settings.getString(SettingsActivity.KEY_PREF_SYNC_LECTURES, res.getString(R.string.pref_lectures_def)).equals("messe")) {
                 whatwhen.what = OfficeTypes.MESSE;
@@ -166,7 +167,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         mMenu = null;
 
         // Asynchronously load lectures
-        loadLecture();
+        loadLecture(true);
 
         // Return view
         return view;
@@ -206,7 +207,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         whatwhen = new WhatWhen();
         whatwhen.what = OfficeTypes.MESSE;
         whatwhen.when = new AelfDate();
-        whatwhen.position = 0; // 1st lecture of the office
+        position = 0; // 1st lecture of the office
 
         if (host.equals("www.aelf.org")) {
             // AELF Website
@@ -335,7 +336,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
         if (mViewPager != null) {
             whatwhen.anchor = null;
-            whatwhen.position = mViewPager.getCurrentItem();
+            position = mViewPager.getCurrentItem();
         }
     }
 
@@ -374,7 +375,7 @@ public class SectionLecturesFragment extends SectionFragment implements
     private void applyOffice() {
         lecturesPagerAdapter = new LecturePagerAdapter(getChildFragmentManager(), office, whatwhen.copy());
         mViewPager.setAdapter(lecturesPagerAdapter);
-        mViewPager.setCurrentItem(whatwhen.position);
+        mViewPager.setCurrentItem(position);
 
         refreshUI(whatwhen);
     }
@@ -642,14 +643,13 @@ public class SectionLecturesFragment extends SectionFragment implements
             return true;
         }
 
-        whatwhen.useCache = false;
         whatwhen.anchor = null;
         if (mViewPager != null) {
-            whatwhen.position = mViewPager.getCurrentItem();
+            position = mViewPager.getCurrentItem();
         } else {
-            whatwhen.position = 0;
+            position = 0;
         }
-        loadLecture();
+        loadLecture(false);
         return true;
     }
 
@@ -810,7 +810,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         });
     }
 
-    public void loadLecture() {
+    public void loadLecture(boolean useCache) {
         // Cancel any pending load
         cancelLectureLoad();
 
@@ -820,9 +820,8 @@ public class SectionLecturesFragment extends SectionFragment implements
         // Start Loading
         preventCancel.lock();
         try {
-            DownloadOfficeTask loader = new DownloadOfficeTask(getContext(), whatwhen, this);
+            DownloadOfficeTask loader = new DownloadOfficeTask(getContext(), whatwhen, useCache, this);
             loader.execute();
-            whatwhen.useCache = true; // cache override are one-shot
             currentRefresh = loader;
         } finally {
             preventCancel.unlock();
@@ -875,7 +874,7 @@ public class SectionLecturesFragment extends SectionFragment implements
             // If we have an anchor, attempt to find corresponding position
             if (isSuccess) {
                 if (whatwhen.anchor != null && office != null) {
-                    whatwhen.position = office.getLecturePosition(whatwhen.anchor);
+                    position = office.getLecturePosition(whatwhen.anchor);
                 }
             }
 

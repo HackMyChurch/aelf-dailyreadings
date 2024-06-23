@@ -6,8 +6,9 @@ import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.preference.PreferenceManager;
 import android.util.Log;
+
+import androidx.preference.PreferenceManager;
 
 import java.io.IOException;
 
@@ -52,6 +53,7 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
     private LecturesController lecturesCtrl;
 
     private WhatWhen ww;
+    private boolean useCache;
 
     public static final String TAG = "DownloadOfficeTask";
 
@@ -76,11 +78,12 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
             "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/apply-optimal-sync-settings\">Appliquer ces paramètres</a></div>";
 
 
-    public DownloadOfficeTask(Context ctx, WhatWhen whatwhen, LectureLoadProgressListener lectureLoadProgressListener) {
+    public DownloadOfficeTask(Context ctx, WhatWhen whatwhen, boolean useCache, LectureLoadProgressListener lectureLoadProgressListener) {
         this.ctx = ctx;
         this.lecturesCtrl = LecturesController.getInstance(ctx);
         this.lectureLoadProgressListener = lectureLoadProgressListener;
         this.ww = whatwhen.copy();
+        this.useCache = useCache;
     }
 
     private void runOnUIThread(Runnable code) {
@@ -105,7 +108,7 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
             // TODO: start only after a delay
             // TODO: use a nicer lecture swap animation ?
             onLectureLoadProgress(LectureLoadProgress.LOAD_START);
-            Office office = lecturesCtrl.loadLectures(ww.what, ww.when, ww.useCache);
+            Office office = lecturesCtrl.loadLectures(ww.what, ww.when, useCache);
             onLectureLoadProgress(LectureLoadProgress.LOAD_DONE);
             return office;
         } catch (IOException e) {
