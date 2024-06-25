@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout2"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
     android:background="?attr/drawableDrawerHeaderBg"
     android:minHeight="160dp"
     android:orientation="vertical"
@@ -11,59 +12,58 @@
     android:paddingTop="24dp"
     android:paddingBottom="16dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <ImageView
+        android:id="@+id/drawer_header_logo"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:scaleType="centerInside"
+        android:translationX="-8dp"
+        app:srcCompat="?attr/drawableAelfLogo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
 
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="69dp"
-            android:layout_height="69dp"
-            android:scaleType="centerInside"
-            android:translationX="-8dp"
-            app:srcCompat="?attr/drawableAelfLogo" />
+    <TextView
+        android:id="@+id/drawer_header_liturgical_day"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-condensed-medium"
+        android:gravity="bottom"
+        android:maxHeight="40dp"
+        android:textColor="?attr/colorLectureText"
+        android:textSize="34dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintTop_toTopOf="@+id/drawer_header_logo"
+        app:layout_constraintLeft_toRightOf="@+id/drawer_header_logo"
+        app:layout_constraintRight_toRightOf="parent"
+        app:autoSizeMaxTextSize="34dp"
+        app:autoSizeMinTextSize="16dp"
+        app:autoSizeTextType="uniform"
+        tools:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:paddingLeft="8dp">
-
-            <TextView
-                android:id="@+id/drawer_header_liturgical_day"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:fontFamily="sans-serif-condensed-medium"
-                android:gravity="bottom"
-                android:maxHeight="40dp"
-                tools:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu"
-                android:textColor="?attr/colorLectureText"
-                android:textSize="34dp"
-                app:autoSizeMaxTextSize="34dp"
-                app:autoSizeMinTextSize="16dp"
-                app:autoSizeTextType="uniform" />
-
-            <TextView
-                android:id="@+id/drawer_header_liturgical_time"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="-4dp"
-                android:fontFamily="sans-serif-light"
-                tools:text="Année B — Semaine IV"
-                android:textColor="?attr/colorLectureText"
-                android:textSize="14dp" />
-
-        </LinearLayout>
-    </LinearLayout>
+    <TextView
+        android:id="@+id/drawer_header_liturgical_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="-4dp"
+        android:fontFamily="sans-serif-light"
+        android:textColor="?attr/colorLectureText"
+        android:textSize="14dp"
+        app:layout_constraintTop_toBottomOf="@+id/drawer_header_liturgical_day"
+        app:layout_constraintLeft_toLeftOf="@+id/drawer_header_liturgical_day"
+        app:layout_constraintRight_toRightOf="@+id/drawer_header_liturgical_day"
+        tools:text="Année B — Semaine IV" />
 
     <LinearLayout
         android:id="@+id/drawer_header_liturgical_options"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingTop="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/drawer_header_logo"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         android:showDividers="middle">
     </LinearLayout>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

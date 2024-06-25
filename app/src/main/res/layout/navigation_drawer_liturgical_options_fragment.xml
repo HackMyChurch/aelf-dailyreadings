@@ -1,42 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingBottom="4dp"
-    tools:showIn="@layout/navigation_drawer_header_offices">
+    android:paddingBottom="4dp">
 
     <View
         android:id="@+id/drawer_header_liturgical_color"
         android:layout_width="9dp"
         android:layout_height="9dp"
         android:layout_marginTop="6dp"
-        android:layout_marginRight="8dp"
-        android:background="?attr/colorLiturgicalGreen" />
+        android:background="?attr/colorLiturgicalGreen"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/drawer_header_liturgical_day_title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:textColor="?attr/colorLectureText"
+        android:textSize="14dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toRightOf="@+id/drawer_header_liturgical_color"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="La Sainte Trinité" />
 
-        <TextView
-            android:id="@+id/drawer_header_liturgical_day_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="La Sainte Trinité"
-            android:textColor="?attr/colorLectureText"
-            android:textSize="14dp" />
+    <TextView
+        android:id="@+id/drawer_header_liturgical_day_degree"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-light"
+        android:textColor="?attr/colorLectureText"
+        android:textSize="12dp"
+        android:textStyle="italic"
+        android:layout_marginTop="-4dp"
+        app:layout_constraintLeft_toLeftOf="@+id/drawer_header_liturgical_day_title"
+        app:layout_constraintRight_toRightOf="@+id/drawer_header_liturgical_day_title"
+        app:layout_constraintTop_toBottomOf="@+id/drawer_header_liturgical_day_title"
+        tools:text="Solennité" />
 
-        <TextView
-            android:id="@+id/drawer_header_liturgical_day_degree"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="-4dp"
-            android:fontFamily="sans-serif-light"
-            tools:text="Solennité"
-            android:textColor="?attr/colorLectureText"
-            android:textSize="12dp"
-            android:textStyle="italic" />
-    </LinearLayout>
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
