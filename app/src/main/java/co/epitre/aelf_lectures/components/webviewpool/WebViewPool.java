@@ -1,16 +1,10 @@
-package co.epitre.aelf_lectures.components;
+package co.epitre.aelf_lectures.components.webviewpool;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.MutableContextWrapper;
-import android.util.Log;
-import android.view.View;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
-
-import co.epitre.aelf_lectures.base.VirtualDisplayMutableContextWrapper;
 
 /**
  * Instanciating a WebView is expensive. This is also something we do on every page slide. This
@@ -20,10 +14,8 @@ import co.epitre.aelf_lectures.base.VirtualDisplayMutableContextWrapper;
  * - https://gist.github.com/vishalratna-microsoft/6fb32ef46996144248f3b86a4e07bd40
  * - https://medium.com/microsoft-mobile-engineering/clean-android-webview-caching-9b871b3579f3
  */
-public class WebViewPool {
+public class WebViewPool extends WebViewPoolBase {
     private static final String TAG = "WebViewPool";
-
-    private static volatile WebViewPool instance;
 
     private final ArrayBlockingQueue<WebView> webViews;
     private final Context appContext;
@@ -32,32 +24,18 @@ public class WebViewPool {
     // Initialization code
     //
 
-    private WebViewPool(Context appContext, int initialCapacity, int maxCapacity) {
+    WebViewPool(Context appContext, int initialCapacity, int maxCapacity) {
         this.appContext = appContext;
         this.webViews = new ArrayBlockingQueue<>(maxCapacity);
 
         // Initialize pool
         for (int i = 0; i < initialCapacity; i++) {
-            webViews.add(createWebView());
+            webViews.add(createWebView(appContext));
         }
 
         // Clear the (application wide) webview cache
         WebView webView = webViews.peek();
         webView.clearCache(true);
-    }
-
-    public static void Initialize(Context appContext, int initialCapacity, int maxCapacity) {
-        synchronized(WebViewPool.class) {
-            if (instance != null) {
-                throw new RuntimeException("WebViewPoolManager is already initialized");
-            }
-
-            instance = new WebViewPool(appContext, initialCapacity, maxCapacity);
-        }
-    }
-
-    public static WebViewPool getInstance() {
-        return instance;
     }
 
     //
@@ -68,7 +46,7 @@ public class WebViewPool {
         // Get available webview or allocate if needed
         WebView webView = webViews.poll();
         if (webView == null) {
-            webView = createWebView();
+            webView = createWebView(ctx);
         }
 
         // Swap the context
@@ -85,32 +63,6 @@ public class WebViewPool {
         mutableContextWrapper.setBaseContext(appContext);
 
         // Put it back in the pool, unless full
-        webViews.offer(createWebView());
-    }
-
-    //
-    // Internals
-    //
-
-    @SuppressLint("SetJavaScriptEnabled")
-    private WebView createWebView() {
-        Context WebViewContext = new VirtualDisplayMutableContextWrapper(appContext);
-        WebView webView = new WebView(WebViewContext);
-
-        // Common setup
-        webView.setBackgroundColor(0x00000000);
-        WebSettings webSettings = webView.getSettings();
-        webSettings.setBuiltInZoomControls(false);
-        webSettings.setJavaScriptEnabled(true);
-        webSettings.setDomStorageEnabled(true);
-
-        // Accessibility: enable (best effort)
-        try {
-            webView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-        } catch (NoClassDefFoundError e) {
-            Log.w(TAG, "Accessibility support is not available on this device");
-        }
-
-        return webView;
+        webViews.offer(webView);
     }
 }

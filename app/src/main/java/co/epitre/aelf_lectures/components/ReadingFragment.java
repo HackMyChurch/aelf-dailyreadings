@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
+import co.epitre.aelf_lectures.components.webviewpool.WebViewPoolManager;
 
 
 public abstract class ReadingFragment extends Fragment {
@@ -64,7 +65,7 @@ public abstract class ReadingFragment extends Fragment {
         super.onViewCreated(rootView, savedInstanceState);
 
         // Get and install the WebView
-        mWebView = WebViewPool.getInstance().borrowWebView(requireContext());
+        mWebView = WebViewPoolManager.getInstance().borrowWebView(requireContext());
         mWebviewPlaceHolder = replaceView(R.id.LectureView, rootView, mWebView);
 
         // Install theme and styling hooks
@@ -91,7 +92,7 @@ public abstract class ReadingFragment extends Fragment {
         replaceView(R.id.LectureView, rootView, mWebviewPlaceHolder);
         mWebView.setOnTouchListener(null);
         mWebView.setWebViewClient(null);
-        WebViewPool.getInstance().releaseWebView(mWebView);
+        WebViewPoolManager.getInstance().releaseWebView(mWebView);
         mWebviewPlaceHolder = null;
         mWebView = null;
     }

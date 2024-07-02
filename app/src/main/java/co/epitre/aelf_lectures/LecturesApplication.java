@@ -13,7 +13,7 @@ import androidx.preference.PreferenceManager;
 import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
-import co.epitre.aelf_lectures.components.WebViewPool;
+import co.epitre.aelf_lectures.components.webviewpool.WebViewPoolManager;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -48,7 +48,7 @@ public class LecturesApplication extends Application {
 
         // Boot application
         HardwareDetection.getGuessedPerformanceClass(this);
-        WebViewPool.Initialize(this, INITIAL_WEB_VIEWS, MAX_WEB_VIEW);
+        WebViewPoolManager.Initialize(this, INITIAL_WEB_VIEWS, MAX_WEB_VIEW);
         initNetworkStatusMonitor();
         isValidServer();
         initializeSync();
