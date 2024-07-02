@@ -55,6 +55,12 @@ public class ReadingWebViewClient extends WebViewClient {
             mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
         }
 
+        // Open external resources
+        String scheme = uri.getScheme();
+        if (scheme != null) {
+            mActivity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
+        }
+
         // Always cancel default action
         return true;
     }
