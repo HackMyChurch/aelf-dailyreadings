@@ -44,20 +44,19 @@ public class ReadingWebViewClient extends WebViewClient {
             return true;
         }
         String host = uri.getHost();
+        String scheme = uri.getScheme();
 
         if (host != null && host.equals("www.aelf.org") || url.startsWith("aelf:")) {
             // If this is a request to AELF website, forward it to the main activity
             mActivity.onIntent(new Intent(Intent.ACTION_VIEW, uri));
         } else if (url.startsWith("mailto:")) {
+            // Send mail to dev
             Intent intent = new Intent(Intent.ACTION_SENDTO);
             intent.setType("text/plain");
             intent.setData(uri);
             mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
-        }
-
-        // Open external resources
-        String scheme = uri.getScheme();
-        if (scheme != null) {
+        } else if (scheme != null) {
+            // Open external resources
             mActivity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
         }
 
