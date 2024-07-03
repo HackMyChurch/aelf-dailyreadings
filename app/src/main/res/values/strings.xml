@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.8.6">
+    <!ENTITY app_version "2.9.0">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -11,7 +11,9 @@
     <string name="app_support">&app_support;</string>
 
     <!-- Version ID to use when querying the API. Only increment when the data format changes to avoid excessive API load -->
-    <item name="api_version" type="integer">76</item>
+    <!-- 76: First stable version -->
+    <!-- 82: Add support for opening external links -->
+    <item name="api_version" type="integer">82</item>
 
     <!-- Drawer actions -->
     <string name="drawer_open">Ouvrir la liste des offices</string>
@@ -52,21 +54,17 @@
 
     <string name="dialog_whats_new_title">Nouveautés</string>
     <string name="dialog_whats_new_content">
-        Merci d\'avoir mis à jour votre application \"&app_name;\" !
+        Merci d\'avoir mis à jour \"&app_name;\" !
         \n
-        \nEn apparence petite et discrète, cette mise à jour vient avec un tout nouveau moteur de
-        \nsynchronisation. Concrètement, cela corrige à la racine les soucis de synchronisation
-        \nremontés ces dernières années. (si vous avez toujours un problème hors connexion,
-        \ncontactez-nous depuis les préférences de l\'application)
+        \nGrande nouveauté, les informations sur le jour liturgique sont maintenant visibles
+        directement depuis le menu latéral. Une révolution 😇.
         \n
         \nEn plus de cela:
-        \n• Revenir en arrière depuis la Bible vers un office arrive maintenant au bon endroit.
-        \n• La doxologie et les antiennes sont maintenant là où on les attend.
-        \n• Un rare crash au chargement des offices a été corrigé.
-        \n• La Bible a été synchronisée avec le site officiel.
+        \n• Corrections de bugs
+        \n• Amélioration des performances
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
-        \ndevenir meilleure !
+        devenir meilleure !
     </string>
 
 	<!-- Buttons -->
