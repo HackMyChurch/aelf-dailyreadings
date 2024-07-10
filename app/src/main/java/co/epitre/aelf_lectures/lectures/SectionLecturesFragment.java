@@ -32,6 +32,7 @@ import android.widget.Toast;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.ListPopupWindow;
+import androidx.appcompat.widget.TooltipCompat;
 import androidx.preference.PreferenceManager;
 import androidx.viewpager.widget.ViewPager;
 
@@ -476,6 +477,7 @@ public class SectionLecturesFragment extends SectionFragment implements
             liturgicalDayTitleView.setText(Capitalize(liturgyOption.getName()));
             liturgicalDayDegreeView.setText(liturgyOption.getDegree());
 
+            String tooltipColor = liturgyOption.getColor();
             switch (liturgyOption.getColor()) {
                 case "blanc":
                     liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalWhite));
@@ -497,7 +499,15 @@ public class SectionLecturesFragment extends SectionFragment implements
                     break;
                 default:
                     liturgicalColorView.setBackgroundColor(getThemeColorAttribute(R.attr.colorLiturgicalUnknown));
+                    tooltipColor = null;
                     break;
+            }
+
+            if (tooltipColor != null) {
+                TooltipCompat.setTooltipText(
+                    liturgicalOptionView,
+                    "Couleur liturgique: "+tooltipColor
+                );
             }
 
             // Attach option
