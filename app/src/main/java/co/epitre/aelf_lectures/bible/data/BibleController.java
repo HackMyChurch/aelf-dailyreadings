@@ -1,10 +1,14 @@
 package co.epitre.aelf_lectures.bible.data;
 
+import static org.sqlite.database.sqlite.SQLiteDatabase.OPEN_READONLY;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.sqlite.database.sqlite.SQLiteDatabase;
 
 import java.io.Closeable;
 import java.io.File;
@@ -17,11 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.sqlite.database.sqlite.SQLiteDatabase;
-
 import co.epitre.aelf_lectures.LecturesApplication;
-
-import static org.sqlite.database.sqlite.SQLiteDatabase.OPEN_READONLY;
 
 public class BibleController {
     private static final String TAG = "BibleController";
@@ -221,13 +221,16 @@ public class BibleController {
         queryBuilder.append(" FROM search");
         queryBuilder.append(" WHERE text MATCH '\"");
         queryBuilder.append(search);
-        queryBuilder.append("\" OR ");
-        queryBuilder.append(" NEAR(\"");
-        queryBuilder.append(TextUtils.join("\" \"", tokens));
-        queryBuilder.append("\", ");
-        queryBuilder.append(tokens.size()*2);
-        queryBuilder.append(" ) OR ");
-        queryBuilder.append(TextUtils.join(" ", tokens));
+        queryBuilder.append("\"");
+        if (!tokens.isEmpty()) {
+            queryBuilder.append(" OR ");
+            queryBuilder.append(" NEAR(\"");
+            queryBuilder.append(TextUtils.join("\" \"", tokens));
+            queryBuilder.append("\", ");
+            queryBuilder.append(tokens.size()*2);
+            queryBuilder.append(" ) OR ");
+            queryBuilder.append(TextUtils.join(" ", tokens));
+        }
         queryBuilder.append("'");
         queryBuilder.append(orderByLimit(sort));
         queryBuilder.append(";");
