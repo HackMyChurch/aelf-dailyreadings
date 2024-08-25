@@ -1,0 +1,5 @@
+<resources>
+    <style name="SplashScreenTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="android:windowBackground">@color/light_aelf_lecture_background</item>
+    </style>
+</resources>

@@ -13,7 +13,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AelfAppThemeLight" >
+        android:theme="@style/SplashScreenTheme" >
         <meta-data android:name="android.max_aspect" android:value="2.1" />
         <activity
             android:name="co.epitre.aelf_lectures.LecturesActivity"
