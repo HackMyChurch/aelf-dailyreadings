@@ -297,16 +297,19 @@ public class SectionLecturesFragment extends SectionFragment implements
         int position = mViewPager.getCurrentItem();
         Lecture lecture = lecturesPagerAdapter.getLecture(position);
 
+        // Get current region
+        String region = settings.getString(SettingsActivity.KEY_PREF_REGION, "romain");
+
         // Build URL
-        return buildUri(whatwhen.what, whatwhen.when, lecture.getKey());
+        return buildUri(whatwhen.what, whatwhen.when, region, lecture.getKey());
     }
 
     public static Uri buildUri(OfficeTypes what) {
-        return buildUri(what, defaultDate, null);
+        return buildUri(what, defaultDate, "romain", null);
     }
 
-    public static Uri buildUri(OfficeTypes what, AelfDate when, String key) {
-        String url = "http://www.aelf.org/"+when.toIsoString()+"/romain/"+what.urlName();
+    public static Uri buildUri(OfficeTypes what, AelfDate when, String region, String key) {
+        String url = "https://www.aelf.org/"+when.toIsoString()+"/"+region+"/"+what.urlName();
         if (key != null) {
             url += "#"+key;
         }
@@ -748,7 +751,7 @@ public class SectionLecturesFragment extends SectionFragment implements
             return;
 
         // Send the new URI to the activity
-        Uri uri = buildUri(whatwhen.what, date, null);
+        Uri uri = buildUri(whatwhen.what, date, "romain", null);
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         activity.onIntent(intent);
     }
