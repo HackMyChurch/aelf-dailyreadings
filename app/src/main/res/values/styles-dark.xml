@@ -10,6 +10,7 @@
         <item name="colorPrimaryDark">@color/dark_aelf_primary_dark</item>
         <item name="android:colorBackground">@color/dark_aelf_primary_dark</item>
         <item name="colorDrawerItemText">@color/white</item>
+        <item name="android:windowBackground">@color/dark_aelf_window_background</item>
 
         <!-- Lecture colors -->
         <item name="colorLectureText">@color/dark_aelf_lecture_text</item>

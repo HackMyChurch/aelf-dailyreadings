@@ -3,6 +3,7 @@
 	<!-- Light theme -->
 	<color name="light_aelf_primary">#13171F</color>
 	<color name="light_aelf_primary_dark">#1E2024</color>
+	<color name="light_aelf_window_background">#F0EADF</color>
 	<color name="light_aelf_lecture_background">#efe3ce</color>
 	<color name="light_aelf_lecture_background_darker">#d6cbb8</color>
 	<color name="light_aelf_lecture_background_26">#42efe3ce</color>
@@ -13,6 +14,7 @@
 	<!-- Dark theme -->
 	<color name="dark_aelf_primary">#13171F</color>            <!-- http://paletton.com/#uid=13J0u0k5W6N5dkR5MeDdF5Vk65w -->
 	<color name="dark_aelf_primary_dark">#1E2024</color>
+	<color name="dark_aelf_window_background">#2E2E33</color>
 	<color name="dark_aelf_lecture_background">#1d1e23</color> <!-- http://paletton.com/#uid=13E1k0ke15J79fQ6-6Bjt4Npb3- -->
 	<color name="dark_aelf_lecture_background_darker">#1d1e23</color>
 	<color name="dark_aelf_lecture_text">#f8f7fa</color>
