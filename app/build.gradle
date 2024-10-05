@@ -11,6 +11,9 @@ android {
             sourceCompatibility JavaVersion.VERSION_17
             targetCompatibility JavaVersion.VERSION_17
         }
+        kotlinOptions {
+            jvmTarget = '17'
+        }
     }
     buildFeatures {
         buildConfig true
@@ -44,7 +47,6 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -59,7 +61,7 @@ dependencies {
     implementation 'com.squareup.moshi:moshi:1.15.0'
 
     // Synchronization
-    implementation "androidx.work:work-runtime:2.9.0"
+    implementation "androidx.work:work-runtime:2.9.1"
 
     // Foundation
     implementation 'org.greenrobot:eventbus:3.3.1'
