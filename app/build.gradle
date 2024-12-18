@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdk 34
+    compileSdk 35
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
         minSdk 21
-        targetSdkVersion 34
+        targetSdkVersion 35
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_17
             targetCompatibility JavaVersion.VERSION_17
@@ -49,7 +49,7 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
 
     // Material design
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
@@ -61,7 +61,7 @@ dependencies {
     implementation 'com.squareup.moshi:moshi:1.15.0'
 
     // Synchronization
-    implementation "androidx.work:work-runtime:2.9.1"
+    implementation "androidx.work:work-runtime:2.10.0"
 
     // Foundation
     implementation 'org.greenrobot:eventbus:3.3.1'
