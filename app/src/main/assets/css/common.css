@@ -57,8 +57,8 @@ blockquote p {
 
 blockquote small i {
     display: block;
-    text-align: right;
-    margin-top: -15px;
+    float: right;
+    margin-bottom: 15px;
     margin-right: 0;
     padding-top: 0;
 }
@@ -77,6 +77,12 @@ div.app-office-navigation {
     font-size: 17px;
     text-decoration: none;
     border: 1px solid;
+}
+
+/* Main content */
+
+.content {
+    clear: both;
 }
 
 /* Verse styling with optional line-wrap support */
@@ -117,6 +123,7 @@ div.app-office-navigation {
    padding-left: 25px;
    text-indent: -25px;
    margin-bottom: 1px;
+   text-wrap: pretty;
 }
 
 /* Mark currently selected verse */
