@@ -27,18 +27,19 @@
         android:id="@+id/drawer_header_liturgical_day"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="-8dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:gravity="bottom"
         android:maxHeight="40dp"
         android:textColor="?attr/colorLectureText"
         android:textSize="34sp"
-        android:layout_marginLeft="8dp"
-        app:layout_constraintTop_toTopOf="@+id/drawer_header_logo"
-        app:layout_constraintLeft_toRightOf="@+id/drawer_header_logo"
-        app:layout_constraintRight_toRightOf="parent"
         app:autoSizeMaxTextSize="34dp"
         app:autoSizeMinTextSize="16dp"
         app:autoSizeTextType="uniform"
+        app:layout_constraintLeft_toRightOf="@+id/drawer_header_logo"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/drawer_header_logo"
         tools:text="Sainte\u00a0Marie, Mère\u00a0de\u00a0Dieu" />
 
     <TextView
@@ -53,6 +54,19 @@
         app:layout_constraintLeft_toLeftOf="@+id/drawer_header_liturgical_day"
         app:layout_constraintRight_toRightOf="@+id/drawer_header_liturgical_day"
         tools:text="Année B — Semaine IV" />
+
+    <Spinner
+        android:id="@+id/drawer_header_region"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif-light"
+        android:textColor="?attr/colorLectureText"
+        android:textSize="14sp"
+        app:layout_constraintLeft_toLeftOf="@+id/drawer_header_liturgical_time"
+        app:layout_constraintRight_toRightOf="@+id/drawer_header_liturgical_time"
+        app:layout_constraintTop_toBottomOf="@+id/drawer_header_liturgical_time"
+        tools:listitem="@layout/navigation_drawer_header_office_region" />
 
     <LinearLayout
         android:id="@+id/drawer_header_liturgical_options"

@@ -13,6 +13,7 @@ public class OfficeInformations implements Serializable {
     @Json(name = "liturgical_period") String liturgicalPeriod;
     @Json(name = "liturgical_year") String liturgicalYear;
     @Json(name = "psalter_week") Integer psalterWeek;
+    @Json(name = "zone") String region;
     @Json(name = "liturgy_options") List<OfficeLiturgyOption> liturgyOptions;
 
     public String getLiturgicalDay() {
@@ -31,6 +32,10 @@ public class OfficeInformations implements Serializable {
 
     public String getLiturgicalYear() {
         return liturgicalYear;
+    }
+
+    public String getRegion() {
+        return region;
     }
 
     public String getRomanPsalterWeek() {

@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +39,10 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.material.tabs.TabLayout;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -64,7 +67,8 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 public class SectionLecturesFragment extends SectionFragment implements
         LectureLoadProgressListener,
         DatePickerFragment.CalendarDialogListener,
-        NetworkStatusMonitor.NetworkStatusChangedListener
+        NetworkStatusMonitor.NetworkStatusChangedListener,
+        SharedPreferences.OnSharedPreferenceChangeListener
 {
     public static final String TAG = "SectionOfficesFragment";
 
@@ -332,12 +336,14 @@ public class SectionLecturesFragment extends SectionFragment implements
     public void onResume() {
         super.onResume();
         networkStatusMonitor.registerNetworkStatusChangeListener(this);
+        settings.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         networkStatusMonitor.unregisterNetworkStatusChangeListener(this);
+        settings.unregisterOnSharedPreferenceChangeListener(this);
         if (mViewPager != null) {
             whatwhen.anchor = null;
             position = mViewPager.getCurrentItem();
@@ -370,6 +376,21 @@ public class SectionLecturesFragment extends SectionFragment implements
         outState.putInt("position", position);
         outState.putLong("when", when);
         outState.putLong("last-update", System.currentTimeMillis());
+    }
+
+    //
+    // Preference changes
+    //
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key == null) {
+            return;
+        }
+
+        if (key.equals(SettingsActivity.KEY_PREF_REGION)) {
+            onRefresh("region-change");
+        }
     }
 
     //
@@ -436,6 +457,7 @@ public class SectionLecturesFragment extends SectionFragment implements
         // Get a handle on the views
         TextView liturgicalDayView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_day);
         TextView liturgicalTimeView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_time);
+        Spinner LiturgicalRegionView = drawerHeaderView.findViewById(R.id.drawer_header_region);
         LinearLayout liturgicalOptionsListView = drawerHeaderView.findViewById(R.id.drawer_header_liturgical_options);
 
         // Set the day
@@ -461,6 +483,9 @@ public class SectionLecturesFragment extends SectionFragment implements
         }
 
         liturgicalTimeView.setText(builder.toString());
+
+        // Set region(s)
+        setupHeaderRegion(LiturgicalRegionView, informations.getRegion());
 
         // Set the liturgy options
         liturgicalOptionsListView.removeAllViews();
@@ -516,6 +541,42 @@ public class SectionLecturesFragment extends SectionFragment implements
             // Attach option
             liturgicalOptionsListView.addView(liturgicalOptionView);
         }
+    }
+
+    void setupHeaderRegion(Spinner LiturgicalRegionView, String region) {
+        // Get resources
+        List<String> regionValues = Arrays.asList(getResources().getStringArray(R.array.pref_region_values));
+
+        // Setup spinner layout
+        ArrayAdapter<CharSequence> regionAdapter = ArrayAdapter.createFromResource(
+                requireContext(),
+                R.array.pref_region_title,
+                R.layout.navigation_drawer_header_office_region
+        );
+        regionAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        LiturgicalRegionView.setAdapter(regionAdapter);
+
+        // Select the current region
+        if (region != null && regionValues.contains(region)) {
+            int regionPosition = regionValues.indexOf(region);
+            LiturgicalRegionView.setSelection(regionPosition);
+        }
+
+        // Set region change listener
+        LiturgicalRegionView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                String selectedRegionValue = regionValues.get(position);
+                if (selectedRegionValue.equals(region)) {
+                    return;
+                }
+
+                settings.edit().putString(SettingsActivity.KEY_PREF_REGION, selectedRegionValue).apply();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {}
+        });
     }
 
     //

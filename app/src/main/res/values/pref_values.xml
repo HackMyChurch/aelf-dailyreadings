@@ -47,7 +47,7 @@
         <item>Canada</item>
         <item>Monaco</item>
         <item>Afrique</item>
-        <item>Autre (Calendrier romain)</item>
+        <item>Romain (Autres)</item>
     </string-array>
     <string-array name="pref_region_values">
         <item>france</item>
