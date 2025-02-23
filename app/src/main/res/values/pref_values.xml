@@ -45,6 +45,7 @@
         <item>Luxembourg</item>
         <item>Suisse</item>
         <item>Canada</item>
+        <item>Monaco</item>
         <item>Afrique</item>
         <item>Autre (Calendrier romain)</item>
     </string-array>
@@ -54,6 +55,7 @@
         <item>luxembourg</item>
         <item>suisse</item>
         <item>canada</item>
+        <item>monaco</item>
         <item>afrique</item>
         <item>romain</item>
     </string-array>

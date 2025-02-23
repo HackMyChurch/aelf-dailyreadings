@@ -132,6 +132,7 @@ public class LecturesApplication extends Application {
             case "LU" -> "luxembourg";
             case "CA" -> "canada";
             case "CH" -> "suisse";
+            case "MC" -> "monaco";
             case "DZ", "AO", "AC", "BJ", "BW", "BF", "BI", "CM", "CV", "CF", "TD", "KM", "CG", "CD",
                  "CI", "DG", "DJ", "EG", "GQ", "ER", "ET", "FK", "GA", "GH", "GI", "GN", "GW", "KE",
                  "LS", "LR", "LY", "MG", "MW", "ML", "MR", "MU", "YT", "MA", "MZ", "NA", "NE", "NG",
