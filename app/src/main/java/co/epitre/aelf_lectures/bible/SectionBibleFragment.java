@@ -28,6 +28,7 @@ import org.greenrobot.eventbus.Subscribe;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.SectionFragment;
 import co.epitre.aelf_lectures.bible.data.BibleController;
+import co.epitre.aelf_lectures.bible.v2.BibleBookFragmentV2;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
@@ -38,7 +39,7 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 public class SectionBibleFragment extends SectionFragment {
     public static final String TAG = "SectionBibleFragment";
 
-    public SectionBibleFragment(){
+    public SectionBibleFragment() {
         // Required empty public constructor
     }
 
@@ -88,7 +89,7 @@ public class SectionBibleFragment extends SectionFragment {
                 // Load requested URL
                 onLink(uri);
             }
-        } else if(Intent.ACTION_SEARCH.equals(intent.getAction())) {
+        } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             onSearch(intent.getStringExtra(SearchManager.QUERY));
         } else {
             // load default page
@@ -158,7 +159,7 @@ public class SectionBibleFragment extends SectionFragment {
 
     @Override
     public void onSearch(String query) {
-        Uri uri = Uri.parse("https://www.aelf.org/search?query="+query);
+        Uri uri = Uri.parse("https://www.aelf.org/search?query=" + query);
         onLink(uri);
     }
 
@@ -181,7 +182,7 @@ public class SectionBibleFragment extends SectionFragment {
 
         SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
         final SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        if (searchView == null ) {
+        if (searchView == null) {
             return;
         }
 
@@ -234,7 +235,7 @@ public class SectionBibleFragment extends SectionFragment {
         if (currentBibleFragment != null) {
             route = currentBibleFragment.getRoute();
         }
-        return Uri.parse("https://www.aelf.org"+route);
+        return Uri.parse("https://www.aelf.org" + route);
     }
 
     public String getTitle() {
@@ -250,7 +251,9 @@ public class SectionBibleFragment extends SectionFragment {
         if (activity == null) {
             return;
         }
-        BibleFragment newBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId);
+
+        Fragment newBibleFragment = new BibleBookFragmentV2();
+
         setFragment(newBibleFragment);
     }
 

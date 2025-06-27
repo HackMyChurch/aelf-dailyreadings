@@ -79,7 +79,7 @@
         <!-- ContentProvider to expose files outside the application -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="co.epitre.aelf_lectures.fileprovider"
+            android:authorities="co.epitre.aelf_lectures.fileprovider,co.epitre.aelf_lectures.debug.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
