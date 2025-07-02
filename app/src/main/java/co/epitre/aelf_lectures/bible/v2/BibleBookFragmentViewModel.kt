@@ -29,6 +29,9 @@ class BibleBookFragmentViewModel : ViewModel() {
     val selectedChapterRef
         get() = _bibleBookChapters.getOrNull(selectedChapterIndex.value) ?: "1"
 
+    val nbChapters
+        get() = _bibleBookChapters.size
+
 
     fun init(biblePartId: Int, bibleBookId: Int) {
         val biblePart = BibleBookList.getInstance().parts[biblePartId]

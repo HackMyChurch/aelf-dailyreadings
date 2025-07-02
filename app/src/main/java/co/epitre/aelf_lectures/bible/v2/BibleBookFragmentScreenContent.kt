@@ -1,13 +1,17 @@
 package co.epitre.aelf_lectures.bible.v2
 
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -29,12 +33,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +72,12 @@ fun BibleBookFragmentScreenContent(
     onPinchToZoom: (Float) -> Unit = {}
 ) {
 
+    val scrollStates = remember {
+        List(nbChapters) { ScrollState(0) }
+    }
+
+    var displayedVerses by remember { mutableStateOf<Map<Int, List<BibleVerse>>>(emptyMap()) }
+
     BoxWithConstraints {
 
         val tabWidth = this.maxWidth / 3
@@ -82,7 +95,7 @@ fun BibleBookFragmentScreenContent(
                     )
                 }
             ) {
-                for (i in 0..nbChapters) {
+                for (i in 0..<nbChapters) {
                     Tab(
                         modifier = Modifier.width(tabWidth),
                         selected = selectedChapterIndex == i,
@@ -110,20 +123,24 @@ fun BibleBookFragmentScreenContent(
                 )
             }
 
+            val coroutineScope = rememberCoroutineScope()
+
+
+            val flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior()
+
+
             HorizontalPager(
-                state = pagerState, modifier = Modifier.weight(1f)
+                state = pagerState,
+                modifier = Modifier.fillMaxHeight(),
+                verticalAlignment = Alignment.Top
             ) { index ->
 
 
-                var displayedVerses by remember { mutableStateOf(listOf<BibleVerse>()) }
-
-                LaunchedEffect(Unit) {
-                    displayedVerses = verses(index)
+                if (displayedVerses[index] == null) {
+                    LaunchedEffect(Unit) {
+                        displayedVerses += index to verses(index)
+                    }
                 }
-
-                val coroutineScope = rememberCoroutineScope()
-                val scrollState = rememberScrollState()
-                val flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior()
 
                 var isTextSelectable by remember { mutableStateOf(true) }
 
@@ -145,7 +162,7 @@ fun BibleBookFragmentScreenContent(
                                     onPanEnd = { pan, panDirection ->
                                         if (panDirection == 0) {
                                             coroutineScope.launch {
-                                                println(pan)
+                                                scrollStates[index].stopScroll()
                                                 pagerState.animateScrollToPage(
                                                     if (pagerState.currentPageOffsetFraction < -0.25
                                                         || pan > 2500
@@ -162,7 +179,7 @@ fun BibleBookFragmentScreenContent(
                                             }
                                         } else {
                                             coroutineScope.launch {
-                                                scrollState.scroll {
+                                                scrollStates[index].scroll {
                                                     with(flingBehavior) {
                                                         performFling(-pan)
                                                     }
@@ -183,15 +200,13 @@ fun BibleBookFragmentScreenContent(
                                             if (panDirection == 0) {
                                                 pagerState.scrollBy(-pPan.x)
                                             } else {
-                                                scrollState.scrollBy(-pPan.y)
+                                                scrollStates[index].scrollBy(-pPan.y)
                                             }
-
-
                                         }
                                     }
                                 }
                             }
-                            .verticalScroll(state = scrollState, enabled = false)
+                            .verticalScroll(state = scrollStates[index], enabled = false)
                     ) {
                         Space(spacing.s150)
                         TextWithZoom(
@@ -201,7 +216,7 @@ fun BibleBookFragmentScreenContent(
                         )
                         Space(spacing.s100)
 
-                        displayedVerses.forEach {
+                        displayedVerses.get(index)?.forEach {
                             BibleVerseComponent(
                                 ref = it.ref,
                                 text = it.text,

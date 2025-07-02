@@ -97,7 +97,7 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
 
 
                 BibleBookFragmentScreenContent(
-                    nbChapters = 65,
+                    nbChapters = viewmodel.nbChapters,
                     selectedChapterIndex = selectedChapterIndex,
                     setSelectedChapterIndex = {
                         viewmodel.setSelectedChapterIndex(it)
