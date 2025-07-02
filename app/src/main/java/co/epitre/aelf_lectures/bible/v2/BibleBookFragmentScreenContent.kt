@@ -3,22 +3,18 @@ package co.epitre.aelf_lectures.bible.v2
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.calculateCentroid
-import androidx.compose.foundation.gestures.calculateCentroidSize
-import androidx.compose.foundation.gestures.calculatePan
-import androidx.compose.foundation.gestures.calculateRotation
-import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ScrollableTabRow
@@ -35,16 +31,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChanged
-import androidx.compose.ui.input.pointer.util.VelocityTracker
-import androidx.compose.ui.input.pointer.util.addPointerInputChange
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter
 import co.epitre.aelf_lectures.bible.data.BibleVerse
 import co.epitre.aelf_lectures.bible.v2.components.BibleVerseComponent
@@ -57,8 +46,7 @@ import co.epitre.aelf_lectures.bible.v2.reimplemented.customDetectTransformGestu
 import co.epitre.aelf_lectures.bible.v2.util.Space
 import co.epitre.aelf_lectures.bible.v2.util.round
 import kotlinx.coroutines.launch
-import kotlin.math.PI
-import kotlin.math.abs
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,16 +117,9 @@ fun BibleBookFragmentScreenContent(
                     displayedVerses = verses(index)
                 }
 
-                val scrollState = rememberScrollState()
-
-                val scope = rememberCoroutineScope()
-                var offsetY by remember { mutableStateOf(0f) }
-
+                val coroutineScope = rememberCoroutineScope()
+                val scrollState = rememberLazyListState()
                 val flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior()
-
-
-                val state = rememberLazyListState()
-
 
                 LazyColumn(
                     flingBehavior = flingBehavior,
@@ -147,50 +128,87 @@ fun BibleBookFragmentScreenContent(
 
 
 
-                Column(
+                LazyColumn(
+                    state = scrollState,
+                    contentPadding = PaddingValues(
+                        start = spacing.s100,
+                        end = spacing.s100,
+                        top = spacing.s50,
+                        bottom = spacing.s100
+                    ),
+                    userScrollEnabled = false, // scroll handled in pointerInput to work with zoom
                     modifier = Modifier
                         .pointerInput(Unit) {
                             customDetectTransformGestures(
-                                onPanEnd = {
-                                    scope.launch {
-                                        scrollState.scroll {
-                                            with(flingBehavior) {
-                                                performFling(-it)
+                                onPanEnd = { pan, panDirection ->
+                                    if (panDirection == 0) {
+                                        coroutineScope.launch {
+                                            println(pan)
+                                            pagerState.animateScrollToPage(
+                                                if (pagerState.currentPageOffsetFraction < -0.25
+                                                    || pan > 2500) {
+                                                    pagerState.currentPage - 1
+                                                } else if (pagerState.currentPageOffsetFraction > 0.25
+                                                    || pan < -2500
+                                                ) {
+                                                    pagerState.currentPage + 1
+                                                } else {
+                                                    pagerState.currentPage
+                                                }
+                                            )
+                                        }
+                                    } else {
+                                        coroutineScope.launch {
+                                            scrollState.scroll {
+                                                with(flingBehavior) {
+                                                    performFling(-pan)
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            ) { _, pPan, pZoom, _ ->
+                            ) { _, pPan, pZoom, _, panDirection ->
 
                                 if (pZoom != 1f) {
                                     val rounded = pZoom.round(2)
-                                    if(rounded != zoom) {
+                                    if (rounded != zoom) {
                                         onPinchToZoom(pZoom)
                                     }
 
                                 } else {
-                                    scope.launch {
-                                        scrollState.scrollBy(-pPan.y)
+                                    coroutineScope.launch {
+                                        if (panDirection == 0) {
+                                            pagerState.scrollBy(-pPan.x)
+                                        } else {
+                                            scrollState.scrollBy(-pPan.y)
+                                        }
+
+
                                     }
                                 }
                             }
                         }
-                        .verticalScroll(scrollState, enabled = false),
                 ) {
-                    Space(spacing.s50)
-                    TextWithZoom(
-                        chapter(index).chapterName, style = Typo.title,
-                        color = colors.textNeutral,
-                        zoom = zoom,
-                    )
-                    Space(spacing.s100)
+                    item {
+                        Space(spacing.s50)
+                        TextWithZoom(
+                            chapter(index).chapterName, style = Typo.title,
+                            color = colors.textNeutral,
+                            zoom = zoom,
+                        )
+                        Space(spacing.s100)
+                    }
 
-                    displayedVerses.forEach {
+                    items(displayedVerses) {
                         BibleVerseComponent(
                             ref = it.ref,
                             text = it.text,
                             zoom = zoom
                         )
+                    }
+
+                    item {
+                        Box(Modifier.navigationBarsPadding())
                     }
                 }
             }

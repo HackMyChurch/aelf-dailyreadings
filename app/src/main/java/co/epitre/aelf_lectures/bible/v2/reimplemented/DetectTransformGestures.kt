@@ -16,11 +16,12 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastForEach
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 
 suspend fun PointerInputScope.customDetectTransformGestures(
     panZoomLock: Boolean = false,
-    onPanEnd: (velocityY: Float) -> Unit = {},
-    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float) -> Unit
+    onPanEnd: (velocityY: Float, panDirection: Int) -> Unit = { _, _ -> },
+    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float, panDirection: Int) -> Unit
 ) {
     awaitEachGesture {
         var rotation = 0f
@@ -34,14 +35,26 @@ suspend fun PointerInputScope.customDetectTransformGestures(
 
         awaitFirstDown(requireUnconsumed = false)
 
+        var panDirection: Int? = null
 
         do {
             val event = awaitPointerEvent()
             val canceled = event.changes.fastAny { it.isConsumed }
+
             if (!canceled) {
                 val zoomChange = event.calculateZoom()
                 val rotationChange = event.calculateRotation()
                 val panChange = event.calculatePan()
+
+                if (panDirection == null) {
+                    panDirection =
+                        if (panChange.x.absoluteValue > panChange.y.absoluteValue) {
+                            0
+                        } else {
+                            1
+                        }
+                }
+
 
                 if (!pastTouchSlop) {
                     zoom *= zoomChange
@@ -67,7 +80,7 @@ suspend fun PointerInputScope.customDetectTransformGestures(
                     val centroid = event.calculateCentroid(useCurrent = false)
                     val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
                     if (effectiveRotation != 0f || zoomChange != 1f || panChange != Offset.Zero) {
-                        onGesture(centroid, panChange, zoomChange, effectiveRotation)
+                        onGesture(centroid, panChange, zoomChange, effectiveRotation, panDirection)
                     }
                     event.changes.fastForEach {
                         if (it.positionChanged()) {
@@ -83,7 +96,11 @@ suspend fun PointerInputScope.customDetectTransformGestures(
         if (zoom == 1f && pan != Offset.Zero) {
             val velocity = tracker.calculateVelocity()
             tracker.resetTracking()
-            onPanEnd(velocity.y)
+            if (panDirection == 0) {
+                onPanEnd(velocity.x, panDirection)
+            } else if (panDirection == 1) {
+                onPanEnd(velocity.y, panDirection)
+            }
         }
     }
 }
