@@ -2,6 +2,7 @@ package co.epitre.aelf_lectures.bible.v2.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,14 +21,17 @@ fun BibleVerseComponent(
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier.padding(bottom = spacing.s38)) {
-        TextWithZoom(
-            ref,
-            color = colors.textAnnotation,
-            style = Typo.verse,
-            modifier = Modifier.alignByBaseline(),
-            zoom = zoom
-        )
-        Space(spacing.s38)
+        DisableSelection {
+            TextWithZoom(
+                ref,
+                color = colors.textAnnotation,
+                style = Typo.verse,
+                modifier = Modifier.alignByBaseline(),
+                zoom = zoom
+            )
+            Space(spacing.s38)
+        }
+
         TextWithZoom(
             text, color = colors.textNeutral,
             style = Typo.body,
