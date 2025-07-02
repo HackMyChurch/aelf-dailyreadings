@@ -56,6 +56,7 @@ import co.epitre.aelf_lectures.bible.v2.composeTheme.spacing
 import co.epitre.aelf_lectures.bible.v2.reimplemented.customDetectTransformGestures
 import co.epitre.aelf_lectures.bible.v2.util.Space
 import co.epitre.aelf_lectures.bible.v2.util.round
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -112,9 +113,17 @@ fun BibleBookFragmentScreenContent(
                 initialPageOffsetFraction = 0f,
                 pageCount = { nbChapters })
 
+
+            var tempDisablePan by remember { mutableStateOf(false) }
+
             LaunchedEffect(pagerState.targetPage) {
+                tempDisablePan = true
                 setSelectedChapterIndex(pagerState.targetPage)
+                delay(200)
+                tempDisablePan = false
             }
+
+
 
             LaunchedEffect(selectedChapterIndex) {
                 pagerState.animateScrollToPage(
@@ -151,6 +160,7 @@ fun BibleBookFragmentScreenContent(
                         { DisableSelection { it() } }
                     }
 
+
                 wrapper {
                     Column(
                         modifier = Modifier
@@ -159,29 +169,34 @@ fun BibleBookFragmentScreenContent(
                             )
                             .pointerInput(Unit) {
                                 customDetectTransformGestures(
-                                    onPanEnd = { pan, panDirection ->
+                                    onPanEnd = { velocity, panDirection ->
                                         if (panDirection == 0) {
                                             coroutineScope.launch {
                                                 scrollStates[index].stopScroll()
-                                                pagerState.animateScrollToPage(
-                                                    if (pagerState.currentPageOffsetFraction < -0.25
-                                                        || pan > 2500
-                                                    ) {
-                                                        pagerState.currentPage - 1
-                                                    } else if (pagerState.currentPageOffsetFraction > 0.25
-                                                        || pan < -2500
-                                                    ) {
-                                                        pagerState.currentPage + 1
-                                                    } else {
-                                                        pagerState.currentPage
-                                                    }
-                                                )
+                                                if (tempDisablePan) {
+                                                    pagerState.animateScrollToPage(pagerState.targetPage)
+                                                    tempDisablePan = false
+                                                } else {
+                                                    pagerState.animateScrollToPage(
+                                                        if (pagerState.currentPageOffsetFraction < -0.25
+                                                            || velocity > 1500
+                                                        ) {
+                                                            pagerState.currentPage - 1
+                                                        } else if (pagerState.currentPageOffsetFraction > 0.25
+                                                            || velocity < -1500
+                                                        ) {
+                                                            pagerState.currentPage + 1
+                                                        } else {
+                                                            pagerState.currentPage
+                                                        }
+                                                    )
+                                                }
                                             }
                                         } else {
                                             coroutineScope.launch {
                                                 scrollStates[index].scroll {
                                                     with(flingBehavior) {
-                                                        performFling(-pan)
+                                                        performFling(-velocity)
                                                     }
                                                 }
                                             }
