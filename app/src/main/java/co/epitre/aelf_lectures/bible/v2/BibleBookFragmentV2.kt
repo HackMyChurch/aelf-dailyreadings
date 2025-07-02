@@ -1,31 +1,69 @@
 package co.epitre.aelf_lectures.bible.v2
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.preference.PreferenceManager
 import co.epitre.aelf_lectures.R
+import co.epitre.aelf_lectures.bible.BibleBookFragment
+import co.epitre.aelf_lectures.bible.BibleFragment
+import co.epitre.aelf_lectures.settings.SettingsActivity
 
-class BibleBookFragmentV2 : Fragment() {
+class BibleBookFragmentV2 private constructor() : BibleFragment() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private val viewmodel by viewModels<BibleBookFragmentViewModel>()
+
+    companion object {
+
+
+        const val BIBLE_PART_ID: String = "biblePartId"
+        const val BIBLE_BOOK_ID: String = "bibleBookId"
+
+        fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
+                /* comment this line with // to activate this block
+
+              return BibleBookFragment().apply {
+                  arguments = Bundle().apply {
+                      putInt(BIBLE_PART_ID, biblePartId)
+                      putInt(BIBLE_BOOK_ID, bibleBookId)
+                  }
+              }
+
+
+            // */
+
+           //      /* comment this line with // to activate this block
+            return BibleBookFragmentV2().apply {
+                arguments = Bundle().apply {
+                    putInt(BIBLE_PART_ID, biblePartId)
+                    putInt(BIBLE_BOOK_ID, bibleBookId)
+                }
+            }
+
+            //      */
+
+        }
     }
+
+
+    override fun getRoute(): String {
+        return "/bible/${viewmodel.bookRef}/${viewmodel.selectedChapterRef}"
+    }
+
+    override fun getTitle(): String {
+        return "LA BIBLE LOL"
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,27 +72,56 @@ class BibleBookFragmentV2 : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_section_bible_book_v2, container, false)
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
+
+
+        arguments?.let {
+            viewmodel.init(it.getInt(BIBLE_PART_ID), it.getInt(BIBLE_BOOK_ID))
+        }
+
+        viewmodel.setSelectedChapterIndex(0)
+
         composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
+
+            val preferences =
+                PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
+            val initZoom = preferences.getInt(
+                SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
+                100
+            ) / 100f
+
             setContent {
-                MaterialTheme {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "Hello la Bible ♥",
-                            modifier = Modifier.padding(48.dp),
-                            fontSize = 28.sp
+                val selectedChapterIndex by viewmodel.selectedChapterIndex.collectAsStateWithLifecycle()
+                var zoom by remember { mutableFloatStateOf(initZoom) }
+
+
+                BibleBookFragmentScreenContent(
+                    nbChapters = 65,
+                    selectedChapterIndex = selectedChapterIndex,
+                    setSelectedChapterIndex = {
+                        viewmodel.setSelectedChapterIndex(it)
+                    },
+                    verses = {
+                        viewmodel.getChapterVerses(it)
+                    },
+                    chapter = {
+                        viewmodel.getChapterAt(it)
+                    },
+                    zoom = zoom,
+                    onPinchToZoom = { pZoom ->
+                        zoom = (zoom * pZoom).coerceIn(1f, 7f)
+
+                        val editor: SharedPreferences.Editor = preferences.edit()
+                        editor.putInt(
+                            SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
+                            (zoom * 100).toInt()
                         )
-                        Text(
-                            "Hello la Bible ♥",
-                            modifier = Modifier.padding(48.dp),
-                            fontSize = 28.sp
-                        )
+                        editor.apply()
                     }
-                }
+                )
+
+
             }
         }
         return view

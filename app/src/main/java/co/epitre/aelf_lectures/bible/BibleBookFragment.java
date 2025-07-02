@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.ListPopupWindow;
 import androidx.viewpager.widget.ViewPager;
@@ -128,6 +129,11 @@ public class BibleBookFragment extends BibleFragment {
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId) {
         return newInstance(biblePartId, bibleBookId, bibleChapterId, null, null);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query, String reference) {

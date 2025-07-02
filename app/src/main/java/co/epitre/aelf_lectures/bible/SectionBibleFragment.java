@@ -143,7 +143,11 @@ public class SectionBibleFragment extends SectionFragment {
                 newBibleFragment = BibleSearchFragment.newInstance(uri);
             } else {
                 // To the Bible fragment
-                newBibleFragment = BibleBookFragment.newInstance(uri);
+
+                // todo lt tem disable this
+                //newBibleFragment = BibleBookFragment.newInstance(uri);
+
+                newBibleFragment = BibleMenuFragment.newInstance(0);
             }
         }
 
@@ -231,6 +235,7 @@ public class SectionBibleFragment extends SectionFragment {
 
     public Uri getUri() {
         String route = "";
+
         BibleFragment currentBibleFragment = getCurrentBibleFragment();
         if (currentBibleFragment != null) {
             route = currentBibleFragment.getRoute();
@@ -252,7 +257,7 @@ public class SectionBibleFragment extends SectionFragment {
             return;
         }
 
-        Fragment newBibleFragment = new BibleBookFragmentV2();
+        Fragment newBibleFragment = BibleBookFragmentV2.Companion.newInstance(biblePartId, bibleBookId);
 
         setFragment(newBibleFragment);
     }

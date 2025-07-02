@@ -6,7 +6,7 @@ public class BibleVerse {
     private String mRef;
     private String mText;
 
-    BibleVerse(String verseRef, @NonNull String text) {
+    public BibleVerse(String verseRef, @NonNull String text) {
         this.mRef = verseRef;
         this.mText = text;
     }
@@ -19,3 +19,4 @@ public class BibleVerse {
         return this.mText;
     }
 }
+
