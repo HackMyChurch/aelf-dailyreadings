@@ -58,9 +58,7 @@ import co.epitre.aelf_lectures.bible.v2.util.Space
 import co.epitre.aelf_lectures.bible.v2.util.round
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BibleBookFragmentScreenContent(
     nbChapters: Int,
@@ -94,7 +92,7 @@ fun BibleBookFragmentScreenContent(
                         Modifier.tabIndicatorOffset(tabPositions[selectedChapterIndex]),
                         color = colors.onSurfaceFilled
                     )
-                }
+                },
             ) {
                 for (i in 0..<nbChapters) {
                     Tab(
@@ -109,7 +107,7 @@ fun BibleBookFragmentScreenContent(
             }
 
             val pagerState = rememberPagerState(
-                initialPage = 0,
+                initialPage = selectedChapterIndex,
                 initialPageOffsetFraction = 0f,
                 pageCount = { nbChapters })
 

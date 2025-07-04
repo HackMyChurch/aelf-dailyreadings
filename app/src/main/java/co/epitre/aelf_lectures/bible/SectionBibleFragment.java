@@ -133,8 +133,8 @@ public class SectionBibleFragment extends SectionFragment {
         } else {
             String path = uri.getPath();
             if (path == null) {
+                newBibleFragment = null;
                 // To the Bible fragment
-                newBibleFragment = BibleBookFragment.newInstance(uri);
             } else if (path.equals("/bible")) {
                 // To the menu fragment
                 newBibleFragment = BibleMenuFragment.newInstance(uri);
@@ -142,12 +142,7 @@ public class SectionBibleFragment extends SectionFragment {
                 // To the search fragment
                 newBibleFragment = BibleSearchFragment.newInstance(uri);
             } else {
-                // To the Bible fragment
-
-                // todo lt tem disable this
-                //newBibleFragment = BibleBookFragment.newInstance(uri);
-
-                newBibleFragment = BibleMenuFragment.newInstance(0);
+                newBibleFragment = BibleBookFragmentV2.Companion.newInstance(uri);
             }
         }
 

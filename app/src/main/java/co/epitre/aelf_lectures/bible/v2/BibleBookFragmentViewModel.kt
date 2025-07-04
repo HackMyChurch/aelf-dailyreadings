@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible.v2
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter
 import co.epitre.aelf_lectures.bible.data.BibleBookEntry
@@ -10,13 +11,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import kotlin.properties.Delegates
 
 class BibleBookFragmentViewModel : ViewModel() {
 
     private val bibleController = BibleController.getInstance()
 
-    private val _selectedChapterIndex = MutableStateFlow(0)
+    private val _selectedChapterIndex = MutableStateFlow(-1)
     val selectedChapterIndex = _selectedChapterIndex.asStateFlow()
 
     private lateinit var _bibleBookEntry: BibleBookEntry
@@ -27,20 +27,48 @@ class BibleBookFragmentViewModel : ViewModel() {
         get() = _bibleBookEntry.bookRef
 
     val selectedChapterRef
-        get() = _bibleBookChapters.getOrNull(selectedChapterIndex.value) ?: "1"
+        get() = _bibleBookChapters.getOrNull(selectedChapterIndex.value)?.chapterRef ?: "1"
 
     val nbChapters
         get() = _bibleBookChapters.size
 
+    val bookTitle
+        get() = _bibleBookEntry.bookName
 
-    fun init(biblePartId: Int, bibleBookId: Int) {
+
+    fun initWithId(biblePartId: Int, bibleBookId: Int) {
         val biblePart = BibleBookList.getInstance().parts[biblePartId]
         _bibleBookEntry = biblePart.bibleBookEntries[bibleBookId]
         _bibleBookChapters = bibleController.getBookChapters(_bibleBookEntry.bookRef)
+        _selectedChapterIndex.value = 0
+    }
+
+    fun initWithUri(uri: Uri) {
+        val path = uri.path
+        val chunks = path?.split("/")
+        val bookRef = chunks?.getOrNull(2) ?: "Gn"
+        val chapterRef = chunks?.getOrNull(3) ?: "1"
+
+        _bibleBookEntry = try {
+            BibleBookList.getInstance().parts.flatMap {
+                it.bibleBookEntries
+            }.find {
+                it.bookRef == bookRef
+            } ?: throw IllegalStateException()
+
+        } catch (e: Exception) {
+            BibleBookList.getInstance().parts.first().bibleBookEntries.first()
+
+        }
+        _bibleBookChapters = bibleController.getBookChapters(_bibleBookEntry.bookRef)
+
+        _selectedChapterIndex.value = _bibleBookChapters.indexOfFirst {
+            it.chapterRef == chapterRef
+        }.coerceAtLeast(0)
     }
 
     suspend fun getChapterVerses(chapterIndex: Int): List<BibleVerse> {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) x@{
             bibleController.getBookChapterVerses(
                 _bibleBookEntry.bookRef,
                 _bibleBookChapters.getOrNull(chapterIndex)?.chapterRef
@@ -53,10 +81,12 @@ class BibleBookFragmentViewModel : ViewModel() {
     }
 
     fun getChapterAt(index: Int) = _bibleBookChapters.getOrNull(index)
-            ?: BibleBookChapter("", "", "")
+        ?: BibleBookChapter("", "", "")
 
     fun setSelectedChapterIndex(index: Int) {
         _selectedChapterIndex.value = index
     }
+
+
 
 }

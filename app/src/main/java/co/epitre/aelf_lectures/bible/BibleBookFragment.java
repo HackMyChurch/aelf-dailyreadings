@@ -62,9 +62,9 @@ public class BibleBookFragment extends BibleFragment {
     // FIXME: this is *very* ineficient
     public static BibleBookFragment newInstance(Uri uri) {
         String path = uri.getPath();
-        if (path == null) {
+      //  if (path == null) {
             path = "";
-        }
+      //  }
         String[] chunks = path.split("/");
         String query = uri.getQueryParameter("query");
         String reference = uri.getQueryParameter("reference");
