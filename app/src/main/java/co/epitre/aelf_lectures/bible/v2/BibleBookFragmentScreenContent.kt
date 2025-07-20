@@ -123,7 +123,7 @@ fun BibleBookFragmentScreenContent(
                             if (selectedChapterIndex != i) {
                                 setSelectedChapterIndex(i)
                             } else {
-                                showChaptersDropdown = true
+                                showChaptersDropdown = !showChaptersDropdown
                             }
 
                         }, text = {
@@ -306,7 +306,6 @@ fun BibleBookFragmentScreenContent(
                     modifier = Modifier
                         .offset(x = selectedTabXOffset.pxToDp())
                         .width(tabWidth)
-                        .navigationBarsPadding()
                         .animateContentSize(),
                     color = Color.White,
                 ) {
@@ -325,6 +324,12 @@ fun BibleBookFragmentScreenContent(
                                     }
                                 )
                             }
+
+                            Space(
+                                modifier = Modifier
+                                    .navigationBarsPadding()
+                                    .padding(bottom = spacing.s25)
+                            )
                         }
                     }
 
