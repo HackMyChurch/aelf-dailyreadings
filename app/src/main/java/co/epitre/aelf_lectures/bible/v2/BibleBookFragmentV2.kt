@@ -33,6 +33,7 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         const val BIBLE_PART_ID: String = "biblePartId"
         const val BIBLE_BOOK_ID: String = "bibleBookId"
         const val BIBLE_URL: String = "bibleUrl"
+        const val BIBLE_SEARCH_QUERY: String = "bibleSearchQuery"
 
         fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
             /* comment this line with // to activate this block
@@ -63,6 +64,9 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
             return BibleBookFragmentV2().apply {
                 arguments = Bundle().apply {
                     putString(BIBLE_URL, uri.toString())
+                    uri.getQueryParameter("query")?.let {
+                        putString(BIBLE_SEARCH_QUERY, it)
+                    }
                 }
             }
         }
@@ -140,6 +144,7 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
                             viewmodel.getChapterAt(it)
                         },
                         zoom = zoom,
+                        searchQuery = arguments?.getString(BIBLE_SEARCH_QUERY),
                         onPinchToZoom = { pZoom ->
                             zoom = (zoom * pZoom).coerceIn(1f, 7f)
 

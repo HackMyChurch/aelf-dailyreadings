@@ -13,9 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.DisableSelection
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +23,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import co.epitre.aelf_lectures.bible.data.BibleVerse
 import co.epitre.aelf_lectures.bible.v2.composeTheme.Typo
 import co.epitre.aelf_lectures.bible.v2.composeTheme.colors
@@ -37,7 +34,8 @@ fun BibleVerseComponent(
     ref: String,
     text: String,
     zoom: Float,
-    isFocued: Boolean = false,
+    isFocused: Boolean = false,
+    searchQuery: String? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -69,15 +67,26 @@ fun BibleVerseComponent(
                     .padding(start = 1.dp, end = 3.dp)
                     .fillMaxHeight()
                     .width(1.5.dp)
-                    .background(if (isFocued) colors.focusText else Color.Transparent)
+                    .background(if (isFocused) colors.focusText else Color.Transparent)
             )
 
-            TextWithZoom(
-                text, color = colors.textNeutral,
-                style = Typo.body,
-                modifier = Modifier.alignByBaseline(),
-                zoom = zoom
-            )
+            if(searchQuery != null && searchQuery.isNotEmpty()) {
+                TextWithZoomAndHighlights(
+                    text, color = colors.textNeutral,
+                    searchRegex = searchQuery,
+                    style = Typo.body,
+                    modifier = Modifier.alignByBaseline(),
+                    zoom = zoom
+                )
+            } else {
+                TextWithZoom(
+                    text, color = colors.textNeutral,
+                    style = Typo.body,
+                    modifier = Modifier.alignByBaseline(),
+                    zoom = zoom
+                )
+            }
+
         }
         Space(spacing.s38)
     }
@@ -100,7 +109,7 @@ fun PreviewBibleVerse(
         ref = ref,
         text = text,
         zoom = 1f,
-        isFocued = true
+        isFocused = true
     )
 }
 
