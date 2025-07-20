@@ -29,8 +29,8 @@ class BibleBookFragmentViewModel : ViewModel() {
     val selectedChapterRef
         get() = _bibleBookChapters.getOrNull(selectedChapterIndex.value)?.chapterRef ?: "1"
 
-    val nbChapters
-        get() = _bibleBookChapters.size
+    val chapters
+        get() = _bibleBookChapters
 
     val bookTitle
         get() = _bibleBookEntry.bookName
@@ -40,7 +40,9 @@ class BibleBookFragmentViewModel : ViewModel() {
         val biblePart = BibleBookList.getInstance().parts[biblePartId]
         _bibleBookEntry = biblePart.bibleBookEntries[bibleBookId]
         _bibleBookChapters = bibleController.getBookChapters(_bibleBookEntry.bookRef)
-        _selectedChapterIndex.value = 0
+        _selectedChapterIndex.value = _bibleBookChapters.indexOfFirst {
+            it.chapterRef == _bibleBookEntry.chapterRef
+        }.coerceAtLeast(0)
     }
 
     fun initWithUri(uri: Uri) {
@@ -86,7 +88,6 @@ class BibleBookFragmentViewModel : ViewModel() {
     fun setSelectedChapterIndex(index: Int) {
         _selectedChapterIndex.value = index
     }
-
 
 
 }

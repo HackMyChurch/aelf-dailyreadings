@@ -7,6 +7,7 @@ interface ThemeColors {
     val textNeutral: Color
     val surfaceFilled: Color
     val onSurfaceFilled: Color
+    val focusText: Color
 }
 
 val lightThemeColors = object : ThemeColors {
@@ -14,4 +15,5 @@ val lightThemeColors = object : ThemeColors {
     override val textNeutral: Color = ColorPrimitives.DARK_BROWN
     override val surfaceFilled: Color = ColorPrimitives.DARK_RED
     override val onSurfaceFilled: Color = ColorPrimitives.WHITE
+    override val focusText: Color = ColorPrimitives.DARK_RED
 }

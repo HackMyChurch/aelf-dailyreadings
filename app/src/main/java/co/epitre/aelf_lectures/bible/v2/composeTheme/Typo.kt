@@ -10,7 +10,7 @@ object Typo {
     val body = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Normal,
-        fontSize = 15.sp
+        fontSize = 15.sp,
     )
 
 

@@ -61,7 +61,7 @@ fun TextWithZoom(
             textDecoration = textDecoration,
             fontStyle = fontStyle,
             letterSpacing = letterSpacing,
-            lineBreak = LineBreak.Heading
+            lineBreak = LineBreak.Simple
         ),
         onTextLayout,
         overflow,
