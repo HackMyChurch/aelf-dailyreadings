@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2.util
+package co.epitre.aelf_lectures.compose.utils
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.ColumnScope
@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.Dp
 @Composable
 fun ColumnScope.Space(height: Dp? = null, weight: Float? = null, modifier: Modifier = Modifier) {
     Spacer(
-        modifier = Modifier
+        modifier = Modifier.Companion
             .ifNotNull(height) { height(it) }
             .ifNotNull(weight) { weight(it) }
             .then(modifier),

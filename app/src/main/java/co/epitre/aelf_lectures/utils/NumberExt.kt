@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2.util
+package co.epitre.aelf_lectures.utils
 
 import kotlin.math.pow
 import kotlin.math.roundToInt

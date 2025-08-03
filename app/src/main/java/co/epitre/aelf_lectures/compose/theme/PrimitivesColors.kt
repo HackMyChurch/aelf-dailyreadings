@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2.composeTheme
+package co.epitre.aelf_lectures.compose.theme
 
 import androidx.compose.ui.graphics.Color
 

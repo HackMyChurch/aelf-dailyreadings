@@ -1,6 +1,5 @@
-package co.epitre.aelf_lectures.bible.v2.util
+package co.epitre.aelf_lectures.compose.utils
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity

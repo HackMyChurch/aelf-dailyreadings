@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2
+package co.epitre.aelf_lectures.bible
 
 import android.content.SharedPreferences
 import android.net.Uri
@@ -20,14 +20,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
-import co.epitre.aelf_lectures.bible.BibleFragment
+import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentScreenContent
+import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentViewModel
 import co.epitre.aelf_lectures.settings.SettingsActivity
 
-class BibleBookFragmentV2 private constructor() : BibleFragment() {
+class BibleBookFragment private constructor() : BibleFragment() {
 
     private val viewmodel by viewModels<BibleBookFragmentViewModel>()
 
-    companion object {
+    companion object Companion {
 
 
         const val BIBLE_PART_ID: String = "biblePartId"
@@ -36,7 +37,7 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         const val BIBLE_SEARCH_QUERY: String = "bibleSearchQuery"
 
         fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
-            return BibleBookFragmentV2().apply {
+            return BibleBookFragment().apply {
                 arguments = Bundle().apply {
                     putInt(BIBLE_PART_ID, biblePartId)
                     putInt(BIBLE_BOOK_ID, bibleBookId)
@@ -45,7 +46,7 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         }
 
         fun newInstance(uri: Uri): BibleFragment {
-            return BibleBookFragmentV2().apply {
+            return BibleBookFragment().apply {
                 arguments = Bundle().apply {
                     putString(BIBLE_URL, uri.toString())
                     uri.getQueryParameter("query")?.let {
@@ -151,10 +152,5 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         val activity = activity as? LecturesActivity
         // Reset the home button state
         activity?.setHomeButtonEnabled(false, null)
-    }
-
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 }

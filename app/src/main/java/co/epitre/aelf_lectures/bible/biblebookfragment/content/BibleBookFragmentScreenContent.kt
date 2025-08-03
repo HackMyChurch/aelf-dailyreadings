@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2
+package co.epitre.aelf_lectures.bible.biblebookfragment.content
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -53,18 +53,18 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import co.epitre.aelf_lectures.bible.biblebookfragment.components.BibleVerseComponent
+import co.epitre.aelf_lectures.bible.biblebookfragment.components.TextWithZoom
+import co.epitre.aelf_lectures.bible.biblebookfragment.components.previewBibleVerse
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter
 import co.epitre.aelf_lectures.bible.data.BibleVerse
-import co.epitre.aelf_lectures.bible.v2.components.BibleVerseComponent
-import co.epitre.aelf_lectures.bible.v2.components.TextWithZoom
-import co.epitre.aelf_lectures.bible.v2.components.previewBibleVerse
-import co.epitre.aelf_lectures.bible.v2.composeTheme.Typo
-import co.epitre.aelf_lectures.bible.v2.composeTheme.colors
-import co.epitre.aelf_lectures.bible.v2.composeTheme.spacing
-import co.epitre.aelf_lectures.bible.v2.reimplemented.customDetectTransformGestures
-import co.epitre.aelf_lectures.bible.v2.util.Space
-import co.epitre.aelf_lectures.bible.v2.util.pxToDp
-import co.epitre.aelf_lectures.bible.v2.util.round
+import co.epitre.aelf_lectures.compose.theme.Typo
+import co.epitre.aelf_lectures.compose.theme.colors
+import co.epitre.aelf_lectures.compose.theme.spacing
+import co.epitre.aelf_lectures.compose.utils.customDetectTransformGestures
+import co.epitre.aelf_lectures.compose.utils.Space
+import co.epitre.aelf_lectures.compose.utils.pxToDp
+import co.epitre.aelf_lectures.utils.round
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 

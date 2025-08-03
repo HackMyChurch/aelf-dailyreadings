@@ -1,10 +1,8 @@
-package co.epitre.aelf_lectures.bible.v2.components
+package co.epitre.aelf_lectures.bible.biblebookfragment.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -16,10 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
@@ -28,10 +24,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import co.epitre.aelf_lectures.bible.data.BibleVerse
-import co.epitre.aelf_lectures.bible.v2.composeTheme.Typo
-import co.epitre.aelf_lectures.bible.v2.composeTheme.colors
-import co.epitre.aelf_lectures.bible.v2.composeTheme.spacing
-import co.epitre.aelf_lectures.bible.v2.util.Space
+import co.epitre.aelf_lectures.compose.theme.Typo
+import co.epitre.aelf_lectures.compose.theme.colors
+import co.epitre.aelf_lectures.compose.theme.spacing
+import co.epitre.aelf_lectures.compose.utils.Space
 
 @Composable
 fun BibleVerseComponent(

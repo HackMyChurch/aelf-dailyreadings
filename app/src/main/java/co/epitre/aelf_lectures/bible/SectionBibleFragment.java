@@ -28,7 +28,6 @@ import org.greenrobot.eventbus.Subscribe;
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.SectionFragment;
 import co.epitre.aelf_lectures.bible.data.BibleController;
-import co.epitre.aelf_lectures.bible.v2.BibleBookFragmentV2;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 
@@ -142,7 +141,7 @@ public class SectionBibleFragment extends SectionFragment {
                 // To the search fragment
                 newBibleFragment = BibleSearchFragment.newInstance(uri);
             } else {
-                newBibleFragment = BibleBookFragmentV2.Companion.newInstance(uri);
+                newBibleFragment = BibleBookFragment.Companion.newInstance(uri);
             }
         }
 
@@ -252,7 +251,7 @@ public class SectionBibleFragment extends SectionFragment {
             return;
         }
 
-        Fragment newBibleFragment = BibleBookFragmentV2.Companion.newInstance(biblePartId, bibleBookId);
+        Fragment newBibleFragment = BibleBookFragment.Companion.newInstance(biblePartId, bibleBookId);
 
         setFragment(newBibleFragment);
     }

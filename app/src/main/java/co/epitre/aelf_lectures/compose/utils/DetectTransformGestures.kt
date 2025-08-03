@@ -1,4 +1,15 @@
-package co.epitre.aelf_lectures.bible.v2.reimplemented
+/**
+ * Custom reimplementation of `detectTransformGestures` from Jetpack Compose.
+ *
+ * Reason for reimplementation:
+ * - Needed fine-grained control over pan, zoom, and rotation gesture detection.
+ * - Added `panDirection` tracking to distinguish horizontal vs vertical gestures.
+ * - Introduced `onPanEnd` callback with velocity information for inertial scrolling.
+ * - Preserved compatibility with both locked pan/zoom modes and unrestricted gestures.
+ * - Ensured precise control of touch slop thresholds and velocity tracking beyond
+ *   the capabilities of the stock implementation.
+ */
+package co.epitre.aelf_lectures.compose.utils
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown

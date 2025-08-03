@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2.composeTheme
+package co.epitre.aelf_lectures.compose.theme
 
 import androidx.compose.ui.unit.dp
 
@@ -38,3 +38,6 @@ object Radius {
     val xxxl = 80.dp
     val full = 9999.dp
 }
+
+val spacing
+    get() = Spacing

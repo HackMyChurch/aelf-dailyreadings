@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.v2
+package co.epitre.aelf_lectures.bible.biblebookfragment.content
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
