@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter
@@ -88,7 +90,7 @@ fun BibleBookFragmentScreenContent(
 
     var showChaptersDropdown by remember { mutableStateOf(false) }
     var displayedVerses by remember { mutableStateOf<Map<Int, List<BibleVerse>>>(emptyMap()) }
-    var selectedTabXOffset by remember { mutableStateOf(0f) }
+    var selectedTabXOffset by remember { mutableFloatStateOf(0f) }
 
     BoxWithConstraints {
 
@@ -101,6 +103,7 @@ fun BibleBookFragmentScreenContent(
                 edgePadding = 0.dp,
                 containerColor = colors.surfaceFilled,
                 contentColor = colors.onSurfaceFilled,
+                divider = {},
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[selectedChapterIndex]),
@@ -133,10 +136,15 @@ fun BibleBookFragmentScreenContent(
                                         Icons.Filled.ArrowDropDown,
                                         modifier = Modifier.scale(1.2f),
                                         contentDescription = null,
-                                        tint = Color.White
+                                        tint = colors.tabText
                                     )
                                 }
-                                Text(chapter(i).chapterName)
+                                Text(
+                                    chapter(i).chapterName,
+                                    color = colors.tabText,
+                                    style = Typo.tab,
+                                    overflow = TextOverflow.Ellipsis
+                                )
                             }
 
                         })

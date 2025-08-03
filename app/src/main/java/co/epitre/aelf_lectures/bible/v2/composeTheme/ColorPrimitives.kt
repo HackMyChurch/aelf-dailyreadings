@@ -10,4 +10,8 @@ object ColorPrimitives {
     val DARK_RED = rgba(191, 35, 41, 1.0)
     val DARK_BROWN = rgba(93, 69, 26, 1.0)
     val WHITE = Color(0xFFFFFFFF)
+    val LIGHT_BEIGE = Color(0xFFEFE3CE)
+    val ALMOST_BLACK = Color(0xFF1D1E23)
+    val ALMOST_WHITE = Color(0xFFF8F7FA)
+    val PINK_RED = Color(0xFFF9787E)
 }

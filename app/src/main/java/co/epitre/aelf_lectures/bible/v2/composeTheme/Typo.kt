@@ -26,4 +26,10 @@ object Typo {
         fontSize = 20.sp
     )
 
+    val tab = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+    )
+
 }

@@ -36,28 +36,12 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         const val BIBLE_SEARCH_QUERY: String = "bibleSearchQuery"
 
         fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
-            /* comment this line with // to activate this block
-
-          return BibleBookFragment().apply {
-              arguments = Bundle().apply {
-                  putInt(BIBLE_PART_ID, biblePartId)
-                  putInt(BIBLE_BOOK_ID, bibleBookId)
-              }
-          }
-
-
-        // */
-
-            //      /* comment this line with // to activate this block
             return BibleBookFragmentV2().apply {
                 arguments = Bundle().apply {
                     putInt(BIBLE_PART_ID, biblePartId)
                     putInt(BIBLE_BOOK_ID, bibleBookId)
                 }
             }
-
-            //      */
-
         }
 
         fun newInstance(uri: Uri): BibleFragment {
