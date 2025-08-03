@@ -81,20 +81,6 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         return ""
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val activity = activity as? LecturesActivity
-        // Enable "home" button to get back to the menu
-        if (parentFragmentManager.backStackEntryCount > 0) {
-            activity?.setHomeButtonEnabled(true, View.OnClickListener { v: View? ->
-                parentFragmentManager.popBackStack()
-            })
-        } else {
-            activity?.setHomeButtonEnabled(false, null)
-        }
-    }
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -161,6 +147,28 @@ class BibleBookFragmentV2 private constructor() : BibleFragment() {
         }
         return view
     }
+
+
+    override fun onStart() {
+        super.onStart()
+        val activity = activity as? LecturesActivity
+        if (parentFragmentManager.backStackEntryCount > 0) {
+            activity?.setHomeButtonEnabled(true, View.OnClickListener { v: View? ->
+                parentFragmentManager.popBackStack()
+            })
+        } else {
+            activity?.setHomeButtonEnabled(false, null)
+        }
+    }
+
+
+    override fun onStop() {
+        super.onStop()
+        val activity = activity as? LecturesActivity
+        // Reset the home button state
+        activity?.setHomeButtonEnabled(false, null)
+    }
+
 
     override fun onDestroy() {
         super.onDestroy()
