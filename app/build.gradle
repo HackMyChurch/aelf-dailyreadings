@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdk 35
+    compileSdk = 36
     defaultConfig {
         applicationId "co.epitre.aelf_lectures"
         minSdk 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_17
             targetCompatibility JavaVersion.VERSION_17

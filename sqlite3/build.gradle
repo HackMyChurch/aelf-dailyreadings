@@ -1,14 +1,14 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdk 34
+    compileSdk = 36
     // When bumping, make sure to update https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/co.epitre.aelf_lectures.yml
-    // Version/name mapping is available on https://github.com/android/ndk/releases. In this case, r26b.
-    ndkVersion '26.1.10909125'
+    // Version/name mapping is available on https://github.com/android/ndk/releases. In this case, r28c.
+    ndkVersion '28.2.13676358'
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 34
+        targetSdkVersion 36
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
