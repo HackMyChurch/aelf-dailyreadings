@@ -27,7 +27,7 @@
         android:id="@+id/drawer_header_liturgical_day"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
+        android:layout_marginLeft="2dp"
         android:layout_marginTop="-8dp"
         android:fontFamily="sans-serif-condensed-medium"
         android:gravity="bottom"
@@ -53,13 +53,13 @@
         app:layout_constraintTop_toBottomOf="@+id/drawer_header_liturgical_day"
         app:layout_constraintLeft_toLeftOf="@+id/drawer_header_liturgical_day"
         app:layout_constraintRight_toRightOf="@+id/drawer_header_liturgical_day"
-        tools:text="Année B — Semaine IV" />
+        tools:text="Année Impaire — Semaine IV" />
 
     <Spinner
         android:id="@+id/drawer_header_region"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="0dp"
         android:fontFamily="sans-serif-light"
         android:textColor="?attr/colorLectureText"
         android:textSize="14sp"
