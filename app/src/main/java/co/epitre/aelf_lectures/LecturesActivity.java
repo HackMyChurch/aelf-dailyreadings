@@ -288,15 +288,8 @@ public class LecturesActivity extends BaseActivity implements
         uiOptions |= View.SYSTEM_UI_FLAG_LOW_PROFILE;
         uiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
-        if (has_bottom_navigation_bar && !isInMultiWindowMode()) {
-            // Portrait mode: enable translucent navigation bar and compensate height
-            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            toolbar.setPadding(0, get_status_bar_height(), 0, 0);
-        } else  {
-            // FIXME: looks like we have always the same padding
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-            toolbar.setPadding(0, 0, 0, 0);
-        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        toolbar.setPadding(0, get_status_bar_height(), 0, 0);
 
         // Apply settings
         View decorView = window.getDecorView();

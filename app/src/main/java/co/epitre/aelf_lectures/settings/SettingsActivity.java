@@ -4,6 +4,8 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
 
 import co.epitre.aelf_lectures.R;
@@ -46,6 +48,11 @@ public class SettingsActivity extends BaseActivity {
                 .beginTransaction()
                 .replace(R.id.preference_container, new MainPrefFragment())
                 .commit();
+
+        // Android 15+: Set flags consistent with the main view to avoid hiding content behind the top system bar
+        Window window = getWindow();
+        View decorView = window.getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
     // Intercept crashes when opening intents from settings

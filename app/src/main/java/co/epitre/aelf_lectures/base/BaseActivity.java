@@ -40,6 +40,9 @@ public class BaseActivity extends AppCompatActivity implements
         // Register preference listener
         this.settings.registerOnSharedPreferenceChangeListener(this);
 
+        int flags = getWindow().getAttributes().flags;
+        Log.e(TAG, String.format("onCreate: %040x", flags));
+
         // Call parent
         super.onCreate(savedInstanceState);
     }
