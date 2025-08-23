@@ -23,6 +23,7 @@ import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentScreenContent
 import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentViewModel
 import co.epitre.aelf_lectures.settings.SettingsActivity
+import co.epitre.aelf_lectures.utils.Utils
 
 class BibleBookFragment private constructor() : BibleFragment() {
 
@@ -35,6 +36,7 @@ class BibleBookFragment private constructor() : BibleFragment() {
         const val BIBLE_BOOK_ID: String = "bibleBookId"
         const val BIBLE_URL: String = "bibleUrl"
         const val BIBLE_SEARCH_QUERY: String = "bibleSearchQuery"
+        const val BIBLE_REFERENCE: String = "bibleReference"
 
         fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
             return BibleBookFragment().apply {
@@ -52,6 +54,9 @@ class BibleBookFragment private constructor() : BibleFragment() {
                     uri.getQueryParameter("query")?.let {
                         putString(BIBLE_SEARCH_QUERY, it)
                     }
+                    uri.getQueryParameter("reference")?.let {
+                        putString(BIBLE_REFERENCE, it)
+                    }
                 }
             }
         }
@@ -68,9 +73,7 @@ class BibleBookFragment private constructor() : BibleFragment() {
 
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_section_bible_book_v2, container, false)
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
@@ -89,8 +92,7 @@ class BibleBookFragment private constructor() : BibleFragment() {
             val preferences =
                 PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
             val initZoom = preferences.getInt(
-                SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
-                100
+                SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100
             ) / 100f
 
             setContent {
@@ -116,17 +118,18 @@ class BibleBookFragment private constructor() : BibleFragment() {
                         },
                         zoom = zoom,
                         searchQuery = arguments?.getString(BIBLE_SEARCH_QUERY),
+                        lectureRefs = arguments?.getString(BIBLE_REFERENCE)?.let {
+                            Utils.getLectureReferences(it)
+                        },
                         onPinchToZoom = { pZoom ->
                             zoom = (zoom * pZoom).coerceIn(1f, 7f)
 
                             val editor: SharedPreferences.Editor = preferences.edit()
                             editor.putInt(
-                                SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
-                                (zoom * 100).toInt()
+                                SettingsActivity.KEY_PREF_DISP_FONT_SIZE, (zoom * 100).toInt()
                             )
                             editor.apply()
-                        }
-                    )
+                        })
                 }
             }
         }
@@ -153,4 +156,5 @@ class BibleBookFragment private constructor() : BibleFragment() {
         // Reset the home button state
         activity?.setHomeButtonEnabled(false, null)
     }
+
 }

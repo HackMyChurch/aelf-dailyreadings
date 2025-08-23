@@ -28,15 +28,17 @@ import co.epitre.aelf_lectures.compose.theme.Typo
 import co.epitre.aelf_lectures.compose.theme.colors
 import co.epitre.aelf_lectures.compose.theme.spacing
 import co.epitre.aelf_lectures.compose.utils.Space
+import co.epitre.aelf_lectures.compose.utils.ifThen
 
 @Composable
 fun BibleVerseComponent(
     ref: String,
     text: String,
     zoom: Float,
-    isFocused: Boolean = false,
-    searchQuery: String? = null,
     modifier: Modifier = Modifier,
+    isFocused: Boolean = false,
+    isHighlighted: Boolean = false,
+    searchQuery: String? = null,
     onClick: () -> Unit = {}
 ) {
     Column(
@@ -75,19 +77,24 @@ fun BibleVerseComponent(
                     .background(if (isFocused) colors.focusText else Color.Transparent)
             )
 
-            if(searchQuery != null && searchQuery.isNotEmpty()) {
+            if (searchQuery != null && searchQuery.isNotEmpty()) {
                 TextWithZoomAndHighlights(
-                    text, color = colors.textNeutral,
+                    text,
+                    color = colors.textNeutral,
                     searchRegex = searchQuery,
                     style = Typo.body,
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier
+                        .alignByBaseline()
+                        .ifThen(isHighlighted) { background(colors.highlightBackground) },
                     zoom = zoom
                 )
             } else {
                 TextWithZoom(
                     text, color = colors.textNeutral,
                     style = Typo.body,
-                    modifier = Modifier.alignByBaseline(),
+                    modifier = Modifier
+                        .alignByBaseline()
+                        .ifThen(isHighlighted) { background(colors.highlightBackground) },
                     zoom = zoom
                 )
             }
@@ -114,7 +121,8 @@ fun PreviewBibleVerse(
         ref = ref,
         text = text,
         zoom = 1f,
-        isFocused = true
+        isFocused = true,
+        isHighlighted = true
     )
 }
 

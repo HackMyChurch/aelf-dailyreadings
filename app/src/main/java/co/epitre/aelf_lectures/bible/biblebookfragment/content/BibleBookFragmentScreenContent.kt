@@ -11,6 +11,7 @@ import androidx.compose.foundation.gestures.stopScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,8 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -43,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -58,14 +62,19 @@ import co.epitre.aelf_lectures.bible.biblebookfragment.components.TextWithZoom
 import co.epitre.aelf_lectures.bible.biblebookfragment.components.previewBibleVerse
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter
 import co.epitre.aelf_lectures.bible.data.BibleVerse
+import co.epitre.aelf_lectures.bible.data.LectureReference
 import co.epitre.aelf_lectures.compose.theme.Typo
 import co.epitre.aelf_lectures.compose.theme.colors
 import co.epitre.aelf_lectures.compose.theme.spacing
 import co.epitre.aelf_lectures.compose.utils.customDetectTransformGestures
 import co.epitre.aelf_lectures.compose.utils.Space
 import co.epitre.aelf_lectures.compose.utils.pxToDp
+import co.epitre.aelf_lectures.utils.Utils.containsVerse
+import co.epitre.aelf_lectures.utils.Utils.safeToInt
 import co.epitre.aelf_lectures.utils.round
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
@@ -78,12 +87,16 @@ fun BibleBookFragmentScreenContent(
     modifier: Modifier = Modifier,
     zoom: Float = 1f,
     searchQuery: String? = null,
+    lectureRefs: List<LectureReference>? = null,
     onPinchToZoom: (Float) -> Unit = {}
 ) {
 
 
+    val scrollToRef = lectureRefs?.firstOrNull()?.verseStart
+    val highlightChapter = lectureRefs?.firstOrNull()?.chapter
+
     val scrollStates = remember {
-        List(chapters.size) { ScrollState(0) }
+        List(chapters.size) { LazyListState(0) }
     }
 
     var focusedVerse by remember { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -91,6 +104,24 @@ fun BibleBookFragmentScreenContent(
     var showChaptersDropdown by remember { mutableStateOf(false) }
     var displayedVerses by remember { mutableStateOf<Map<Int, List<BibleVerse>>>(emptyMap()) }
     var selectedTabXOffset by remember { mutableFloatStateOf(0f) }
+
+
+    if (scrollToRef != null) {
+        LaunchedEffect(Unit) {
+            val listState = scrollStates[selectedChapterIndex]
+            snapshotFlow { listState.layoutInfo.visibleItemsInfo }
+                .filter { it.isNotEmpty() }
+                .first()
+
+            delay(200)
+
+            listState.animateScrollToItem(
+                scrollToRef.safeToInt() ?: 0,
+                scrollOffset = 0
+            )
+        }
+    }
+
 
     BoxWithConstraints {
 
@@ -120,9 +151,7 @@ fun BibleBookFragmentScreenContent(
                                     selectedTabXOffset = it.positionInRoot().x
                                 }
 
-                            },
-                        selected = selectedChapterIndex == i,
-                        onClick = {
+                            }, selected = selectedChapterIndex == i, onClick = {
                             if (selectedChapterIndex != i) {
                                 setSelectedChapterIndex(i)
                             } else {
@@ -172,8 +201,7 @@ fun BibleBookFragmentScreenContent(
                 LaunchedEffect(selectedChapterIndex) {
                     showChaptersDropdown = false
                     pagerState.animateScrollToPage(
-                        selectedChapterIndex,
-                        animationSpec = tween(250)
+                        selectedChapterIndex, animationSpec = tween(250)
                     )
                 }
 
@@ -187,12 +215,11 @@ fun BibleBookFragmentScreenContent(
                     state = pagerState,
                     modifier = Modifier.fillMaxHeight(),
                     verticalAlignment = Alignment.Top
-                ) { index ->
+                ) { pagerIndex ->
 
-
-                    if (displayedVerses[index] == null) {
+                    if (displayedVerses[pagerIndex] == null) {
                         LaunchedEffect(Unit) {
-                            displayedVerses += index to verses(index)
+                            displayedVerses += pagerIndex to verses(pagerIndex)
                         }
                     }
 
@@ -207,29 +234,28 @@ fun BibleBookFragmentScreenContent(
 
 
                     wrapper {
-                        Column(
+                        LazyColumn(
+                            userScrollEnabled = false,
+                            state = scrollStates[pagerIndex],
+                            contentPadding = PaddingValues(
+                                start = spacing.s25,
+                                end = spacing.s50
+                            ),
                             modifier = Modifier
-                                .padding(
-                                    horizontal = spacing.s100
-                                )
                                 .pointerInput(Unit) {
                                     customDetectTransformGestures(
                                         onPanEnd = { velocity, panDirection ->
                                             if (panDirection == 0) {
                                                 coroutineScope.launch {
-                                                    scrollStates[index].stopScroll()
+                                                    scrollStates[pagerIndex].stopScroll()
                                                     if (tempDisablePan) {
                                                         pagerState.animateScrollToPage(pagerState.targetPage)
                                                         tempDisablePan = false
                                                     } else {
                                                         pagerState.animateScrollToPage(
-                                                            if (pagerState.currentPageOffsetFraction < -0.25
-                                                                || velocity > 1500
-                                                            ) {
+                                                            if (pagerState.currentPageOffsetFraction < -0.25 || velocity > 1500) {
                                                                 pagerState.currentPage - 1
-                                                            } else if (pagerState.currentPageOffsetFraction > 0.25
-                                                                || velocity < -1500
-                                                            ) {
+                                                            } else if (pagerState.currentPageOffsetFraction > 0.25 || velocity < -1500) {
                                                                 pagerState.currentPage + 1
                                                             } else {
                                                                 pagerState.currentPage
@@ -239,15 +265,14 @@ fun BibleBookFragmentScreenContent(
                                                 }
                                             } else {
                                                 coroutineScope.launch {
-                                                    scrollStates[index].scroll {
+                                                    scrollStates[pagerIndex].scroll {
                                                         with(flingBehavior) {
                                                             performFling(-velocity)
                                                         }
                                                     }
                                                 }
                                             }
-                                        }
-                                    ) { _, pPan, pZoom, _, panDirection ->
+                                        }) { _, pPan, pZoom, _, panDirection ->
 
                                         if (pZoom != 1f) {
                                             val rounded = pZoom.round(2)
@@ -260,45 +285,60 @@ fun BibleBookFragmentScreenContent(
                                                 if (panDirection == 0) {
                                                     pagerState.scrollBy(-pPan.x)
                                                 } else {
-                                                    scrollStates[index].scrollBy(-pPan.y)
+                                                    scrollStates[pagerIndex].scrollBy(-pPan.y)
                                                 }
                                             }
                                         }
                                     }
-                                }
-                                .verticalScroll(state = scrollStates[index], enabled = false)
-                        ) {
-                            Space(spacing.s150)
-                            TextWithZoom(
-                                chapter(index).chapterName, style = Typo.title,
-                                color = colors.textNeutral,
-                                zoom = zoom,
-                            )
-                            Space(spacing.s100)
+                                }) {
 
-                            displayedVerses.get(index)?.forEachIndexed { i, it ->
-                                BibleVerseComponent(
-                                    ref = it.ref,
-                                    text = it.text,
-                                    zoom = zoom,
-                                    searchQuery = searchQuery,
-                                    isFocused = focusedVerse == selectedChapterIndex to i,
-                                    onClick = {
-                                        val toFocus = selectedChapterIndex to i
-                                        if (focusedVerse != toFocus) {
-                                            focusedVerse = toFocus
-                                        } else {
-                                            focusedVerse = null
-                                        }
-                                    }
+                            item {
+                                Column {
+                                    Space(spacing.s150)
+                                    TextWithZoom(
+                                        chapter(pagerIndex).chapterName, style = Typo.title,
+                                        modifier = Modifier.padding(horizontal = spacing.s100),
+                                        color = colors.textNeutral,
+                                        zoom = zoom,
+                                    )
+                                    Space(spacing.s100)
+                                }
+
+                            }
+                            displayedVerses[pagerIndex]?.forEachIndexed { i, it ->
+
+                                item {
+                                    val chapterRef = chapters[pagerIndex].chapterRef
+                                    BibleVerseComponent(
+                                        ref = it.ref,
+                                        text = it.text,
+                                        zoom = zoom,
+                                        searchQuery = searchQuery,
+                                        isFocused = focusedVerse == selectedChapterIndex to i,
+                                        isHighlighted = highlightChapter == chapterRef
+                                                && lectureRefs.containsVerse(
+                                            chapters[pagerIndex].chapterRef,
+                                            it.ref,
+                                        ),
+                                        onClick = {
+                                            val toFocus = selectedChapterIndex to i
+                                            if (focusedVerse != toFocus) {
+                                                focusedVerse = toFocus
+                                            } else {
+                                                focusedVerse = null
+                                            }
+                                        })
+                                }
+                            }
+
+                            item {
+                                Box(
+                                    Modifier
+                                        .navigationBarsPadding()
+                                        .padding(spacing.s100)
                                 )
                             }
 
-                            Box(
-                                Modifier
-                                    .navigationBarsPadding()
-                                    .padding(spacing.s100)
-                            )
                         }
                     }
                 }
@@ -321,16 +361,13 @@ fun BibleBookFragmentScreenContent(
                     if (showChaptersDropdown) {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                             chapters.forEachIndexed { i, it ->
-                                DropdownMenuItem(
-                                    text = { Text(it.chapterName) },
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            delay(200)
-                                            setSelectedChapterIndex(i)
-                                            showChaptersDropdown = false
-                                        }
+                                DropdownMenuItem(text = { Text(it.chapterName) }, onClick = {
+                                    coroutineScope.launch {
+                                        delay(200)
+                                        setSelectedChapterIndex(i)
+                                        showChaptersDropdown = false
                                     }
-                                )
+                                })
                             }
 
                             Space(
@@ -356,9 +393,7 @@ fun PreviewBibleBookFragmentScreenContent() {
     var selectedChapterIndex by remember { mutableIntStateOf(0) }
 
     val verses = listOf(
-        previewBibleVerse,
-        previewBibleVerse,
-        previewBibleVerse
+        previewBibleVerse, previewBibleVerse, previewBibleVerse
     )
 
     BibleBookFragmentScreenContent(
@@ -370,6 +405,5 @@ fun PreviewBibleBookFragmentScreenContent() {
         verses = { verses },
         chapter = {
             BibleBookChapter("Gn", it.toString(), "Chapitre ${it + 1}")
-        }
-    )
+        })
 }
