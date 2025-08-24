@@ -11,6 +11,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -104,6 +105,11 @@ public class ReadingPinchToZoomListener implements View.OnTouchListener, SharedP
                 onZoomEnd(getCurrentZoomLevel());
             }
         });
+
+        mParent.setOnApplyWindowInsetsListener((view, windowInsets) -> {
+            view.setPadding(windowInsets.getSystemWindowInsetLeft(), 0, windowInsets.getSystemWindowInsetRight(), 0);
+            return windowInsets;
+        });
     }
 
     @Override
@@ -177,8 +183,8 @@ public class ReadingPinchToZoomListener implements View.OnTouchListener, SharedP
         // Apply new width and zoom
         mWebsettings.setTextZoom(zoomLevel);
         if (current_width != new_width) {
-            ViewGroup.LayoutParams params = mWebview.getLayoutParams();
-            params.width = new_width;
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) mWebview.getLayoutParams();
+            params.matchConstraintMaxWidth = new_width;
             mWebview.setLayoutParams(params);
         }
     }
