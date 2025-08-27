@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.9.2">
+    <!ENTITY app_version "2.9.3">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -56,15 +56,13 @@
     <string name="dialog_whats_new_content">
         Merci d\'avoir mis à jour \"&app_name;\" !
         \n
-        \nGrande nouveauté, les informations sur le jour liturgique sont maintenant visibles
-        directement depuis le menu latéral. Une révolution 😇.
-        \n
-        \nEn plus de cela:
-        \n• Corrections de bugs
-        \n• Amélioration des performances
+        \nPrincipales nouveautés:
+        \n• Ajout des propres de Monaco
+        \n• Sélection de la région depuis le menu
+        \n• Meilleure compatibilité avec Android 15 et 16
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
-        devenir meilleure !
+        devenir meilleure 😇
     </string>
 
 	<!-- Buttons -->
