@@ -16,4 +16,5 @@ object ColorPrimitives {
     val PINK_RED = Color(0xFFF9787E)
     val CYAN = Color(0xFFA5CFD9)
     val PETROL_BLUE = Color(0xFF1E475A)
+    val DARK_GRAY = Color(0xFF303030)
 }

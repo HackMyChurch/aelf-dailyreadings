@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures.bible.biblebookfragment.content
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollableDefaults
@@ -31,6 +30,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -66,8 +66,8 @@ import co.epitre.aelf_lectures.bible.data.LectureReference
 import co.epitre.aelf_lectures.compose.theme.Typo
 import co.epitre.aelf_lectures.compose.theme.colors
 import co.epitre.aelf_lectures.compose.theme.spacing
-import co.epitre.aelf_lectures.compose.utils.customDetectTransformGestures
 import co.epitre.aelf_lectures.compose.utils.Space
+import co.epitre.aelf_lectures.compose.utils.customDetectTransformGestures
 import co.epitre.aelf_lectures.compose.utils.pxToDp
 import co.epitre.aelf_lectures.utils.Utils.containsVerse
 import co.epitre.aelf_lectures.utils.Utils.safeToInt
@@ -355,13 +355,19 @@ fun BibleBookFragmentScreenContent(
                         .offset(x = selectedTabXOffset.pxToDp())
                         .width(tabWidth)
                         .animateContentSize(),
-                    color = Color.White,
+                    color = colors.elevatedSurface,
                 ) {
 
                     if (showChaptersDropdown) {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                             chapters.forEachIndexed { i, it ->
-                                DropdownMenuItem(text = { Text(it.chapterName) }, onClick = {
+                                DropdownMenuItem(
+                                    colors = MenuDefaults.itemColors(
+                                        textColor = colors.onElevatedSurface
+                                    ),
+                                    text = { Text(it.chapterName) },
+
+                                    onClick = {
                                     coroutineScope.launch {
                                         delay(200)
                                         setSelectedChapterIndex(i)
