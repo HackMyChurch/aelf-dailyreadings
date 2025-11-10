@@ -12,6 +12,8 @@ interface ThemeColors {
     val focusText: Color
     val tabText: Color
     val highlightBackground: Color
+    val textSelectionHandle: Color
+    val textSelectionBackground: Color
 }
 
 val lightThemeColors = object : ThemeColors {
@@ -22,6 +24,8 @@ val lightThemeColors = object : ThemeColors {
     override val focusText: Color = ColorPrimitives.DARK_RED
     override val tabText: Color = ColorPrimitives.LIGHT_BEIGE
     override val highlightBackground: Color = ColorPrimitives.DARK_RED.copy(alpha = .12f)
+    override val textSelectionHandle: Color = ColorPrimitives.DARK_RED
+    override val textSelectionBackground: Color = ColorPrimitives.CYAN
 }
 
 val darkThemeColors = object : ThemeColors {
@@ -32,6 +36,8 @@ val darkThemeColors = object : ThemeColors {
     override val focusText: Color = ColorPrimitives.PINK_RED
     override val tabText: Color = ColorPrimitives.PINK_RED
     override val highlightBackground: Color = ColorPrimitives.PINK_RED.copy(alpha = .12f)
+    override val textSelectionHandle: Color = ColorPrimitives.PINK_RED
+    override val textSelectionBackground: Color = ColorPrimitives.PETROL_BLUE
 }
 
 

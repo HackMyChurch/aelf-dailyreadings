@@ -22,8 +22,10 @@ import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentScreenContent
 import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentViewModel
+import co.epitre.aelf_lectures.compose.theme.AELFTheme
 import co.epitre.aelf_lectures.settings.SettingsActivity
 import co.epitre.aelf_lectures.utils.Utils
+import androidx.core.content.edit
 
 class BibleBookFragment private constructor() : BibleFragment() {
 
@@ -96,40 +98,43 @@ class BibleBookFragment private constructor() : BibleFragment() {
             ) / 100f
 
             setContent {
-                val selectedChapterIndex by viewmodel.selectedChapterIndex.collectAsStateWithLifecycle()
-                var zoom by remember { mutableFloatStateOf(initZoom) }
+                AELFTheme {
+                    val selectedChapterIndex by viewmodel.selectedChapterIndex.collectAsStateWithLifecycle()
+                    var zoom by remember { mutableFloatStateOf(initZoom) }
 
-                if (selectedChapterIndex != -1) {
+                    if (selectedChapterIndex != -1) {
 
-                    (LocalActivity.current as? AppCompatActivity)?.supportActionBar?.title =
-                        viewmodel.bookTitle
+                        (LocalActivity.current as? AppCompatActivity)?.supportActionBar?.title =
+                            viewmodel.bookTitle
 
-                    BibleBookFragmentScreenContent(
-                        chapters = viewmodel.chapters,
-                        selectedChapterIndex = selectedChapterIndex,
-                        setSelectedChapterIndex = {
-                            viewmodel.setSelectedChapterIndex(it)
-                        },
-                        verses = {
-                            viewmodel.getChapterVerses(it)
-                        },
-                        chapter = {
-                            viewmodel.getChapterAt(it)
-                        },
-                        zoom = zoom,
-                        searchQuery = arguments?.getString(BIBLE_SEARCH_QUERY),
-                        lectureRefs = arguments?.getString(BIBLE_REFERENCE)?.let {
-                            Utils.getLectureReferences(it)
-                        },
-                        onPinchToZoom = { pZoom ->
-                            zoom = (zoom * pZoom).coerceIn(1f, 7f)
+                        BibleBookFragmentScreenContent(
+                            chapters = viewmodel.chapters,
+                            selectedChapterIndex = selectedChapterIndex,
+                            setSelectedChapterIndex = {
+                                viewmodel.setSelectedChapterIndex(it)
+                            },
+                            verses = {
+                                viewmodel.getChapterVerses(it)
+                            },
+                            chapter = {
+                                viewmodel.getChapterAt(it)
+                            },
+                            zoom = zoom,
+                            searchQuery = arguments?.getString(BIBLE_SEARCH_QUERY),
+                            lectureRefs = arguments?.getString(BIBLE_REFERENCE)?.let {
+                                Utils.getLectureReferences(it)
+                            },
+                            onPinchToZoom = { pZoom ->
+                                zoom = (zoom * pZoom).coerceIn(1f, 7f)
 
-                            val editor: SharedPreferences.Editor = preferences.edit()
-                            editor.putInt(
-                                SettingsActivity.KEY_PREF_DISP_FONT_SIZE, (zoom * 100).toInt()
-                            )
-                            editor.apply()
-                        })
+                                preferences.edit {
+                                    putInt(
+                                        SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
+                                        (zoom * 100).toInt()
+                                    )
+                                }
+                            })
+                    }
                 }
             }
         }
