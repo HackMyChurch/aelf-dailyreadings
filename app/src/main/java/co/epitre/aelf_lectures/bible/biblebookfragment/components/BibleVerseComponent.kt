@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.selection.DisableSelection
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -47,7 +48,6 @@ fun BibleVerseComponent(
             .pointerInput(Unit) {
                 awaitPointerEventScope {
                     while (true) {
-                        val down = awaitFirstDown(requireUnconsumed = false)
                         val up = waitForUpOrCancellation()
                         if (up != null && !up.isConsumed) {
                             onClick()
@@ -63,7 +63,8 @@ fun BibleVerseComponent(
                     style = Typo.verse,
                     textAlign = TextAlign.End,
                     modifier = Modifier
-                        .alignByBaseline()
+                        .align(Alignment.Top)
+                        .padding(top = 1.dp * zoom)
                         .widthIn((12 * zoom).dp),
                     zoom = zoom
                 )
