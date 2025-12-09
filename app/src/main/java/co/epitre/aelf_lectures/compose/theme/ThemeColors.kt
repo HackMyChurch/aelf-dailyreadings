@@ -24,31 +24,31 @@ interface ThemeColors {
 }
 
 val lightThemeColors = object : ThemeColors {
-    override val textAnnotation: Color = ColorPrimitives.DARK_RED
-    override val textNeutral: Color = ColorPrimitives.DARK_BROWN
-    override val surfaceFilled: Color = ColorPrimitives.DARK_RED
-    override val onSurfaceFilled: Color = ColorPrimitives.WHITE
-    override val focusText: Color = ColorPrimitives.DARK_RED
-    override val tabText: Color = ColorPrimitives.LIGHT_BEIGE
-    override val highlightBackground: Color = ColorPrimitives.DARK_RED.copy(alpha = .12f)
-    override val textSelectionHandle: Color = ColorPrimitives.DARK_RED
-    override val textSelectionBackground: Color = ColorPrimitives.CYAN
-    override val elevatedSurface: Color = ColorPrimitives.WHITE
-    override val onElevatedSurface: Color = ColorPrimitives.ALMOST_BLACK
+    override val textAnnotation: Color = ColorsFromTheme.lightAelfAccent
+    override val textNeutral: Color = ColorsFromTheme.lightAelfLectureText
+    override val surfaceFilled: Color = ColorsFromTheme.lightAelfAccent
+    override val onSurfaceFilled: Color = ColorsFromTheme.white
+    override val focusText: Color = ColorsFromTheme.lightAelfAccent
+    override val tabText: Color = ColorsFromTheme.lightAelfLectureBackground
+    override val highlightBackground: Color = ColorsFromTheme.lightAelfAccent.copy(alpha = .12f)
+    override val textSelectionHandle: Color = ColorsFromTheme.lightAelfAccent
+    override val textSelectionBackground: Color = ColorsFromTheme.CYAN
+    override val elevatedSurface: Color = ColorsFromTheme.white
+    override val onElevatedSurface: Color = ColorsFromTheme.darkAelfLectureBackground
 }
 
 val darkThemeColors = object : ThemeColors {
-    override val textAnnotation: Color = ColorPrimitives.PINK_RED
-    override val textNeutral: Color = ColorPrimitives.ALMOST_WHITE
-    override val surfaceFilled: Color = ColorPrimitives.ALMOST_BLACK
-    override val onSurfaceFilled: Color = ColorPrimitives.PINK_RED
-    override val focusText: Color = ColorPrimitives.PINK_RED
-    override val tabText: Color = ColorPrimitives.PINK_RED
-    override val highlightBackground: Color = ColorPrimitives.PINK_RED.copy(alpha = .12f)
-    override val textSelectionHandle: Color = ColorPrimitives.PINK_RED
-    override val textSelectionBackground: Color = ColorPrimitives.PETROL_BLUE
-    override val elevatedSurface: Color = ColorPrimitives.DARK_GRAY
-    override val onElevatedSurface: Color = ColorPrimitives.ALMOST_WHITE
+    override val textAnnotation: Color = ColorsFromTheme.darkAelfAccent
+    override val textNeutral: Color = ColorsFromTheme.darkAelfLectureText
+    override val surfaceFilled: Color = ColorsFromTheme.darkAelfLectureBackground
+    override val onSurfaceFilled: Color = ColorsFromTheme.darkAelfAccent
+    override val focusText: Color = ColorsFromTheme.darkAelfAccent
+    override val tabText: Color = ColorsFromTheme.darkAelfAccent
+    override val highlightBackground: Color = ColorsFromTheme.darkAelfAccent.copy(alpha = .12f)
+    override val textSelectionHandle: Color = ColorsFromTheme.darkAelfAccent
+    override val textSelectionBackground: Color = ColorsFromTheme.PETROL_BLUE
+    override val elevatedSurface: Color = ColorsFromTheme.DARK_GRAY
+    override val onElevatedSurface: Color = ColorsFromTheme.darkAelfLectureText
 }
 
 

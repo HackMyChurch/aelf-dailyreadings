@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import co.epitre.aelf_lectures.components.NetworkStatusMonitor;
 import co.epitre.aelf_lectures.components.webviewpool.WebViewPoolManager;
+import co.epitre.aelf_lectures.compose.theme.ColorsFromTheme;
 import co.epitre.aelf_lectures.lectures.data.LecturesController;
 import co.epitre.aelf_lectures.lectures.data.Validator;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
@@ -36,8 +37,11 @@ public class LecturesApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         Log.i(TAG, "app start...");
         checkAppReplacingState();
+
+        ColorsFromTheme.init(this);
 
         // Load Sqlite lib
         System.loadLibrary("sqliteX");
