@@ -3,12 +3,11 @@ package co.epitre.aelf_lectures.utils
 import co.epitre.aelf_lectures.bible.data.LectureReference
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import kotlin.math.exp
 
 class UtilsTest {
 
     @Test
-    fun test1() = testGetLectureReferences(
+    fun testRangesSeparatedWithDot() = testGetLectureReferences(
         refToTest = "2,1-3.8-11",
         expected = listOf(
             LectureReference("2", "1", "3"),
@@ -17,7 +16,7 @@ class UtilsTest {
     )
 
     @Test
-    fun test2() = testGetLectureReferences(
+    fun testRangesSeparatedWithComa() = testGetLectureReferences(
         refToTest = "2,1-3,8-11",
         expected = listOf(
             LectureReference("2", "1", "3"),
@@ -26,7 +25,7 @@ class UtilsTest {
     )
 
     @Test
-    fun test3() = testGetLectureReferences(
+    fun testOneChapterOnly() = testGetLectureReferences(
         refToTest = "2",
         expected = listOf(
             LectureReference("2", null, null)
@@ -34,7 +33,7 @@ class UtilsTest {
     )
 
     @Test
-    fun test4() = testGetLectureReferences(
+    fun testTwoChaptersOnly() = testGetLectureReferences(
         refToTest = "2-3",
         expected = listOf(
             LectureReference("2", null, null),
@@ -43,7 +42,7 @@ class UtilsTest {
     )
 
     @Test
-    fun test5() = testGetLectureReferences(
+    fun testTwoChaptersAndOneRange() = testGetLectureReferences(
         refToTest = "2-3,30-6",
         expected = listOf(
             LectureReference("2", "30", null),
@@ -53,7 +52,7 @@ class UtilsTest {
 
 
     @Test
-    fun test6() = testGetLectureReferences(
+    fun testOneChapterTwoRangesONeChapterOneRange() = testGetLectureReferences(
         refToTest = "2,1-3.8-11;4,13-17",
         expected = listOf(
             LectureReference("2", "1", "3"),
@@ -64,13 +63,40 @@ class UtilsTest {
 
 
     @Test
-    fun test7() = testGetLectureReferences(
+    fun testTwoChaptersWithUnboundedRanges() = testGetLectureReferences(
         refToTest = "2-3,1-3.8-11,13-17",
         expected = listOf(
             LectureReference("2", "1", null),
             LectureReference("3", null, "3"),
             LectureReference("3", "8", "11"),
             LectureReference("3", "13", "17"),
+        )
+    )
+
+    @Test
+    fun testWithLetters() = testGetLectureReferences(
+        refToTest = "9A,2-3",
+        expected = listOf(
+            LectureReference("9A", "2", "3"),
+        )
+    )
+
+    @Test
+    fun testWithLowercaseLetters() = testGetLectureReferences(
+        refToTest = "9a,2-3;9b,5-6",
+        expected = listOf(
+            LectureReference("9A", "2", "3"),
+            LectureReference("9B", "5", "6"),
+        )
+    )
+
+
+    @Test
+    fun testIgnorePartialVerses() = testGetLectureReferences(
+        refToTest = "2,1b-3a,8a-11c",
+        expected = listOf(
+            LectureReference("2", "1", "3"),
+            LectureReference("2", "8", "11"),
         )
     )
 

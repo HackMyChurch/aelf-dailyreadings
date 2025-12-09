@@ -2,13 +2,14 @@ package co.epitre.aelf_lectures.compose.theme
 
 import androidx.compose.ui.graphics.Color
 
-fun rgba(red: Int, green: Int, blue: Int, alpha: Double): Color =
-    Color(red, green, blue, (alpha * 255).toInt())
-
+// NOTE: These values duplicate the theme's XML color resources in res/values/colors.xml
+// Ideally we'd fetch them directly from the theme, but doing so would
+// require passing a Context, which cannot be stored in a static object
+// without causing leaks. This static definition is a pragmatic fallback.
 
 object ColorPrimitives {
-    val DARK_RED = rgba(191, 35, 41, 1.0)
-    val DARK_BROWN = rgba(93, 69, 26, 1.0)
+    val DARK_RED = Color(0xFFBF2329)
+    val DARK_BROWN = Color(0xFF5D451A)
     val WHITE = Color(0xFFFFFFFF)
     val LIGHT_BEIGE = Color(0xFFEFE3CE)
     val ALMOST_BLACK = Color(0xFF1D1E23)

@@ -1,6 +1,5 @@
 package co.epitre.aelf_lectures.bible
 
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -77,7 +76,7 @@ class BibleBookFragment private constructor() : BibleFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_section_bible_book_v2, container, false)
+        val view = inflater.inflate(R.layout.fragment_section_bible_book, container, false)
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
 
         arguments?.let {

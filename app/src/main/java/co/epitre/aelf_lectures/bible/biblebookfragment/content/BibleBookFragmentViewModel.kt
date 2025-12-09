@@ -49,7 +49,7 @@ class BibleBookFragmentViewModel : ViewModel() {
         val path = uri.path
         val chunks = path?.split("/")
         val bookRef = chunks?.getOrNull(2) ?: "Gn"
-        val chapterRef = chunks?.getOrNull(3) ?: "1"
+        val chapterRef = chunks?.getOrNull(3)?.uppercase() ?: "1"
 
         _bibleBookEntry = try {
             BibleBookList.getInstance().parts.flatMap {

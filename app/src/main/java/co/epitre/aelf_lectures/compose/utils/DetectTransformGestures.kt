@@ -3,7 +3,7 @@
  *
  * Reason for reimplementation:
  * - Needed fine-grained control over pan, zoom, and rotation gesture detection.
- * - Added `panDirection` tracking to distinguish horizontal vs vertical gestures.
+ * - Added `panAxis` tracking to distinguish horizontal vs vertical gestures.
  * - Introduced `onPanEnd` callback with velocity information for inertial scrolling.
  * - Preserved compatibility with both locked pan/zoom modes and unrestricted gestures.
  * - Ensured precise control of touch slop thresholds and velocity tracking beyond
@@ -29,10 +29,15 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 
+enum class Axis {
+    Horizontal,
+    Vertical
+}
+
 suspend fun PointerInputScope.customDetectTransformGestures(
     panZoomLock: Boolean = false,
-    onPanEnd: (velocityY: Float, panDirection: Int) -> Unit = { _, _ -> },
-    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float, panDirection: Int) -> Unit
+    onPanEnd: (velocityY: Float, panAxis: Axis) -> Unit = { _, _ -> },
+    onGesture: (centroid: Offset, pan: Offset, zoom: Float, rotation: Float, panAxis: Axis) -> Unit
 ) {
     awaitEachGesture {
         var rotation = 0f
@@ -46,7 +51,7 @@ suspend fun PointerInputScope.customDetectTransformGestures(
 
         awaitFirstDown(requireUnconsumed = false)
 
-        var panDirection: Int? = null
+        var panAxis: Axis? = null
 
         do {
             val event = awaitPointerEvent()
@@ -57,12 +62,12 @@ suspend fun PointerInputScope.customDetectTransformGestures(
                 val rotationChange = event.calculateRotation()
                 val panChange = event.calculatePan()
 
-                if (panDirection == null) {
-                    panDirection =
+                if (panAxis == null) {
+                    panAxis =
                         if (panChange.x.absoluteValue > panChange.y.absoluteValue) {
-                            0
+                            Axis.Horizontal
                         } else {
-                            1
+                            Axis.Vertical
                         }
                 }
 
@@ -91,7 +96,7 @@ suspend fun PointerInputScope.customDetectTransformGestures(
                     val centroid = event.calculateCentroid(useCurrent = false)
                     val effectiveRotation = if (lockedToPanZoom) 0f else rotationChange
                     if (effectiveRotation != 0f || zoomChange != 1f || panChange != Offset.Zero) {
-                        onGesture(centroid, panChange, zoomChange, effectiveRotation, panDirection)
+                        onGesture(centroid, panChange, zoomChange, effectiveRotation, panAxis)
                     }
                     event.changes.fastForEach {
                         if (it.positionChanged()) {
@@ -107,10 +112,10 @@ suspend fun PointerInputScope.customDetectTransformGestures(
         if (zoom == 1f && pan != Offset.Zero) {
             val velocity = tracker.calculateVelocity()
             tracker.resetTracking()
-            if (panDirection == 0) {
-                onPanEnd(velocity.x, panDirection)
-            } else if (panDirection == 1) {
-                onPanEnd(velocity.y, panDirection)
+            if (panAxis == Axis.Horizontal) {
+                onPanEnd(velocity.x, panAxis)
+            } else if (panAxis == Axis.Vertical) {
+                onPanEnd(velocity.y, panAxis)
             }
         }
     }

@@ -18,7 +18,7 @@ object Utils {
             val refs = part.split(",", ".")
 
             // Chapter
-            val chapterPart = refs.getOrNull(0) ?: "1"
+            val chapterPart = refs.getOrNull(0)?.uppercase() ?: "1"
             val chapterStart = chapterPart.split("-").getOrNull(0) ?: "1"
             val chapterEnd = chapterPart.split("-").getOrNull(1) ?: chapterStart
 
@@ -43,13 +43,13 @@ object Utils {
                         if (chapterStart != chapterEnd) {
                             references += LectureReference(
                                 chapter = chapterStart,
-                                verseStart = it.split("-").getOrNull(0) ?: "1",
+                                verseStart = it.split("-").getOrNull(0)?.digitsOnly() ?: "1",
                                 verseEnd = null
                             )
                             references += LectureReference(
                                 chapter = chapterEnd,
                                 verseStart = null,
-                                verseEnd = it.split("-").getOrNull(1) ?: "1"
+                                verseEnd = it.split("-").getOrNull(1)?.digitsOnly() ?: "1"
                             )
                         } else {
                             val verseStart = it.split("-").getOrNull(0) ?: "1"
@@ -57,8 +57,8 @@ object Utils {
 
                             references += LectureReference(
                                 chapter = chapterStart,
-                                verseStart = verseStart,
-                                verseEnd = verseEnd
+                                verseStart = verseStart.digitsOnly(),
+                                verseEnd = verseEnd.digitsOnly()
                             )
                         }
 
@@ -70,8 +70,8 @@ object Utils {
 
                         references += LectureReference(
                             chapter = chapterEnd,
-                            verseStart = verseStart,
-                            verseEnd = verseEnd
+                            verseStart = verseStart.digitsOnly(),
+                            verseEnd = verseEnd.digitsOnly()
                         )
                     }
 
@@ -81,8 +81,8 @@ object Utils {
 
                         references += LectureReference(
                             chapter = chapterEnd,
-                            verseStart = verseStart,
-                            verseEnd = verseEnd
+                            verseStart = verseStart.digitsOnly(),
+                            verseEnd = verseEnd.digitsOnly()
                         )
                     }
                 }
@@ -116,3 +116,5 @@ object Utils {
         return false
     }
 }
+
+fun String.digitsOnly() = this.replace(Regex("\\D"), "")

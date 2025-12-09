@@ -3,6 +3,11 @@ package co.epitre.aelf_lectures.compose.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.preference.PreferenceManager
+import co.epitre.aelf_lectures.R
+import co.epitre.aelf_lectures.settings.SettingsActivity
 
 interface ThemeColors {
     val textAnnotation: Color
@@ -47,6 +52,24 @@ val darkThemeColors = object : ThemeColors {
 }
 
 
-val colors
+val colors: ThemeColors
     @Composable
-    get() = if (isSystemInDarkTheme()) darkThemeColors else lightThemeColors
+    get() {
+        val context = LocalContext.current
+
+        val defaultMode = stringResource(R.string.pref_disp_night_mode_v2_def)
+
+        val preferences =
+            PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+
+        val desiredDisplayMode: String = preferences.getString(
+            SettingsActivity.KEY_PREF_DISP_NIGHT_MODE_V2,
+            defaultMode
+        ) ?: defaultMode
+
+        return when {
+            desiredDisplayMode.equals("day") -> lightThemeColors
+            desiredDisplayMode.equals("night") -> darkThemeColors
+            else -> if (isSystemInDarkTheme()) darkThemeColors else lightThemeColors
+        }
+    }
