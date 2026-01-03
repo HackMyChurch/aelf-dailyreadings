@@ -205,6 +205,15 @@ public class LecturesActivity extends BaseActivity implements
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        if (hasFocus) {
+            prepare_fullscreen();
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         lastStopRecord();
