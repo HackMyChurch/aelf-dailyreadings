@@ -85,6 +85,9 @@ public class LectureFragment extends ReadingFragment implements
         htmlString.append("<link href=\"");
         htmlString.append(getThemeCss());
         htmlString.append("\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
+        htmlString.append("<style>");
+        htmlString.append(getAccessibilityCss());
+        htmlString.append("</style>");
         htmlString.append("</head>");
         htmlString.append("<body>");
         htmlString.append(lecture.toHtml());

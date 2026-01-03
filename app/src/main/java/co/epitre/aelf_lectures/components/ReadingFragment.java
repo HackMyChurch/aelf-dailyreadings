@@ -1,6 +1,8 @@
 package co.epitre.aelf_lectures.components;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -101,9 +103,26 @@ public abstract class ReadingFragment extends Fragment {
      * Internal tools
      */
 
+    private int getFontWeightAdjustment() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Configuration config = getResources().getConfiguration();
+            return config.fontWeightAdjustment;
+        }
+        return 0;
+    }
+
     protected String getThemeCss() {
         String themeName = this.lecturesActivity.getNightMode() ? "dark":"light";
         return "css/theme-"+themeName+".css";
+    }
+
+    protected String getAccessibilityCss() {
+        int baseFontWeight = 400 + getFontWeightAdjustment();
+
+        return
+            "body {" +
+            "font-weight: "+baseFontWeight+";" +
+            "}";
     }
 
     private View replaceView(@IdRes int id, View rootView, View newView) {

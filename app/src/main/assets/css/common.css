@@ -4,7 +4,7 @@ body {
     margin: 24px;
     font-family: sans-serif;
     font-size: 15px;
-    font-weight: regular;
+    font-weight: normal;
 }
 
 p {
@@ -15,7 +15,7 @@ p {
 
 h3 {
 	font-size: 20px;
-	font-weight: bold;
+	font-weight: bolder;
 }
 
 /* Page title reference */
@@ -151,7 +151,7 @@ sup {
 
 .antienne-title {
    font-style: italic;
-   font-weight: bold;
+   font-weight: bolder;
 }
 
 /* Workaround: hide images (unsupported) */
@@ -164,7 +164,7 @@ img {
 
 mark {
     background: transparent;
-    font-weight: bold;
+    font-weight: bolder;
     text-decoration: underline;
     text-decoration-style: dotted;
 }

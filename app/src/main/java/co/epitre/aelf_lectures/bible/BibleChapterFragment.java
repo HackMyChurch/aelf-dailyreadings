@@ -42,6 +42,9 @@ public class BibleChapterFragment extends ReadingFragment {
         htmlString.append("<link href=\"");
         htmlString.append(getThemeCss());
         htmlString.append("\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
+        htmlString.append("<style>");
+        htmlString.append(getAccessibilityCss());
+        htmlString.append("</style>");
         htmlString.append("</head><body>");
         htmlString.append(body);
         htmlString.append("<script>");
