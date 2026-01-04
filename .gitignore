@@ -52,3 +52,6 @@ captures/
 *.jks
 
 .idea
+
+# MacOS Filesystem files
+.DS_Store

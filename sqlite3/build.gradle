@@ -47,11 +47,3 @@ dependencies {
     androidTestImplementation 'com.android.support.test:rules:1.0.2'
     testImplementation 'junit:junit:4.12'
 }
-
-allprojects {
-    repositories {
-        // The order in which you list these repositories matter.
-        google()
-        mavenCentral()
-    }
-}

@@ -1,24 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorLectureBackground">
+    android:background="?attr/colorLectureBackground"
+    android:orientation="vertical">
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/bible_chapter_pager"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <co.epitre.aelf_lectures.components.AelfTabLayout
-            android:id="@+id/bible_chapter_layout"
-            style="?attr/tabstripStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:tabGravity="center"
-            app:tabMode="scrollable" />
-
-    </androidx.viewpager.widget.ViewPager>
+    </androidx.compose.ui.platform.ComposeView>
 
 </LinearLayout>

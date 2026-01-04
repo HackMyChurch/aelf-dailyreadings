@@ -1,0 +1,172 @@
+package co.epitre.aelf_lectures.bible
+
+import android.net.Uri
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.activity.compose.LocalActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.net.toUri
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.preference.PreferenceManager
+import co.epitre.aelf_lectures.LecturesActivity
+import co.epitre.aelf_lectures.R
+import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentScreenContent
+import co.epitre.aelf_lectures.bible.biblebookfragment.content.BibleBookFragmentViewModel
+import co.epitre.aelf_lectures.compose.theme.AELFTheme
+import co.epitre.aelf_lectures.settings.SettingsActivity
+import co.epitre.aelf_lectures.utils.Utils
+import androidx.core.content.edit
+
+class BibleBookFragment : BibleFragment() {
+
+    private val viewmodel by viewModels<BibleBookFragmentViewModel>()
+
+    companion object Companion {
+
+        const val BIBLE_PART_ID: String = "biblePartId"
+        const val BIBLE_BOOK_ID: String = "bibleBookId"
+        const val BIBLE_URL: String = "bibleUrl"
+        const val BIBLE_SEARCH_QUERY: String = "bibleSearchQuery"
+        const val BIBLE_REFERENCE: String = "bibleReference"
+
+        fun newInstance(biblePartId: Int, bibleBookId: Int): BibleFragment {
+            return BibleBookFragment().apply {
+                arguments = Bundle().apply {
+                    putInt(BIBLE_PART_ID, biblePartId)
+                    putInt(BIBLE_BOOK_ID, bibleBookId)
+                }
+            }
+        }
+
+        fun newInstance(uri: Uri): BibleFragment {
+            return BibleBookFragment().apply {
+                arguments = Bundle().apply {
+                    putString(BIBLE_URL, uri.toString())
+                    uri.getQueryParameter("query")?.let {
+                        putString(BIBLE_SEARCH_QUERY, it)
+                    }
+                    uri.getQueryParameter("reference")?.let {
+                        putString(BIBLE_REFERENCE, it)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(BIBLE_URL, route)
+    }
+
+
+    override fun getRoute(): String {
+        return "/bible/${viewmodel.bookRef}/${viewmodel.selectedChapterRef}"
+    }
+
+    override fun getTitle(): String {
+        return "${viewmodel.bookTitle} — ${viewmodel.getChapterAt(viewmodel.selectedChapterIndex.value).chapterName}"
+    }
+
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_section_bible_book, container, false)
+        val composeView = view.findViewById<ComposeView>(R.id.compose_view)
+
+        savedInstanceState?.let {
+            viewmodel.initWithUri((it.getString(BIBLE_URL) ?: "").toUri())
+        } ?: run {
+            arguments?.let {
+                if (it.containsKey(BIBLE_PART_ID) && it.containsKey(BIBLE_BOOK_ID)) {
+                    viewmodel.initWithId(it.getInt(BIBLE_PART_ID), it.getInt(BIBLE_BOOK_ID))
+                } else if (it.containsKey(BIBLE_URL)) {
+                    viewmodel.initWithUri((it.getString(BIBLE_URL) ?: "").toUri())
+                }
+            }
+        }
+
+        composeView.apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+
+            val preferences =
+                PreferenceManager.getDefaultSharedPreferences(this.context.applicationContext)
+            val initZoom = preferences.getInt(
+                SettingsActivity.KEY_PREF_DISP_FONT_SIZE, 100
+            ) / 100f
+
+            setContent {
+                AELFTheme {
+                    val selectedChapterIndex by viewmodel.selectedChapterIndex.collectAsStateWithLifecycle()
+                    var zoom by remember { mutableFloatStateOf(initZoom) }
+
+                    if (selectedChapterIndex != -1) {
+
+                        (LocalActivity.current as? AppCompatActivity)?.supportActionBar?.title =
+                            viewmodel.bookTitle
+
+                        BibleBookFragmentScreenContent(
+                            chapters = viewmodel.chapters,
+                            selectedChapterIndex = selectedChapterIndex,
+                            setSelectedChapterIndex = {
+                                viewmodel.setSelectedChapterIndex(it)
+                            },
+                            verses = {
+                                viewmodel.getChapterVerses(it)
+                            },
+                            chapter = {
+                                viewmodel.getChapterAt(it)
+                            },
+                            zoom = zoom,
+                            searchQuery = arguments?.getString(BIBLE_SEARCH_QUERY),
+                            lectureRefs = arguments?.getString(BIBLE_REFERENCE)?.let {
+                                Utils.getLectureReferences(it)
+                            },
+                            onPinchToZoom = { pZoom ->
+                                zoom = (zoom * pZoom).coerceIn(1f, 7f)
+
+                                preferences.edit {
+                                    putInt(
+                                        SettingsActivity.KEY_PREF_DISP_FONT_SIZE,
+                                        (zoom * 100).toInt()
+                                    )
+                                }
+                            })
+                    }
+                }
+            }
+        }
+        return view
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        val activity = activity as? LecturesActivity
+        if (parentFragmentManager.backStackEntryCount > 0) {
+            activity?.setHomeButtonEnabled(true, View.OnClickListener { v: View? ->
+                parentFragmentManager.popBackStack()
+            })
+        } else {
+            activity?.setHomeButtonEnabled(false, null)
+        }
+    }
+
+
+    override fun onStop() {
+        super.onStop()
+        val activity = activity as? LecturesActivity
+        // Reset the home button state
+        activity?.setHomeButtonEnabled(false, null)
+    }
+
+}
