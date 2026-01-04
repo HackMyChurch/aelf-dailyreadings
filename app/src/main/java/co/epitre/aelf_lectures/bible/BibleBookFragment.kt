@@ -26,12 +26,11 @@ import co.epitre.aelf_lectures.settings.SettingsActivity
 import co.epitre.aelf_lectures.utils.Utils
 import androidx.core.content.edit
 
-class BibleBookFragment private constructor() : BibleFragment() {
+class BibleBookFragment : BibleFragment() {
 
     private val viewmodel by viewModels<BibleBookFragmentViewModel>()
 
     companion object Companion {
-
 
         const val BIBLE_PART_ID: String = "biblePartId"
         const val BIBLE_BOOK_ID: String = "bibleBookId"
@@ -63,13 +62,18 @@ class BibleBookFragment private constructor() : BibleFragment() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(BIBLE_URL, route)
+    }
+
 
     override fun getRoute(): String {
         return "/bible/${viewmodel.bookRef}/${viewmodel.selectedChapterRef}"
     }
 
     override fun getTitle(): String {
-        return ""
+        return "${viewmodel.bookTitle} — ${viewmodel.getChapterAt(viewmodel.selectedChapterIndex.value).chapterName}"
     }
 
 
@@ -79,11 +83,15 @@ class BibleBookFragment private constructor() : BibleFragment() {
         val view = inflater.inflate(R.layout.fragment_section_bible_book, container, false)
         val composeView = view.findViewById<ComposeView>(R.id.compose_view)
 
-        arguments?.let {
-            if (it.containsKey(BIBLE_PART_ID) && it.containsKey(BIBLE_BOOK_ID)) {
-                viewmodel.initWithId(it.getInt(BIBLE_PART_ID), it.getInt(BIBLE_BOOK_ID))
-            } else if (it.containsKey(BIBLE_URL)) {
-                viewmodel.initWithUri((it.getString(BIBLE_URL) ?: "").toUri())
+        savedInstanceState?.let {
+            viewmodel.initWithUri((it.getString(BIBLE_URL) ?: "").toUri())
+        } ?: run {
+            arguments?.let {
+                if (it.containsKey(BIBLE_PART_ID) && it.containsKey(BIBLE_BOOK_ID)) {
+                    viewmodel.initWithId(it.getInt(BIBLE_PART_ID), it.getInt(BIBLE_BOOK_ID))
+                } else if (it.containsKey(BIBLE_URL)) {
+                    viewmodel.initWithUri((it.getString(BIBLE_URL) ?: "").toUri())
+                }
             }
         }
 
