@@ -23,10 +23,6 @@ android {
         debug {
             minifyEnabled false
             jniDebuggable true
-            ndk {
-                // Building with NDK_DEBUG=1 for mips crashes the compiler in ndk 14.
-                abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-            }
         }
     }
 
