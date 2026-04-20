@@ -99,6 +99,26 @@ public abstract class ReadingFragment extends Fragment {
         mWebView = null;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        setWebViewAccessibility(true);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        setWebViewAccessibility(false);
+    }
+
+    private void setWebViewAccessibility(boolean visible) {
+        if (mWebView == null) return;
+        mWebView.setImportantForAccessibility(visible
+                ? View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                : View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        );
+    }
+
     /*
      * Internal tools
      */
