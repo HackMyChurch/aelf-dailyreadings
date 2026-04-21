@@ -48,7 +48,7 @@ for (var i = 0; i < references_elements.length; i++) {
     }
 
     // Extract the main reference chunks
-    var matches = reference.match(/([0-9]?)([a-z]+)([0-9]*[a-b]*)(,?)(.*?)(?:-[iv]+)*$/);
+    var matches = reference.match(/([0-9]?)([a-z]+)([0-9]*[a-b]*)(,?)(.*?)(?:-[ivⅠ-Ⅿ]+)*$/);
     if (!matches) {
         continue;
     }
