@@ -94,10 +94,10 @@ public class Lecture implements Serializable {
         StringBuilder bodyBuilder = new StringBuilder();
 
         if (this.longTitle != null && !this.longTitle.isEmpty()) {
-            bodyBuilder.append("<h3>");
+            bodyBuilder.append("<h3 role=\"paragraph\">");
             bodyBuilder.append(TextUtils.htmlEncode(this.longTitle));
             if (this.reference != null && !this.reference.isEmpty()) {
-                bodyBuilder.append("<small><i>— ");
+                bodyBuilder.append("<small><i><span aria-hidden=\"true\">—</span> ");
                 bodyBuilder.append(TextUtils.htmlEncode(this.reference));
                 bodyBuilder.append("</i></small>");
             }

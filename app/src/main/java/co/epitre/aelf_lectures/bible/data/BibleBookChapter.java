@@ -48,7 +48,7 @@ public class BibleBookChapter {
         StringBuilder chapterStringBuilder = new StringBuilder();
 
         // Insert the title
-        chapterStringBuilder.append("<h3>");
+        chapterStringBuilder.append("<h3 role=\"paragraph\">");
         chapterStringBuilder.append(getChapterName());
         chapterStringBuilder.append("</h3>");
 

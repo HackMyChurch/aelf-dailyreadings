@@ -64,5 +64,5 @@ for (var i = 0; i < references_elements.length; i++) {
     var link = "https://www.aelf.org/bible/"+book_number+book_name.capitalize()+"/"+chapter+"?reference="+verses;
 
     // Inject the link
-    references_element.innerHTML = '— <a href="'+link+'">'+reference_prefix+reference_text+reference_suffix+'</a>';
+    references_element.innerHTML = '<span aria-hidden="true">—</span> <a aria-hidden="false" href="'+link+'">'+reference_prefix+reference_text+reference_suffix+'</a>';
 }
