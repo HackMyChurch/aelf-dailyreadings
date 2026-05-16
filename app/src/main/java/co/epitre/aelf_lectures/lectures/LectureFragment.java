@@ -1,26 +1,15 @@
 package co.epitre.aelf_lectures.lectures;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.accessibility.AccessibilityManager;
-
-import androidx.preference.PreferenceManager;
 
 import co.epitre.aelf_lectures.components.ReadingFragment;
 import co.epitre.aelf_lectures.lectures.data.office.Lecture;
 import co.epitre.aelf_lectures.lectures.data.office.LectureVariants;
-import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 /**
  * "Lecture" renderer
  */
-public class LectureFragment extends ReadingFragment implements
-        OnSharedPreferenceChangeListener {
+public class LectureFragment extends ReadingFragment {
     private static final String TAG = "LectureFragment";
 
     /**
@@ -30,28 +19,6 @@ public class LectureFragment extends ReadingFragment implements
     public static final String ARG_VARIANT = "variant";
     public static final String ARG_WHAT = "office";
     public static final String ARG_WHEN = "date";
-
-    private SharedPreferences preferences;
-
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key == null) {
-            return;
-        }
-
-        if (key.equals(SettingsActivity.KEY_PREF_DISP_PSALM_UNDERLINE)) {
-            loadText();
-        }
-    }
-    
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Register preference listener
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
-        preferences.registerOnSharedPreferenceChangeListener(this);
-
-        return super.onCreateView(inflater, container, savedInstanceState);
-    }
 
     @Override
     protected void loadText() {
@@ -95,19 +62,6 @@ public class LectureFragment extends ReadingFragment implements
         htmlString.append("</body></html>");
 
         String reading = htmlString.toString();
-
-        // accessibility: drop the underline attributes && line wrapper fixes, they break the screen readers
-        String underlineMode = preferences.getString(SettingsActivity.KEY_PREF_DISP_PSALM_UNDERLINE, "auto");
-
-        boolean underline = underlineMode.equals("always");
-        if (underlineMode.equals("auto")) {
-            AccessibilityManager am = (AccessibilityManager) getActivity().getSystemService(Context.ACCESSIBILITY_SERVICE);
-            underline = !am.isEnabled();
-        }
-
-        if(!underline) {
-            reading = reading.replaceAll("</?u>", "");
-        }
 
         // Build history URL
         StringBuilder UrlString = new StringBuilder();
