@@ -3,10 +3,12 @@ package co.epitre.aelf_lectures;
 import static co.epitre.aelf_lectures.settings.SettingsActivity.KEY_PREF_PARTICIPATE_SERVER;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Process;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.accessibility.AccessibilityManager;
 
 import androidx.preference.PreferenceManager;
 
@@ -32,6 +34,7 @@ public class LecturesApplication extends Application {
     // Resources
     private static LecturesApplication instance;
     private SharedPreferences settings;
+    private boolean accessibilityWasEnabledAtStartup = false;
 
     @Override
     public void onCreate() {
@@ -45,6 +48,10 @@ public class LecturesApplication extends Application {
         // Get global manager instances
         instance = this;
         settings = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Accessibility
+        AccessibilityManager accessibilityManager = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
+        accessibilityWasEnabledAtStartup = accessibilityManager.isEnabled();
 
         // Boot application
         HardwareDetection.getGuessedPerformanceClass(this);
@@ -65,6 +72,8 @@ public class LecturesApplication extends Application {
     public static LecturesApplication getInstance() {
         return instance;
     }
+
+    public boolean accessibilityWasEnabledAtStartup() {return accessibilityWasEnabledAtStartup;}
 
     //
     // Internals

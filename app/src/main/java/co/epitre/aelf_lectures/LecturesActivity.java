@@ -1,9 +1,12 @@
 package co.epitre.aelf_lectures;
 
 import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -21,6 +24,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -46,7 +50,8 @@ import co.epitre.aelf_lectures.settings.SettingsActivity;
 import co.epitre.aelf_lectures.sync.SyncManager;
 
 public class LecturesActivity extends BaseActivity implements
-        NavigationView.OnNavigationItemSelectedListener {
+        NavigationView.OnNavigationItemSelectedListener,
+        AccessibilityManager.AccessibilityStateChangeListener {
 
     public static final String TAG = "AELFLecturesActivity";
 
@@ -66,10 +71,22 @@ public class LecturesActivity extends BaseActivity implements
     private DrawerLayout drawerLayout;
     private ActionBarDrawerToggle drawerToggle;
 
+    /**
+     * Accessibility
+     */
+
+    private AccessibilityManager accessibilityManager;
+    private boolean accessibilityWasEnabledAtStartup = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Call parent (handles night mode)
         super.onCreate(savedInstanceState);
+
+        // Accessibility
+        accessibilityManager = (AccessibilityManager) getSystemService(Context.ACCESSIBILITY_SERVICE);
+        accessibilityWasEnabledAtStartup = accessibilityManager.isEnabled();
+        accessibilityManager.addAccessibilityStateChangeListener(this);
 
         // ---- need upgrade ?
         int currentVersion, savedVersion;
@@ -196,6 +213,12 @@ public class LecturesActivity extends BaseActivity implements
 
         // Setup the (full) screen
         prepare_fullscreen();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        accessibilityManager.removeAccessibilityStateChangeListener(this);
     }
 
     @Override
@@ -522,6 +545,51 @@ public class LecturesActivity extends BaseActivity implements
             lastStopReset();
             startActivity(intent);
         }
+    }
+
+    //
+    // Accessibility
+    //
+
+
+    @Override
+    public void onAccessibilityStateChanged(boolean isEnabled) {
+        // If TalkBack is enabled after the application has started, it will get stuck on the last element
+        // of the tab strip and never be able to enter the webview. This bug is not present when TalkBack
+        // was enabled when the application starts.
+        // This function is a terrible workaround that will restart the application if such a case occurs.
+
+        if (!isEnabled) {
+            // Disabling accessibility services: nothing to do
+            return;
+        }
+
+        if (LecturesApplication.getInstance().accessibilityWasEnabledAtStartup()) {
+            // Accessibility services were enabled when the application started. The bug is not present.
+            return;
+        }
+
+        // Prepare restart Intent
+        PackageManager packageManager = this.getPackageManager();
+        Intent intent = packageManager.getLaunchIntentForPackage(this.getPackageName());
+        ComponentName componentName = intent.getComponent();
+        Intent mainIntent = Intent.makeRestartActivityTask(componentName);
+        mainIntent.setPackage(this.getPackageName());
+
+        // Build URI to the current location to restore current state (back stack will be lost)
+        SectionFragment currentSection = getCurrentSectionFragment();
+        Uri currentUri = null;
+        if (currentSection != null) {
+            currentUri = currentSection.getUri();
+        }
+
+        if (currentUri != null) {
+            mainIntent.setData(currentUri);
+        }
+
+        // Restart
+        this.startActivity(mainIntent);
+        Runtime.getRuntime().exit(0);
     }
 
     //
