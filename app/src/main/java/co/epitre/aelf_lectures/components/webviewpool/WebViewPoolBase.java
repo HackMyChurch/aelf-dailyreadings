@@ -2,8 +2,6 @@ package co.epitre.aelf_lectures.components.webviewpool;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
-import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -34,13 +32,6 @@ public abstract class WebViewPoolBase {
         webSettings.setBuiltInZoomControls(false);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
-
-        // Accessibility: enable (best effort)
-        try {
-            webView.setAccessibilityDelegate(new View.AccessibilityDelegate());
-        } catch (NoClassDefFoundError e) {
-            Log.w(TAG, "Accessibility support is not available on this device");
-        }
 
         return webView;
     }
