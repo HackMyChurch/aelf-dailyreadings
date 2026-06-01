@@ -273,9 +273,9 @@ public class SectionLecturesFragment extends SectionFragment implements
         if (hour < 3) {
             whatwhen.what = OfficeTypes.COMPLIES;
             whatwhen.when.add(GregorianCalendar.DAY_OF_YEAR, -1);
-        } else if (hour < 4) {
+        } else if (hour < 6) {
             whatwhen.what = OfficeTypes.LECTURES;
-        } else if (hour < 8) {
+        } else if (hour < 9) {
             whatwhen.what = OfficeTypes.LAUDES;
         } else if (hour < 15 && includeMass) {
             whatwhen.what = OfficeTypes.MESSE;
