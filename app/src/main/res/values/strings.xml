@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.9.3">
+    <!ENTITY app_version "2.10.0">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -56,10 +56,11 @@
     <string name="dialog_whats_new_content">
         Merci d\'avoir mis à jour \"&app_name;\" !
         \n
-        \nPrincipales nouveautés:
-        \n• Ajout des propres de Monaco
-        \n• Sélection de la région depuis le menu
-        \n• Meilleure compatibilité avec Android 15 et 16
+        \nCette mise à jour met l\'accent sur l\'accessibilité, particulièrement avec les lecteurs d\'écran tels que TalkBack. Si vous utilisez cette application avec un lecteur d\'écran ou rencontrez des soucis d\'accessibilité, vous pouvez me faire part de votre expélrience par mail: &app_support;.
+        \n
+        \nAutres changements:
+        \n• La barre de notifications est toujours cachée
+        \n• L\'heure des Laudes et de l\'office des lectures ont été ajustées
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
         devenir meilleure 😇
