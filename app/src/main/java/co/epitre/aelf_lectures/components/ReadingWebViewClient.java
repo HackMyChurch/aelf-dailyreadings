@@ -1,6 +1,8 @@
 package co.epitre.aelf_lectures.components;
 
 import android.content.Intent;
+import android.content.ActivityNotFoundException;
+import android.widget.Toast;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
@@ -54,10 +56,18 @@ public class ReadingWebViewClient extends WebViewClient {
             Intent intent = new Intent(Intent.ACTION_SENDTO);
             intent.setType("text/plain");
             intent.setData(uri);
-            mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
+            try {
+                mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(mActivity, "No app found to open this link", Toast.LENGTH_SHORT).show();
+            }
         } else if (scheme != null) {
             // Open external resources
-            mActivity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            try {
+                mActivity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
+            } catch (ActivityNotFoundException e) {
+                Toast.makeText(mActivity, "No app found to open this link", Toast.LENGTH_SHORT).show();
+            }
         }
 
         // Always cancel default action
