@@ -59,14 +59,14 @@ public class ReadingWebViewClient extends WebViewClient {
             try {
                 mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
             } catch (ActivityNotFoundException e) {
-                Toast.makeText(mActivity, "No app found to open this link", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "Aucune application de mail n'a été trouvée", Toast.LENGTH_SHORT).show();
             }
         } else if (scheme != null) {
             // Open external resources
             try {
                 mActivity.startActivity(new Intent(Intent.ACTION_VIEW, uri));
             } catch (ActivityNotFoundException e) {
-                Toast.makeText(mActivity, "No app found to open this link", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "Aucun navigateur web n'a été trouvé", Toast.LENGTH_SHORT).show();
             }
         }
 
