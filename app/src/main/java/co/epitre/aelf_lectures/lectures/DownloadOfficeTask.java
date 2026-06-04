@@ -60,18 +60,15 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
     /**
      * Error messages
      */
-    private static final String noNetworkErrorMessage = ""+
+    private static final String noNetworkErrorMessage =
             "<h3>Aucune connexion Internet n’est disponible</h3>" +
             "<p>L’office que vous demandez n’est pas disponible en mode hors-connexion. Pour le consulter, assurez-vous de disposer d’une connexion Internet de bonne qualité, de préférence en WiFi, puis ré-essayez.</p>" +
             "<p><strong>Astuce&nbsp;:</strong> Une fois chargé avec succès, cet office sera automatiquement disponible en mode hors-connexion&nbsp;!</p>";
-    private static final String connectionErrorMessage = ""+
+    private static final String connectionErrorMessage =
             "<h3>Une erreur s'est glissée lors du chargement des lectures</h3>" +
             "<p>Saviez-vous que cette application est développée entièrement bénévolement&nbsp;? Elle est construite en lien et avec le soutien de l'AELF, mais elle reste un projet indépendant, soutenue par <em>votre</em> prière&nbsp!</p>\n" +
             "<div class=\"app-office-navigation\"><a href=\"aelf://app.epitre.co/action/refresh\">Ré-essayer</a></div>";
-    private static final String emptyOfficeErrorMessage = "" +
-            "<h3>Il n'y a pas encore de lectures pour cet office</h3>" +
-            "<p>Le saviez-vous ? <a href=\"http://aelf.org/\">AELF</a> ajoute les nouveaux offices quotidiennement, jusqu'à un mois à l'avance&nbsp;! Celui-ci devrait bientôt arriver.</p>";
-    private static final String subOptimalSettingsErrorMessage = ""+
+    private static final String subOptimalSettingsErrorMessage =
             "<h3>Erreur de synchronisation</h3>" +
             "<p>Cette lecture devrait être disponible hors connexion. Malheureusement, nous ne l'avons pas trouvée.</p>" +
             "<p>Pour fonctionner de manière optimale, la synchronisation doit être activée sur votre téléphone et l'application devrait être configurée pour pré-charger les lectures du mois dès qu'une connexion est disponible.</p>" +
@@ -134,7 +131,7 @@ class DownloadOfficeTask extends AsyncTask<Void, Void, Office> {
         Resources res = ctx.getResources();
 
         // Is there a custom server ? Beta and no cache are non critical
-        if(!preference.getString(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER, "").equals("")) {
+        if(!preference.getString(SettingsActivity.KEY_PREF_PARTICIPATE_SERVER, "").isEmpty()) {
             return true;
         }
 
