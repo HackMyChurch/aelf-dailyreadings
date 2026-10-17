@@ -238,6 +238,8 @@ chapter_id = 0
 # Process
 #
 
+regex_inflections = re.compile(r"\s*[+*]\s*")
+
 def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, chapter_title):
     global chapter_id
 
@@ -256,6 +258,10 @@ def index_path(chapter_file_path, book_ref, book_id, book_title, chapter_ref, ch
 
         # Get the verse text
         verse_text = chapter_verse.span.next_sibling.strip()
+
+        # Strip inflection marks for readability / accessibility. These would only make sense with
+        # the proper formatting.
+        verse_text = regex_inflections.sub(" ", verse_text)
 
         # Insert the verse in the database
         cursor.execute(

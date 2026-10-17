@@ -56,6 +56,10 @@ public class BibleBookChapter {
         chapterStringBuilder.append("<p>");
         for (BibleVerse bibleVerse: mBibleController.getBookChapterVerses(mBookRef, mChapterRef)) {
             String verseRef = bibleVerse.getRef();
+            String verse = bibleVerse.getText();
+
+            verse = verse.replaceAll("[\\[\\]+*]*", "<span aria-hidden=\"true\">$0</span>");
+
             chapterStringBuilder.append("<span class=\"line\"");
             if (verseRef != null && !verseRef.isEmpty()) {
                 chapterStringBuilder.append(" id=\"verse-");
@@ -68,7 +72,7 @@ public class BibleBookChapter {
                 chapterStringBuilder.append(verseRef);
                 chapterStringBuilder.append("</span>");
             }
-            chapterStringBuilder.append(bibleVerse.getText());
+            chapterStringBuilder.append(verse);
             chapterStringBuilder.append("</span>");
         }
         chapterStringBuilder.append("</p>");
