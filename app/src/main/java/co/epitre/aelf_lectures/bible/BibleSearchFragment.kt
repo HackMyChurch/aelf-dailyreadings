@@ -14,8 +14,14 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.SearchView
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -320,59 +326,101 @@ private fun SortBar(
     onSortChanged: (BibleController.Sort) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        SortRadioButton(
-            text = "Ordre Biblique",
-            selected = sort == BibleController.Sort.Bible,
-            onClick = { onSortChanged(BibleController.Sort.Bible) }
-        )
-        SortRadioButton(
-            text = "Pertinence",
-            selected = sort == BibleController.Sort.Relevance,
-            onClick = { onSortChanged(BibleController.Sort.Relevance) },
-            modifier = Modifier.offset(x = (-1).dp)
-        )
-    }
-}
-
-@Composable
-private fun SortRadioButton(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
     val accentColor = getAccentColor()
     val lectureBgColor = getLectureBackgroundColor()
 
-    val backgroundColor = if (selected) accentColor else lectureBgColor
-    val textColor = if (selected) lectureBgColor else accentColor
+    val indicatorOffset by animateDpAsState(
+        targetValue = if (sort == BibleController.Sort.Bible) 0.dp else 160.dp,
+        animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
+        label = "sortIndicatorOffset"
+    )
 
-    Surface(
-        onClick = onClick,
+    val bibleTextColor by animateColorAsState(
+        targetValue = if (sort == BibleController.Sort.Bible) lectureBgColor else accentColor,
+        animationSpec = tween(durationMillis = 250),
+        label = "bibleTextColor"
+    )
+
+    val relevanceTextColor by animateColorAsState(
+        targetValue = if (sort == BibleController.Sort.Relevance) lectureBgColor else accentColor,
+        animationSpec = tween(durationMillis = 250),
+        label = "relevanceTextColor"
+    )
+
+    Box(
         modifier = modifier
-            .width(160.dp)
-            .height(32.dp),
-        shape = RectangleShape,
-        color = backgroundColor,
-        border = BorderStroke(1.dp, accentColor)
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
+        Surface(
+            modifier = Modifier
+                .width(320.dp)
+                .height(32.dp),
+            shape = RectangleShape,
+            color = lectureBgColor,
+            border = BorderStroke(1.dp, accentColor)
         ) {
-            Text(
-                text = text,
-                color = textColor,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
-            )
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Sliding background indicator
+                Box(
+                    modifier = Modifier
+                        .offset(x = indicatorOffset)
+                        .width(160.dp)
+                        .height(32.dp)
+                        .background(accentColor)
+                )
+
+                // Middle divider
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .width(1.dp)
+                        .height(32.dp)
+                        .background(accentColor)
+                )
+
+                // Clickable options layer
+                Row(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .width(160.dp)
+                            .height(32.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onSortChanged(BibleController.Sort.Bible) }
+                            )
+                    ) {
+                        Text(
+                            text = "Ordre Biblique",
+                            color = bibleTextColor,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .width(160.dp)
+                            .height(32.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onSortChanged(BibleController.Sort.Relevance) }
+                            )
+                    ) {
+                        Text(
+                            text = "Pertinence",
+                            color = relevanceTextColor,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
         }
     }
 }
