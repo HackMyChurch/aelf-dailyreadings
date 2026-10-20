@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.SearchView
 import androidx.compose.animation.animateColorAsState
@@ -31,6 +32,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -42,15 +44,23 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,13 +72,21 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
+import co.epitre.aelf_lectures.bible.data.BibleBookEntryType
+import co.epitre.aelf_lectures.bible.data.BibleBookList
 import co.epitre.aelf_lectures.bible.data.BibleController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -89,6 +107,64 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
 
     private var queryState = mutableStateOf("")
     private var sortState = mutableStateOf(BibleController.Sort.Relevance)
+    private var selectedPartsState = mutableStateOf<Set<String>>(emptySet())
+    private var selectedSectionsState = mutableStateOf<Set<String>>(emptySet())
+    private var selectedBooksState = mutableStateOf<Set<String>>(emptySet())
+    private var bookFilterState = mutableStateOf<List<String>?>(null)
+    private var isFilterSheetVisibleState = mutableStateOf(false)
+
+    private val backStackChangeListener = FragmentManager.OnBackStackChangedListener {
+        if (isAdded) {
+            try {
+                val count = parentFragmentManager.backStackEntryCount
+                var filterSheetInBackStack = false
+                for (i in 0 until count) {
+                    if (parentFragmentManager.getBackStackEntryAt(i).name == BACK_STACK_FILTER_SHEET) {
+                        filterSheetInBackStack = true
+                        break
+                    }
+                }
+                if (!filterSheetInBackStack && isFilterSheetVisibleState.value) {
+                    isFilterSheetVisibleState.value = false
+                }
+            } catch (ignored: IllegalStateException) {
+            }
+        }
+    }
+
+    private fun openFilterSheet() {
+        if (!isFilterSheetVisibleState.value) {
+            isFilterSheetVisibleState.value = true
+            val view = view
+            if (view != null) {
+                val imm = activity?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(view.windowToken, 0)
+            }
+            if (isAdded) {
+                try {
+                    parentFragmentManager.beginTransaction()
+                        .addToBackStack(BACK_STACK_FILTER_SHEET)
+                        .commit()
+                } catch (ignored: IllegalStateException) {
+                }
+            }
+        }
+    }
+
+    private fun dismissFilterSheet() {
+        if (isFilterSheetVisibleState.value) {
+            isFilterSheetVisibleState.value = false
+            if (isAdded) {
+                try {
+                    val count = parentFragmentManager.backStackEntryCount
+                    if (count > 0 && parentFragmentManager.getBackStackEntryAt(count - 1).name == BACK_STACK_FILTER_SHEET) {
+                        parentFragmentManager.popBackStack(BACK_STACK_FILTER_SHEET, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                    }
+                } catch (ignored: IllegalStateException) {
+                }
+            }
+        }
+    }
 
     private var initialized = false
 
@@ -118,6 +194,17 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                     }
                 } catch (ignored: IllegalArgumentException) {
                 }
+                val partsList = args.getStringArrayList(BIBLE_SEARCH_PARTS)
+                val sectionsList = args.getStringArrayList(BIBLE_SEARCH_SECTIONS)
+                val booksList = args.getStringArrayList(BIBLE_SEARCH_BOOKS)
+
+                if (partsList != null) selectedPartsState.value = partsList.toSet()
+                if (sectionsList != null) selectedSectionsState.value = sectionsList.toSet()
+                if (booksList != null) selectedBooksState.value = booksList.toSet()
+
+                if (savedInstanceState != null) {
+                    isFilterSheetVisibleState.value = savedInstanceState.getBoolean(BIBLE_SEARCH_FILTER_SHEET_VISIBLE, false)
+                }
             }
             initialized = true
         }
@@ -127,11 +214,16 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
             setContent {
                 val query by queryState
                 val sort by sortState
+                val selectedParts by selectedPartsState
+                val selectedSections by selectedSectionsState
+                val selectedBooks by selectedBooksState
+                val bookFilter by bookFilterState
+                val isFilterSheetVisible by isFilterSheetVisibleState
                 var searchResults by remember { mutableStateOf<List<BibleSearchResult>>(emptyList()) }
 
-                LaunchedEffect(query, sort) {
+                LaunchedEffect(query, sort, bookFilter) {
                     val results = withContext(Dispatchers.IO) {
-                        performSearch(query, sort)
+                        performSearch(query, sort, bookFilter)
                     }
                     searchResults = results
                 }
@@ -139,18 +231,34 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                 BibleSearchScreen(
                     sort = sort,
                     searchResults = searchResults,
+                    initialSelectedParts = selectedParts,
+                    initialSelectedSections = selectedSections,
+                    initialSelectedBooks = selectedBooks,
                     onSortChanged = { newSort ->
                         sortState.value = newSort
                     },
+                    onSelectionChanged = { parts, sections, books, flatFilter ->
+                        selectedPartsState.value = parts
+                        selectedSectionsState.value = sections
+                        selectedBooksState.value = books
+                        bookFilterState.value = flatFilter
+                    },
                     onItemClick = { link ->
                         onItemClick(link)
-                    }
+                    },
+                    isFilterSheetVisible = isFilterSheetVisible,
+                    onOpenFilter = { openFilterSheet() },
+                    onDismissFilter = { dismissFilterSheet() }
                 )
             }
         }
     }
 
-    private fun performSearch(rawQuery: String, sort: BibleController.Sort): List<BibleSearchResult> {
+    private fun performSearch(
+        rawQuery: String,
+        sort: BibleController.Sort,
+        bookFilter: List<String>?
+    ): List<BibleSearchResult> {
         if (rawQuery.isEmpty()) {
             return emptyList()
         }
@@ -159,7 +267,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
             query += "*"
         }
 
-        val cursor = BibleController.getInstance().search(query, sort) ?: return emptyList()
+        val cursor = BibleController.getInstance().search(query, sort, bookFilter) ?: return emptyList()
         val results = mutableListOf<BibleSearchResult>()
         cursor.use { c ->
             if (c.moveToFirst()) {
@@ -240,22 +348,47 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
     override fun onStart() {
         super.onStart()
         mSearchView?.setOnQueryTextListener(this)
+        try {
+            parentFragmentManager.addOnBackStackChangedListener(backStackChangeListener)
+        } catch (ignored: IllegalStateException) {
+        }
     }
 
     override fun onStop() {
         super.onStop()
         mSearchView?.setOnQueryTextListener(null)
+        try {
+            parentFragmentManager.removeOnBackStackChangedListener(backStackChangeListener)
+        } catch (ignored: IllegalStateException) {
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(BIBLE_SEARCH_QUERY, queryState.value)
         outState.putString(BIBLE_SEARCH_SORT, sortState.value.name)
+        outState.putStringArrayList(BIBLE_SEARCH_PARTS, ArrayList(selectedPartsState.value))
+        outState.putStringArrayList(BIBLE_SEARCH_SECTIONS, ArrayList(selectedSectionsState.value))
+        outState.putStringArrayList(BIBLE_SEARCH_BOOKS, ArrayList(selectedBooksState.value))
+        outState.putBoolean(BIBLE_SEARCH_FILTER_SHEET_VISIBLE, isFilterSheetVisibleState.value)
     }
 
     override fun getRoute(): String {
         return try {
-            "/search?query=${URLEncoder.encode(queryState.value, "UTF-8")}&sort=${URLEncoder.encode(sortState.value.name, "UTF-8")}"
+            val selectedTokens = mutableListOf<String>()
+            selectedTokens.addAll(selectedPartsState.value)
+            selectedTokens.addAll(selectedSectionsState.value)
+            selectedTokens.addAll(selectedBooksState.value)
+
+            val queryParam = URLEncoder.encode(queryState.value, "UTF-8")
+            val sortParam = URLEncoder.encode(sortState.value.name, "UTF-8")
+
+            if (selectedTokens.isNotEmpty()) {
+                val filterParam = URLEncoder.encode(selectedTokens.joinToString(","), "UTF-8")
+                "/search?query=$queryParam&sort=$sortParam&filter=$filterParam"
+            } else {
+                "/search?query=$queryParam&sort=$sortParam"
+            }
         } catch (e: Exception) {
             "/search"
         }
@@ -273,6 +406,11 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
     companion object {
         private const val BIBLE_SEARCH_QUERY = "bibleSearchQuery"
         private const val BIBLE_SEARCH_SORT = "bibleSearchSort"
+        private const val BIBLE_SEARCH_PARTS = "bibleSearchParts"
+        private const val BIBLE_SEARCH_SECTIONS = "bibleSearchSections"
+        private const val BIBLE_SEARCH_BOOKS = "bibleSearchBooks"
+        private const val BIBLE_SEARCH_FILTER_SHEET_VISIBLE = "bibleSearchFilterSheetVisible"
+        private const val BACK_STACK_FILTER_SHEET = "bible_book_filter_sheet"
 
         @JvmStatic
         fun newInstance(uri: Uri): BibleSearchFragment {
@@ -280,6 +418,14 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
             val args = Bundle().apply {
                 putString(BIBLE_SEARCH_QUERY, uri.getQueryParameter("query"))
                 putString(BIBLE_SEARCH_SORT, uri.getQueryParameter("sort"))
+                val filter = uri.getQueryParameter("filter")
+                if (!filter.isNullOrEmpty()) {
+                    val tree = BibleTreeRepository.getTree()
+                    val (parts, sections, books) = parseFilterParam(filter, tree)
+                    putStringArrayList(BIBLE_SEARCH_PARTS, ArrayList(parts))
+                    putStringArrayList(BIBLE_SEARCH_SECTIONS, ArrayList(sections))
+                    putStringArrayList(BIBLE_SEARCH_BOOKS, ArrayList(books))
+                }
             }
             fragment.arguments = args
             return fragment
@@ -287,14 +433,40 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BibleSearchScreen(
     sort: BibleController.Sort,
     searchResults: List<BibleSearchResult>,
     onSortChanged: (BibleController.Sort) -> Unit,
     onItemClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initialSelectedParts: Set<String> = emptySet(),
+    initialSelectedSections: Set<String> = emptySet(),
+    initialSelectedBooks: Set<String> = emptySet(),
+    onSelectionChanged: ((selectedParts: Set<String>, selectedSections: Set<String>, selectedBooks: Set<String>, flatBookRefs: List<String>?) -> Unit)? = null,
+    isFilterSheetVisible: Boolean? = null,
+    onOpenFilter: (() -> Unit)? = null,
+    onDismissFilter: (() -> Unit)? = null
 ) {
+    val tree = remember { BibleTreeRepository.getTree() }
+    var selectedParts by remember(initialSelectedParts) { mutableStateOf(initialSelectedParts) }
+    var selectedSections by remember(initialSelectedSections) { mutableStateOf(initialSelectedSections) }
+    var selectedBooks by remember(initialSelectedBooks) { mutableStateOf(initialSelectedBooks) }
+    var internalIsFilterSheetVisible by remember { mutableStateOf(false) }
+
+    val showFilterSheet = isFilterSheetVisible ?: internalIsFilterSheetVisible
+    val handleOpenFilter = onOpenFilter ?: { internalIsFilterSheetVisible = true }
+    val handleDismissFilter = onDismissFilter ?: { internalIsFilterSheetVisible = false }
+
+    val (filterLabel, calculatedFilter) = remember(tree, selectedParts, selectedSections, selectedBooks) {
+        computeFilterResult(tree, selectedParts, selectedSections, selectedBooks)
+    }
+
+    LaunchedEffect(selectedParts, selectedSections, selectedBooks, calculatedFilter) {
+        onSelectionChanged?.invoke(selectedParts, selectedSections, selectedBooks, calculatedFilter)
+    }
+
     val bgColor = getLectureBackgroundColor()
     val dividerColor = getDividerColor()
 
@@ -305,18 +477,626 @@ fun BibleSearchScreen(
             .clickable(enabled = false) {}
     ) {
         Surface(color = bgColor, modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                SortBar(
-                    sort = sort,
-                    onSortChanged = onSortChanged
-                )
-                HorizontalDivider(color = dividerColor, thickness = 1.dp)
-                SearchResultsList(
-                    results = searchResults,
-                    onItemClick = onItemClick
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    FilterAndSortHeader(
+                        filterLabel = filterLabel,
+                        sort = sort,
+                        onOpenFilter = handleOpenFilter,
+                        onSortChanged = onSortChanged
+                    )
+                    HorizontalDivider(color = dividerColor, thickness = 1.dp)
+                    SearchResultsList(
+                        results = searchResults,
+                        onItemClick = onItemClick
+                    )
+                }
+
+                if (showFilterSheet) {
+                    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                    val scope = rememberCoroutineScope()
+
+                    val animateAndDismiss = {
+                        scope.launch {
+                            sheetState.hide()
+                        }.invokeOnCompletion {
+                            if (!sheetState.isVisible) {
+                                handleDismissFilter()
+                            }
+                        }
+                    }
+
+                    ModalBottomSheet(
+                        onDismissRequest = { handleDismissFilter() },
+                        sheetState = sheetState,
+                        containerColor = bgColor,
+                        scrimColor = Color.Black.copy(alpha = 0.5f),
+                        dragHandle = { }
+                    ) {
+                        BibleBookFilterSheet(
+                            tree = tree,
+                            selectedParts = selectedParts,
+                            selectedSections = selectedSections,
+                            selectedBooks = selectedBooks,
+                            onSelectedPartsChange = { selectedParts = it },
+                            onSelectedSectionsChange = { selectedSections = it },
+                            onSelectedBooksChange = { selectedBooks = it },
+                            onDismiss = { animateAndDismiss() }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilterAndSortHeader(
+    filterLabel: String,
+    sort: BibleController.Sort,
+    onOpenFilter: () -> Unit,
+    onSortChanged: (BibleController.Sort) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val accentColor = getAccentColor()
+    val lectureBgColor = getLectureBackgroundColor()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier
+                .width(320.dp)
+                .height(32.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onOpenFilter
+                ),
+            shape = RectangleShape,
+            color = lectureBgColor,
+            border = BorderStroke(1.dp, accentColor)
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Text(
+                    text = filterLabel,
+                    color = accentColor,
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
         }
+
+        SortBar(
+            sort = sort,
+            onSortChanged = onSortChanged
+        )
+    }
+}
+
+@Composable
+private fun BibleBookFilterSheet(
+    tree: List<BibleTreePart>,
+    selectedParts: Set<String>,
+    selectedSections: Set<String>,
+    selectedBooks: Set<String>,
+    onSelectedPartsChange: (Set<String>) -> Unit,
+    onSelectedSectionsChange: (Set<String>) -> Unit,
+    onSelectedBooksChange: (Set<String>) -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val textColor = getLectureTextColor()
+    val accentColor = getAccentColor()
+    val dividerColor = getDividerColor()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.85f)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Fermer",
+                    tint = textColor
+                )
+            }
+
+            Spacer(modifier = Modifier.width(4.dp))
+
+            Text(
+                text = "Livres",
+                color = textColor,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+
+            if (selectedParts.isNotEmpty() || selectedSections.isNotEmpty() || selectedBooks.isNotEmpty()) {
+                Text(
+                    text = "Effacer",
+                    color = accentColor,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .clickable {
+                            onSelectedPartsChange(emptySet())
+                            onSelectedSectionsChange(emptySet())
+                            onSelectedBooksChange(emptySet())
+                        }
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                )
+            }
+        }
+
+        HorizontalDivider(color = dividerColor, thickness = 1.dp)
+
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(
+                top = 8.dp,
+                bottom = 24.dp
+            )
+        ) {
+                for (part in tree) {
+                    val isPartChecked = selectedParts.contains(part.id)
+
+                    item(key = "part_${part.id}") {
+                        TreePartRow(
+                            part = part,
+                            isChecked = isPartChecked,
+                            onToggle = {
+                                val next = selectedParts.toMutableSet()
+                                if (isPartChecked) {
+                                    next.remove(part.id)
+                                } else {
+                                    next.add(part.id)
+                                }
+                                onSelectedPartsChange(next)
+                            }
+                        )
+                    }
+
+                    for (section in part.sections) {
+                        val isSectionChecked = isPartChecked || selectedSections.contains(section.id)
+                        val isSectionEnabled = !isPartChecked
+
+                        item(key = "section_${section.id}") {
+                            TreeSectionRow(
+                                section = section,
+                                isChecked = isSectionChecked,
+                                isEnabled = isSectionEnabled,
+                                onToggle = {
+                                    if (isSectionEnabled) {
+                                        val next = selectedSections.toMutableSet()
+                                        if (selectedSections.contains(section.id)) {
+                                            next.remove(section.id)
+                                        } else {
+                                            next.add(section.id)
+                                        }
+                                        onSelectedSectionsChange(next)
+                                    }
+                                }
+                            )
+                        }
+
+                        for (book in section.books) {
+                            val isBookChecked = isSectionChecked || selectedBooks.contains(book.ref)
+                            val isBookEnabled = !isSectionChecked
+
+                            item(key = "book_${section.id}_${book.ref}") {
+                                TreeBookRow(
+                                    book = book,
+                                    isChecked = isBookChecked,
+                                    isEnabled = isBookEnabled,
+                                    indentationDp = 52.dp,
+                                    onToggle = {
+                                        if (isBookEnabled) {
+                                            val next = selectedBooks.toMutableSet()
+                                            if (selectedBooks.contains(book.ref)) {
+                                                next.remove(book.ref)
+                                            } else {
+                                                next.add(book.ref)
+                                            }
+                                            onSelectedBooksChange(next)
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    for (book in part.directBooks) {
+                        val isBookChecked = isPartChecked || selectedBooks.contains(book.ref)
+                        val isBookEnabled = !isPartChecked
+
+                        item(key = "direct_book_${part.id}_${book.ref}") {
+                            TreeBookRow(
+                                book = book,
+                                isChecked = isBookChecked,
+                                isEnabled = isBookEnabled,
+                                indentationDp = 32.dp,
+                                onToggle = {
+                                    if (isBookEnabled) {
+                                        val next = selectedBooks.toMutableSet()
+                                        if (selectedBooks.contains(book.ref)) {
+                                            next.remove(book.ref)
+                                        } else {
+                                            next.add(book.ref)
+                                        }
+                                        onSelectedBooksChange(next)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+@Composable
+private fun TreePartRow(
+    part: BibleTreePart,
+    isChecked: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val textColor = getLectureTextColor()
+    val accentColor = getAccentColor()
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onToggle() }
+            .padding(start = 8.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isChecked,
+            onCheckedChange = { onToggle() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = accentColor,
+                checkmarkColor = getLectureBackgroundColor()
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = part.name,
+            color = textColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun TreeSectionRow(
+    section: BibleTreeSection,
+    isChecked: Boolean,
+    isEnabled: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val textColor = getLectureTextColor()
+    val accentColor = getAccentColor()
+    val effectiveTextColor = if (isEnabled) textColor else textColor.copy(alpha = 0.5f)
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = isEnabled) { onToggle() }
+            .padding(start = 28.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isChecked,
+            enabled = isEnabled,
+            onCheckedChange = { if (isEnabled) onToggle() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = accentColor,
+                checkmarkColor = getLectureBackgroundColor(),
+                disabledCheckedColor = accentColor.copy(alpha = 0.5f)
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = section.name,
+            color = effectiveTextColor,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+@Composable
+private fun TreeBookRow(
+    book: BibleTreeBook,
+    isChecked: Boolean,
+    isEnabled: Boolean,
+    indentationDp: Dp,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val textColor = getLectureTextColor()
+    val accentColor = getAccentColor()
+    val effectiveTextColor = if (isEnabled) textColor else textColor.copy(alpha = 0.5f)
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(enabled = isEnabled) { onToggle() }
+            .padding(start = indentationDp, end = 16.dp, top = 2.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = isChecked,
+            enabled = isEnabled,
+            onCheckedChange = { if (isEnabled) onToggle() },
+            colors = CheckboxDefaults.colors(
+                checkedColor = accentColor,
+                checkmarkColor = getLectureBackgroundColor(),
+                disabledCheckedColor = accentColor.copy(alpha = 0.5f)
+            )
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = book.name,
+            color = effectiveTextColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Normal
+        )
+    }
+}
+
+data class BibleTreeBook(
+    val name: String,
+    val ref: String
+)
+
+data class BibleTreeSection(
+    val id: String,
+    val name: String,
+    val books: List<BibleTreeBook>
+)
+
+data class BibleTreePart(
+    val id: String,
+    val name: String,
+    val sections: List<BibleTreeSection>,
+    val directBooks: List<BibleTreeBook> = emptyList()
+)
+
+sealed class SelectedItem {
+    data class PartItem(val part: BibleTreePart) : SelectedItem()
+    data class SectionItem(val section: BibleTreeSection) : SelectedItem()
+    data class BookItem(val book: BibleTreeBook) : SelectedItem()
+}
+
+object BibleTreeRepository {
+    private var cachedParts: List<BibleTreePart>? = null
+
+    fun getTree(): List<BibleTreePart> {
+        cachedParts?.let { return it }
+
+        val bibleBookList = BibleBookList.getInstance()
+        val treeParts = mutableListOf<BibleTreePart>()
+
+        for (part in bibleBookList.parts) {
+            val sections = mutableListOf<BibleTreeSection>()
+            val directBooks = mutableListOf<BibleTreeBook>()
+            val seenBookRefs = mutableSetOf<String>()
+
+            var currentSectionName: String? = null
+            var currentSectionBooks = mutableListOf<BibleTreeBook>()
+
+            for (entry in part.bibleBookEntries) {
+                if (entry.type == BibleBookEntryType.SECTION) {
+                    if (currentSectionName != null && currentSectionBooks.isNotEmpty()) {
+                        sections.add(
+                            BibleTreeSection(
+                                id = "${part.partRef}_${currentSectionName}",
+                                name = currentSectionName,
+                                books = currentSectionBooks.toList()
+                            )
+                        )
+                    }
+                    currentSectionName = entry.bookName
+                    currentSectionBooks = mutableListOf()
+                } else if (entry.type == BibleBookEntryType.BOOK) {
+                    val bookRef = entry.bookRef
+                    val bookName = entry.bookName
+                    if (bookRef != null && seenBookRefs.add(bookRef)) {
+                        val book = BibleTreeBook(name = bookName, ref = bookRef)
+                        if (currentSectionName != null) {
+                            currentSectionBooks.add(book)
+                        } else {
+                            directBooks.add(book)
+                        }
+                    }
+                }
+            }
+
+            if (currentSectionName != null && currentSectionBooks.isNotEmpty()) {
+                sections.add(
+                    BibleTreeSection(
+                        id = "${part.partRef}_${currentSectionName}",
+                        name = currentSectionName,
+                        books = currentSectionBooks.toList()
+                    )
+                )
+            }
+
+            treeParts.add(
+                BibleTreePart(
+                    id = part.partRef,
+                    name = part.name,
+                    sections = sections,
+                    directBooks = directBooks
+                )
+            )
+        }
+
+        cachedParts = treeParts
+        return treeParts
+    }
+}
+
+fun parseFilterParam(
+    filterParam: String,
+    tree: List<BibleTreePart>
+): Triple<Set<String>, Set<String>, Set<String>> {
+    val parts = mutableSetOf<String>()
+    val sections = mutableSetOf<String>()
+    val books = mutableSetOf<String>()
+
+    val validPartIds = tree.map { it.id }.toSet()
+    val validSectionIds = tree.flatMap { part -> part.sections.map { it.id } }.toSet()
+
+    val tokens = filterParam.split(",")
+    for (rawToken in tokens) {
+        val token = rawToken.trim()
+        if (token.isEmpty()) continue
+
+        when {
+            validPartIds.contains(token) -> parts.add(token)
+            validSectionIds.contains(token) -> sections.add(token)
+            else -> books.add(token)
+        }
+    }
+
+    return Triple(parts, sections, books)
+}
+
+fun computeFilterResult(
+    tree: List<BibleTreePart>,
+    selectedParts: Set<String>,
+    selectedSections: Set<String>,
+    selectedBooks: Set<String>
+): Pair<String, List<String>?> {
+    val totalPartsCount = tree.size
+    val allPartsSelected = selectedParts.size == totalPartsCount
+
+    if ((selectedParts.isEmpty() && selectedSections.isEmpty() && selectedBooks.isEmpty()) || allPartsSelected) {
+        return Pair("Dans toute la Bible", null)
+    }
+
+    val selectedItems = mutableListOf<SelectedItem>()
+    val selectedBookRefs = mutableSetOf<String>()
+
+    for (part in tree) {
+        if (selectedParts.contains(part.id)) {
+            selectedItems.add(SelectedItem.PartItem(part))
+            for (section in part.sections) {
+                for (book in section.books) {
+                    selectedBookRefs.add(book.ref)
+                }
+            }
+            for (book in part.directBooks) {
+                selectedBookRefs.add(book.ref)
+            }
+        } else {
+            for (section in part.sections) {
+                if (selectedSections.contains(section.id)) {
+                    selectedItems.add(SelectedItem.SectionItem(section))
+                    for (book in section.books) {
+                        selectedBookRefs.add(book.ref)
+                    }
+                } else {
+                    for (book in section.books) {
+                        if (selectedBooks.contains(book.ref)) {
+                            selectedItems.add(SelectedItem.BookItem(book))
+                            selectedBookRefs.add(book.ref)
+                        }
+                    }
+                }
+            }
+            for (book in part.directBooks) {
+                if (selectedBooks.contains(book.ref)) {
+                    selectedItems.add(SelectedItem.BookItem(book))
+                    selectedBookRefs.add(book.ref)
+                }
+            }
+        }
+    }
+
+    if (selectedItems.isEmpty()) {
+        return Pair("Dans toute la Bible", null)
+    }
+
+    val firstLabel = getLabelForSelectedItem(selectedItems.first())
+    val label = if (selectedItems.size > 1) {
+        "$firstLabel et plus."
+    } else {
+        firstLabel
+    }
+
+    return Pair(label, selectedBookRefs.toList())
+}
+
+private fun getLabelForSelectedItem(item: SelectedItem): String {
+    return when (item) {
+        is SelectedItem.PartItem -> getPartLabel(item.part.name)
+        is SelectedItem.SectionItem -> getSectionLabel(item.section.name)
+        is SelectedItem.BookItem -> getBookLabel(item.book.name)
+    }
+}
+
+private fun getPartLabel(partName: String): String {
+    return when (partName) {
+        "Ancien Testament" -> "Dans tout l'Ancien Testament"
+        "Nouveau Testament" -> "Dans tout le Nouveau Testament"
+        "Psaumes" -> "Dans tous les Psaumes"
+        else -> "Dans tout $partName"
+    }
+}
+
+private fun getSectionLabel(sectionName: String): String {
+    return when (sectionName) {
+        "Pentateuque" -> "Dans le Pentateuque"
+        "Livres Historiques" -> "Dans les Livres Historiques"
+        "Livres Poètiques et Sapientiaux" -> "Dans les Livres Poètiques et Sapientiaux"
+        "Livres Prophètiques" -> "Dans les Livres Prophètiques"
+        "Évangiles" -> "Dans les Évangiles"
+        "Actes" -> "Dans les Actes"
+        "Lettres de saint Paul" -> "Dans les Lettres de saint Paul"
+        "Lettres Catholiques" -> "Dans les Lettres Catholiques"
+        "Apocalypse" -> "Dans l'Apocalypse"
+        else -> {
+            if (sectionName.startsWith("Livres") || sectionName.startsWith("Lettres")) {
+                "Dans les $sectionName"
+            } else {
+                "Dans $sectionName"
+            }
+        }
+    }
+}
+
+private fun getBookLabel(bookName: String): String {
+    return when {
+        bookName.startsWith("Livre") || bookName.startsWith("Premier") || bookName.startsWith("Deuxième livre") -> "Dans le $bookName"
+        bookName.startsWith("Première") || bookName.startsWith("Deuxième lettre") || bookName.startsWith("Troisième lettre") || bookName.startsWith("Lettre") -> "Dans la $bookName"
+        bookName.startsWith("Évangile") -> "Dans l'$bookName"
+        bookName.startsWith("Actes") -> "Dans les $bookName"
+        bookName.startsWith("Cantique") -> "Dans le $bookName"
+        bookName.startsWith("Apocalypse") -> "Dans l'$bookName"
+        else -> "Dans $bookName"
     }
 }
 
@@ -585,4 +1365,22 @@ private fun BibleSearchScreenPreview() {
         onSortChanged = {},
         onItemClick = {}
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BibleBookFilterSheetPreview() {
+    val tree = remember { BibleTreeRepository.getTree() }
+    Surface(color = getLectureBackgroundColor()) {
+        BibleBookFilterSheet(
+            tree = tree,
+            selectedParts = emptySet(),
+            selectedSections = emptySet(),
+            selectedBooks = emptySet(),
+            onSelectedPartsChange = {},
+            onSelectedSectionsChange = {},
+            onSelectedBooksChange = {},
+            onDismiss = {}
+        )
+    }
 }

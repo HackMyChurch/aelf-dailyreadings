@@ -186,6 +186,10 @@ public class BibleController {
     }
 
     public Cursor search(String search, Sort sort) {
+        return search(search, sort, null);
+    }
+
+    public Cursor search(String search, Sort sort, List<String> books) {
         waitReady();
 
         // Filter joining characters
@@ -203,23 +207,38 @@ public class BibleController {
         }
 
         // Try fast path (all terms)
-        Cursor cursor = searchFast(search, tokens, sort);
+        Cursor cursor = searchFast(search, tokens, sort, books);
         if (cursor.getCount() > 0 || tokens.size() <= 1) {
             return cursor;
         }
 
         // Fallback on slow path (Variants with each token omitted once)
-        return searchSlow(search, tokens, sort);
+        return searchSlow(search, tokens, sort, books);
     }
 
-    private Cursor searchFast(String search, List<String> tokens, Sort sort) {
+    private String buildBookFilterClause(List<String> books) {
+        if (books == null || books.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(" AND book IN (");
+        for (int i = 0; i < books.size(); i++) {
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append("'").append(books.get(i).replace("'", "''")).append("'");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private Cursor searchFast(String search, List<String> tokens, Sort sort, List<String> books) {
         // Build the query
         StringBuilder queryBuilder = new StringBuilder();
 
         // Base query: all terms
         queryBuilder.append(" SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
         queryBuilder.append(" FROM search");
-        queryBuilder.append(" WHERE text MATCH '\"");
+        queryBuilder.append(" WHERE (text MATCH '\"");
         queryBuilder.append(search);
         queryBuilder.append("\"");
         if (!tokens.isEmpty()) {
@@ -231,7 +250,8 @@ public class BibleController {
             queryBuilder.append(" ) OR ");
             queryBuilder.append(TextUtils.join(" ", tokens));
         }
-        queryBuilder.append("'");
+        queryBuilder.append("')");
+        queryBuilder.append(buildBookFilterClause(books));
         queryBuilder.append(orderByLimit(sort));
         queryBuilder.append(";");
 
@@ -240,7 +260,7 @@ public class BibleController {
         return db.rawQuery(queryBuilder.toString(), null);
     }
 
-    private Cursor searchSlow(String search, List<String> tokens, Sort sort) {
+    private Cursor searchSlow(String search, List<String> tokens, Sort sort, List<String> books) {
         // Build the query
         StringBuilder queryBuilder = new StringBuilder();
 
@@ -250,7 +270,7 @@ public class BibleController {
         // Base query: all terms
         queryBuilder.append(" SELECT book, chapter, title, rank, '' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
         queryBuilder.append(" FROM search");
-        queryBuilder.append(" WHERE text MATCH '\"");
+        queryBuilder.append(" WHERE (text MATCH '\"");
         queryBuilder.append(search);
         queryBuilder.append("\" OR ");
         queryBuilder.append(" NEAR(\"");
@@ -259,7 +279,8 @@ public class BibleController {
         queryBuilder.append(tokens.size()*2);
         queryBuilder.append(" ) OR ");
         queryBuilder.append(TextUtils.join(" ", tokens));
-        queryBuilder.append("'");
+        queryBuilder.append("')");
+        queryBuilder.append(buildBookFilterClause(books));
 
         // Query variants: skip each of the tokens once
         double rankScaling = ((double)tokens.size() - 1) / (double)tokens.size();
@@ -268,7 +289,7 @@ public class BibleController {
             queryBuilder.append(" UNION");
             queryBuilder.append(" SELECT book, chapter, title, rank * "+rankScaling+", '"+tokens.get(i).replace("*", "")+"' AS skipped, snippet(search, -1, '<b>', '</b>', '...', 32) AS snippet");
             queryBuilder.append(" FROM search");
-            queryBuilder.append(" WHERE text MATCH '");
+            queryBuilder.append(" WHERE (text MATCH '");
             queryBuilder.append(" NEAR(");
             for (int j = 0; j < tokens.size(); j++) {
                 if (i == j) {
@@ -288,7 +309,8 @@ public class BibleController {
                 queryBuilder.append(" ");
                 queryBuilder.append(tokens.get(j));
             }
-            queryBuilder.append("'");
+            queryBuilder.append("')");
+            queryBuilder.append(buildBookFilterClause(books));
         }
 
         // Query trailer
