@@ -39,17 +39,6 @@ public class BibleBook {
     }
 
     //
-    // Accessors
-    //
-
-    public String getName() {
-        if (this.mName == null) {
-            this.mName = mBibleController.getBookTitle(this.mRef);
-        }
-        return this.mName;
-    }
-
-    //
     // API
     //
 

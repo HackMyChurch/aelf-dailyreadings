@@ -44,6 +44,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
@@ -60,6 +61,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -222,6 +224,9 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                 var searchResults by remember { mutableStateOf<List<BibleSearchResult>>(emptyList()) }
 
                 LaunchedEffect(query, sort, bookFilter) {
+                    if (query.isNotBlank()) {
+                        delay(300)
+                    }
                     val results = withContext(Dispatchers.IO) {
                         performSearch(query, sort, bookFilter)
                     }
@@ -229,6 +234,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                 }
 
                 BibleSearchScreen(
+                    query = query,
                     sort = sort,
                     searchResults = searchResults,
                     initialSelectedParts = selectedParts,
@@ -259,11 +265,15 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
         sort: BibleController.Sort,
         bookFilter: List<String>?
     ): List<BibleSearchResult> {
-        if (rawQuery.isEmpty()) {
+        if (rawQuery.length < 3) {
             return emptyList()
         }
-        var query = rawQuery
-        if (query.length >= 3 && !query.endsWith("*")) {
+        val cleanQuery = rawQuery.replace("[^\\p{L}\\p{N}\\s]".toRegex(), " ").trim()
+        if (cleanQuery.length < 3) {
+            return emptyList()
+        }
+        var query = cleanQuery
+        if (!query.endsWith("*")) {
             query += "*"
         }
 
@@ -436,6 +446,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BibleSearchScreen(
+    query: String = "",
     sort: BibleController.Sort,
     searchResults: List<BibleSearchResult>,
     onSortChanged: (BibleController.Sort) -> Unit,
@@ -454,6 +465,8 @@ fun BibleSearchScreen(
     var selectedSections by remember(initialSelectedSections) { mutableStateOf(initialSelectedSections) }
     var selectedBooks by remember(initialSelectedBooks) { mutableStateOf(initialSelectedBooks) }
     var internalIsFilterSheetVisible by remember { mutableStateOf(false) }
+
+    val referenceTarget = remember(query) { parseBibleReference(query) }
 
     val showFilterSheet = isFilterSheetVisible ?: internalIsFilterSheetVisible
     val handleOpenFilter = onOpenFilter ?: { internalIsFilterSheetVisible = true }
@@ -486,6 +499,14 @@ fun BibleSearchScreen(
                         onSortChanged = onSortChanged
                     )
                     HorizontalDivider(color = dividerColor, thickness = 1.dp)
+
+                    referenceTarget?.let { target ->
+                        ReferenceJumpBadge(
+                            target = target,
+                            onClick = { onItemClick(target.link) }
+                        )
+                    }
+
                     SearchResultsList(
                         results = searchResults,
                         onItemClick = onItemClick
@@ -1384,3 +1405,109 @@ private fun BibleBookFilterSheetPreview() {
         )
     }
 }
+
+data class BibleReferenceTarget(
+    val bookRef: String,
+    val chapterRef: String,
+    val referenceParam: String?,
+    val displayRef: String,
+    val link: String
+)
+
+private val refRegex = Regex(
+    """^(?:([1-3])\s*)?([a-zA-ZàâéèêëîïôùûüçÀÂÉÈÊËÎÏÔÙÛÜÇ]+)\s*(\d+[a-bA-B]*)?(?:[\s,:]+(.*))?${'$'}"""
+)
+
+fun parseBibleReference(query: String): BibleReferenceTarget? {
+    if (query.length < 3) {
+        return null
+    }
+    val trimmed = query.trim()
+    if (trimmed.isEmpty()) {
+        return null
+    }
+
+    val match = refRegex.matchEntire(trimmed) ?: return null
+
+    val numberPrefix = match.groupValues[1]
+    val letters = match.groupValues[2]
+    val chapter = match.groupValues[3]
+    val rest = match.groupValues[4].trim()
+
+    val rawBook = if (numberPrefix.isNotEmpty()) "$numberPrefix $letters" else letters
+    val canonicalBookRef = BibleBookList.getInstance().findBookRef(rawBook) ?: return null
+
+    val chapterRef = if (chapter.isNotEmpty()) chapter else "1"
+
+    val referenceParam = if (rest.isNotEmpty()) {
+        val cleanRest = rest.trimStart(',', ':', ' ')
+        if (cleanRest.isNotEmpty()) {
+            if (cleanRest.startsWith("$chapterRef,") || cleanRest.startsWith("$chapterRef:")) {
+                cleanRest.replace(":", ",")
+            } else {
+                "$chapterRef,${cleanRest.replace(":", ",")}"
+            }
+        } else {
+            null
+        }
+    } else {
+        null
+    }
+
+    val link = if (referenceParam != null) {
+        "https://www.aelf.org/bible/$canonicalBookRef/$chapterRef?reference=${URLEncoder.encode(referenceParam, "UTF-8")}"
+    } else {
+        "https://www.aelf.org/bible/$canonicalBookRef/$chapterRef"
+    }
+
+    return BibleReferenceTarget(
+        bookRef = canonicalBookRef,
+        chapterRef = chapterRef,
+        referenceParam = referenceParam,
+        displayRef = trimmed,
+        link = link
+    )
+}
+
+@Composable
+private fun ReferenceJumpBadge(
+    target: BibleReferenceTarget,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val accentColor = getAccentColor()
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Surface(
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick
+                ),
+            shape = RoundedCornerShape(16.dp),
+            color = accentColor.copy(alpha = 0.12f),
+            border = BorderStroke(1.dp, accentColor)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Accéder à ${target.displayRef}",
+                    color = accentColor,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+

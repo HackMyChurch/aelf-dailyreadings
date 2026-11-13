@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.sqlite.database.sqlite.SQLiteDatabase;
+import org.sqlite.database.sqlite.SQLiteException;
 
 import java.io.Closeable;
 import java.io.File;
@@ -91,28 +92,6 @@ public class BibleController {
         return false;
     }
 
-    public String getBookTitle(String bookRef) {
-        waitReady();
-
-        Cursor cursor = db.query(
-                true,
-                "verses",
-                new String[]{"book_title"},
-                "book = '?'",
-                new String[]{bookRef},
-                null,
-                null,
-                null,
-                "1"
-        );
-
-        if (cursor.getCount() != 1) {
-            return null;
-        }
-
-        return cursor.getString(0);
-    }
-
     public List<BibleBookChapter> getBookChapters(String bookRef) {
         waitReady();
 
@@ -192,8 +171,11 @@ public class BibleController {
     public Cursor search(String search, Sort sort, List<String> books) {
         waitReady();
 
-        // Filter joining characters
-        search = search.replaceAll("[-']"," ");
+        // Filter joining & special punctuation characters (keep letters, digits, spaces, and wildcard *)
+        search = search.replaceAll("[^\\p{L}\\p{N}\\s*]", " ").replaceAll("\\s+", " ").trim();
+        if (search.isEmpty()) {
+            return null;
+        }
 
         // Build a list of tokens
         //Log.i(TAG, "search: "+search);
@@ -206,14 +188,26 @@ public class BibleController {
             tokens.add(token);
         }
 
-        // Try fast path (all terms)
-        Cursor cursor = searchFast(search, tokens, sort, books);
-        if (cursor.getCount() > 0 || tokens.size() <= 1) {
-            return cursor;
+        try {
+            // Try fast path (all terms)
+            Cursor cursor = searchFast(search, tokens, sort, books);
+            if (cursor != null) {
+                if (cursor.getCount() > 0 || tokens.size() <= 1) {
+                    return cursor;
+                }
+                cursor.close();
+            }
+        } catch (SQLiteException e) {
+            Log.e(TAG, "Fast FTS search failed for: " + search, e);
         }
 
-        // Fallback on slow path (Variants with each token omitted once)
-        return searchSlow(search, tokens, sort, books);
+        try {
+            // Fallback on slow path (Variants with each token omitted once)
+            return searchSlow(search, tokens, sort, books);
+        } catch (SQLiteException e) {
+            Log.e(TAG, "Slow FTS search failed for: " + search, e);
+            return null;
+        }
     }
 
     private String buildBookFilterClause(List<String> books) {
@@ -325,14 +319,10 @@ public class BibleController {
     }
 
     private String orderByLimit(Sort sort) {
-        switch (sort) {
-            case Bible:
-                return " ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER)";
-            case Relevance:
-                return " ORDER BY rank LIMIT 50";
-            default:
-                return " ";
-        }
+        return switch (sort) {
+            case Bible -> " ORDER BY CAST(book_id as INTEGER),CAST(chapter AS INTEGER)";
+            case Relevance -> " ORDER BY rank LIMIT 50";
+        };
     }
 
     class InitThread extends Thread {

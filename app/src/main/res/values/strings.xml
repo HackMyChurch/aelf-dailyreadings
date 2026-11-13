@@ -76,7 +76,7 @@
     <string name="mailto_dev">Envoyer un e-mail au développeur</string>
 
     <!-- Search engine -->
-    <string name="bible_search_hint">Rechercher un passage de la Bible</string>
+    <string name="bible_search_hint">Passage ou référence</string>
     <string name="bible_search_title">Rechercher</string>
 
     <!-- Shortcuts -->

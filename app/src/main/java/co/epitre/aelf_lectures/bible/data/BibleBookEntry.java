@@ -2,34 +2,53 @@ package co.epitre.aelf_lectures.bible.data;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
-
 public class BibleBookEntry {
-    private BibleBookEntryType mType;
-    private String mBookName;
-    private String mEntryName;
-    private String mBookRef;
-    private String mChapterRef;
+    private final BibleBookEntryType mType;
+    private final String mBookName;
+    private final String mEntryName;
+    private final String mBookRef;
+    private final String mChapterRef;
+    private final List<String> mAliases;
     private BibleBook mBook;
 
     // Section title entry constructor
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName) {
-        this(type, bookName, null);
+        this(type, bookName, bookName, null, null, null);
     }
 
-    // Book entry constructor
+    // Book entry constructor without aliases
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String bookRef) {
-        this(type, bookName, bookName, bookRef, null);
+        this(type, bookName, bookName, bookRef, null, null);
+    }
+
+    // Book entry constructor with explicit aliases array
+    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String bookRef, String[] aliases) {
+        this(type, bookName, bookName, bookRef, null, aliases);
     }
 
     // Chapter entry constructor
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String entryName, String bookRef, String chapterRef) {
+        this(type, bookName, entryName, bookRef, chapterRef, null);
+    }
+
+    // Master constructor
+    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String entryName, String bookRef, String chapterRef, String[] aliases) {
         this.mType = type;
         this.mBookName = bookName;
-        this.mEntryName = entryName;
+        this.mEntryName = entryName != null ? entryName : bookName;
         this.mBookRef = bookRef;
         this.mChapterRef = chapterRef;
+        this.mAliases = new ArrayList<>();
+        if (aliases != null) {
+            for (String alias : aliases) {
+                if (alias != null && !alias.trim().isEmpty()) {
+                    this.mAliases.add(alias.trim());
+                }
+            }
+        }
     }
 
     //
@@ -54,6 +73,10 @@ public class BibleBookEntry {
 
     public String getChapterRef() {
         return this.mChapterRef;
+    }
+
+    public List<String> getAliases() {
+        return this.mAliases;
     }
 
     //
