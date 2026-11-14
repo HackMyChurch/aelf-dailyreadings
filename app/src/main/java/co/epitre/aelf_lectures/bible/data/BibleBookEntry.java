@@ -8,6 +8,7 @@ import java.util.List;
 public class BibleBookEntry {
     private final BibleBookEntryType mType;
     private final String mBookName;
+    private final String mShortBookName;
     private final String mEntryName;
     private final String mBookRef;
     private final String mChapterRef;
@@ -16,36 +17,53 @@ public class BibleBookEntry {
 
     // Section title entry constructor
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName) {
-        this(type, bookName, bookName, null, null, null);
+        this(type, bookName, null, bookName, null, null, null);
     }
 
-    // Book entry constructor without aliases
+    // Book entry constructor without shortBookName or aliases
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String bookRef) {
-        this(type, bookName, bookName, bookRef, null, null);
+        this(type, bookName, null, bookName, bookRef, null, null);
+    }
+
+    // Book entry constructor with explicit shortBookName and bookRef
+    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String shortBookName, String bookRef) {
+        this(type, bookName, shortBookName, bookName, bookRef, null, null);
+    }
+
+    // Book entry constructor with explicit shortBookName, bookRef, and aliases
+    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String shortBookName, String bookRef, String[] aliases) {
+        this(type, bookName, shortBookName, bookName, bookRef, null, aliases);
     }
 
     // Book entry constructor with explicit aliases array
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String bookRef, String[] aliases) {
-        this(type, bookName, bookName, bookRef, null, aliases);
+        this(type, bookName, null, bookName, bookRef, null, aliases);
     }
 
     // Chapter entry constructor
     public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String entryName, String bookRef, String chapterRef) {
-        this(type, bookName, entryName, bookRef, chapterRef, null);
+        this(type, bookName, null, entryName, bookRef, chapterRef, null);
     }
 
     // Master constructor
-    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String entryName, String bookRef, String chapterRef, String[] aliases) {
+    public BibleBookEntry(@NonNull BibleBookEntryType type, @NonNull String bookName, String shortBookName, String entryName, String bookRef, String chapterRef, String[] aliases) {
         this.mType = type;
         this.mBookName = bookName;
+        this.mShortBookName = shortBookName;
         this.mEntryName = entryName != null ? entryName : bookName;
         this.mBookRef = bookRef;
         this.mChapterRef = chapterRef;
         this.mAliases = new ArrayList<>();
+        if (shortBookName != null && !shortBookName.trim().isEmpty()) {
+            this.mAliases.add(shortBookName.trim());
+        }
         if (aliases != null) {
             for (String alias : aliases) {
                 if (alias != null && !alias.trim().isEmpty()) {
-                    this.mAliases.add(alias.trim());
+                    String trimmed = alias.trim();
+                    if (!this.mAliases.contains(trimmed)) {
+                        this.mAliases.add(trimmed);
+                    }
                 }
             }
         }
@@ -61,6 +79,10 @@ public class BibleBookEntry {
 
     public String getBookName() {
         return this.mBookName;
+    }
+
+    public String getShortBookName() {
+        return this.mShortBookName != null ? this.mShortBookName : this.mBookName;
     }
 
     public String getEntryName() {
@@ -113,3 +135,4 @@ public class BibleBookEntry {
         return getBook().getChapterPosition(this.mChapterRef);
     }
 }
+

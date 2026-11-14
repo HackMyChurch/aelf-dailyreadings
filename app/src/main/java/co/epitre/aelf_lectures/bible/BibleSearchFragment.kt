@@ -1415,11 +1415,11 @@ data class BibleReferenceTarget(
 )
 
 private val refRegex = Regex(
-    """^(?:([1-3])\s*)?([a-zA-ZàâéèêëîïôùûüçÀÂÉÈÊËÎÏÔÙÛÜÇ]+)\s*(\d+[a-bA-B]*)?(?:[\s,:]+(.*))?${'$'}"""
+    """^(?:([1-3])\s*)?([a-zA-ZàâéèêëîïôùûüçÀÂÉÈÊËÎÏÔÙÛÜÇ]+)\s*(\d+[a-bA-B]*)?(?:([\s,:-]+)(.*))?${'$'}"""
 )
 
 fun parseBibleReference(query: String): BibleReferenceTarget? {
-    if (query.length < 3) {
+    if (query.length < 2) {
         return null
     }
     val trimmed = query.trim()
@@ -1432,10 +1432,13 @@ fun parseBibleReference(query: String): BibleReferenceTarget? {
     val numberPrefix = match.groupValues[1]
     val letters = match.groupValues[2]
     val chapter = match.groupValues[3]
-    val rest = match.groupValues[4].trim()
+    val sep = match.groupValues[4]
+    val rest = match.groupValues[5].trim()
 
     val rawBook = if (numberPrefix.isNotEmpty()) "$numberPrefix $letters" else letters
-    val canonicalBookRef = BibleBookList.getInstance().findBookRef(rawBook) ?: return null
+    val bookEntry = BibleBookList.getInstance().findBookEntry(rawBook) ?: return null
+    val canonicalBookRef = bookEntry.bookRef ?: return null
+    val shortBookName = bookEntry.shortBookName ?: rawBook
 
     val chapterRef = if (chapter.isNotEmpty()) chapter else "1"
 
@@ -1460,13 +1463,104 @@ fun parseBibleReference(query: String): BibleReferenceTarget? {
         "https://www.aelf.org/bible/$canonicalBookRef/$chapterRef"
     }
 
+    val displayRef = formatBibleReferenceDisplay(shortBookName, chapter, sep, rest)
+
     return BibleReferenceTarget(
         bookRef = canonicalBookRef,
         chapterRef = chapterRef,
         referenceParam = referenceParam,
-        displayRef = trimmed,
+        displayRef = displayRef,
         link = link
     )
+}
+
+fun formatBibleReferenceDisplay(shortBookName: String, chapter: String, sep: String, rest: String): String {
+    if (chapter.isEmpty()) {
+        return shortBookName
+    }
+
+    val trimmedRest = rest.trim()
+    if (trimmedRest.isEmpty()) {
+        return "$shortBookName chapitre $chapter"
+    }
+
+    val startChapterNum = chapter.toIntOrNull()
+
+    // Check multi-chapter range without verses: e.g. "Mt 26-27" or "Mt 26 - 27" or "Mt 26 à 27"
+    if (sep.contains("-") || sep.contains("à")) {
+        val endChapterNum = trimmedRest.toIntOrNull()
+        if (endChapterNum != null && startChapterNum != null && endChapterNum > startChapterNum) {
+            return "$shortBookName chapitres $chapter à $endChapterNum"
+        }
+    }
+
+    // Check multi-chapter range without verses when rest starts with "-" or "à": e.g. "-27", "- 27"
+    val multiChapterNoVersesRegex = Regex("""^\s*(?:-|à)\s*(\d+)\s*$""")
+    val multiChapterMatch = multiChapterNoVersesRegex.matchEntire(trimmedRest)
+    if (multiChapterMatch != null) {
+        val endChapter = multiChapterMatch.groupValues[1]
+        val endChapterNum = endChapter.toIntOrNull()
+        if (startChapterNum == null || endChapterNum == null || endChapterNum > startChapterNum) {
+            return "$shortBookName chapitres $chapter à $endChapter"
+        }
+    }
+
+    // Check multi-chapter with verses: e.g. "36 - 27, 5" or "36-27:5" or "36 à 27, 5"
+    val multiChapterWithVersesRegex = Regex("""^\s*(\d+[a-bA-B]*(?:\s*-\s*\d+[a-bA-B]*)?)\s*(?:-|\bà\b)\s*(\d+)\s*[:,]\s*(\d+.*)$""")
+    val multiChapterVerseMatch = multiChapterWithVersesRegex.matchEntire(trimmedRest)
+    if (multiChapterVerseMatch != null) {
+        val startVersePart = multiChapterVerseMatch.groupValues[1].trim()
+        val endChapter = multiChapterVerseMatch.groupValues[2].trim()
+        val endVersePart = multiChapterVerseMatch.groupValues[3].trim()
+        val endChapterNum = endChapter.toIntOrNull()
+
+        if (startChapterNum != null && endChapterNum != null && endChapterNum > startChapterNum) {
+            val formattedStartVerses = formatVerseExpression(startVersePart)
+            val formattedEndVerses = formatVerseExpression(endVersePart)
+
+            return "$shortBookName chapitre $chapter $formattedStartVerses à chapitre $endChapter $formattedEndVerses"
+        }
+    }
+
+    // Single chapter with verses: e.g. "36", "36-46", "36, 38", "1-3, 6, 8-10"
+    val formattedVerses = formatVerseExpression(trimmedRest)
+    return "$shortBookName chapitre $chapter $formattedVerses"
+}
+
+private fun formatVerseExpression(versesExpr: String): String {
+    val clean = versesExpr.trimStart(',', ':', ' ', '-').trimEnd(',', ':', ' ')
+    if (clean.isEmpty()) return ""
+
+    // Split into clauses by comma, dot, or semicolon or "et"
+    val clauses = clean.split(Regex("""[,.;]+|\bet\b"""))
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+
+    if (clauses.isEmpty()) return ""
+
+    val formattedClauses = clauses.map { clause ->
+        if (clause.contains("-") || clause.contains("à")) {
+            val parts = clause.split(Regex("""\s*-\s*|\s+à\s+"""))
+            if (parts.size >= 2) {
+                "${parts[0].trim()} à ${parts[1].trim()}"
+            } else {
+                clause
+            }
+        } else {
+            clause
+        }
+    }
+
+    val isSingleVerse = formattedClauses.size == 1 && !formattedClauses[0].contains("à")
+    val prefix = if (isSingleVerse) "verset" else "versets"
+
+    val joined = when (formattedClauses.size) {
+        1 -> formattedClauses[0]
+        2 -> "${formattedClauses[0]} et ${formattedClauses[1]}"
+        else -> "${formattedClauses.dropLast(1).joinToString(", ")} et ${formattedClauses.last()}"
+    }
+
+    return "$prefix $joined"
 }
 
 @Composable
