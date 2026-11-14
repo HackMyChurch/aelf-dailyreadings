@@ -1302,44 +1302,49 @@ private fun SearchResultItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val lectureBgColor = getLectureBackgroundColor()
     val accentColor = getAccentColor()
     val textColor = getLectureTextColor()
     val dividerColor = getDividerColor()
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(16.dp)
+    Surface(
+        onClick = onClick,
+        color = lectureBgColor,
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Text(
-                text = result.title,
-                color = accentColor,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = result.reference,
-                color = textColor,
-                fontSize = 12.sp,
-                textAlign = TextAlign.End
-            )
-        }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
+            ) {
+                Text(
+                    text = result.title,
+                    color = accentColor,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = result.reference,
+                    color = textColor,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.End
+                )
+            }
 
-        if (result.snippetHtml.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(7.dp))
-            HtmlText(
-                html = result.snippetHtml,
-                color = textColor,
-                fontSize = 14.sp
-            )
+            if (result.snippetHtml.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(7.dp))
+                HtmlText(
+                    html = result.snippetHtml,
+                    color = textColor,
+                    fontSize = 14.sp
+                )
+            }
         }
     }
     HorizontalDivider(color = dividerColor, thickness = 1.dp)
