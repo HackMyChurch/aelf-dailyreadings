@@ -207,6 +207,30 @@ public class BibleBookFragment extends BibleFragment {
         return view;
     }
 
+    public BibleBookEntry getBibleBookEntry() {
+        return mBibleBookEntry;
+    }
+
+    public String getBookRef() {
+        if (mBibleBookEntry != null) {
+            return mBibleBookEntry.getBookRef();
+        }
+        Bundle args = getArguments();
+        if (args != null) {
+            int biblePartId = args.getInt(BIBLE_PART_ID, -1);
+            int bibleBookId = args.getInt(BIBLE_BOOK_ID, -1);
+            if (biblePartId >= 0 && bibleBookId >= 0) {
+                try {
+                    BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
+                    BibleBookEntry entry = biblePart.getBibleBookEntries().get(bibleBookId);
+                    return entry.getBookRef();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+        return null;
+    }
+
     @Override
     public String getRoute() {
         if (mViewPager == null) {

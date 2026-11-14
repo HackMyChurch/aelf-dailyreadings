@@ -158,7 +158,15 @@ public class SectionBibleFragment extends SectionFragment {
 
     @Override
     public void onSearch(String query) {
-        Uri uri = Uri.parse("https://www.aelf.org/search?query="+query);
+        String url = "https://www.aelf.org/search?query=" + (query != null ? Uri.encode(query) : "");
+        BibleFragment current = getCurrentBibleFragment();
+        if (current instanceof BibleBookFragment bookFragment) {
+            String bookRef = bookFragment.getBookRef();
+            if (bookRef != null && !bookRef.trim().isEmpty()) {
+                url += "&filter=" + Uri.encode(bookRef.trim());
+            }
+        }
+        Uri uri = Uri.parse(url);
         onLink(uri);
     }
 

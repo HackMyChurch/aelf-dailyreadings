@@ -16,7 +16,9 @@ import androidx.fragment.app.FragmentManager
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.SearchView
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.EaseOutBounce
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -45,7 +47,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,8 +84,12 @@ import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.ripple.RippleAlpha
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalRippleConfiguration
+import androidx.compose.material3.RippleConfiguration
+import androidx.compose.runtime.CompositionLocalProvider
 import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.bible.data.BibleBookEntryType
@@ -93,6 +98,7 @@ import co.epitre.aelf_lectures.bible.data.BibleController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder
+import kotlin.time.Duration.Companion.milliseconds
 
 data class BibleSearchResult(
     val title: String,
@@ -114,6 +120,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
     private var selectedBooksState = mutableStateOf<Set<String>>(emptySet())
     private var bookFilterState = mutableStateOf<List<String>?>(null)
     private var isFilterSheetVisibleState = mutableStateOf(false)
+    private var hasUriFilterState = mutableStateOf(false)
 
     private val backStackChangeListener = FragmentManager.OnBackStackChangedListener {
         if (isAdded) {
@@ -204,7 +211,9 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                 if (sectionsList != null) selectedSectionsState.value = sectionsList.toSet()
                 if (booksList != null) selectedBooksState.value = booksList.toSet()
 
-                if (savedInstanceState != null) {
+                if (savedInstanceState == null) {
+                    hasUriFilterState.value = args.getBoolean(BIBLE_SEARCH_HAS_URI_FILTER, false)
+                } else {
                     isFilterSheetVisibleState.value = savedInstanceState.getBoolean(BIBLE_SEARCH_FILTER_SHEET_VISIBLE, false)
                 }
             }
@@ -221,6 +230,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                 val selectedBooks by selectedBooksState
                 val bookFilter by bookFilterState
                 val isFilterSheetVisible by isFilterSheetVisibleState
+                val hasUriFilter by hasUriFilterState
                 var searchResults by remember { mutableStateOf<List<BibleSearchResult>>(emptyList()) }
 
                 LaunchedEffect(query, sort, bookFilter) {
@@ -240,6 +250,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                     initialSelectedParts = selectedParts,
                     initialSelectedSections = selectedSections,
                     initialSelectedBooks = selectedBooks,
+                    shouldPulseFilter = hasUriFilter,
                     onSortChanged = { newSort ->
                         sortState.value = newSort
                     },
@@ -420,6 +431,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
         private const val BIBLE_SEARCH_SECTIONS = "bibleSearchSections"
         private const val BIBLE_SEARCH_BOOKS = "bibleSearchBooks"
         private const val BIBLE_SEARCH_FILTER_SHEET_VISIBLE = "bibleSearchFilterSheetVisible"
+        private const val BIBLE_SEARCH_HAS_URI_FILTER = "bibleSearchHasUriFilter"
         private const val BACK_STACK_FILTER_SHEET = "bible_book_filter_sheet"
 
         @JvmStatic
@@ -435,6 +447,7 @@ class BibleSearchFragment : BibleFragment(), SearchView.OnQueryTextListener {
                     putStringArrayList(BIBLE_SEARCH_PARTS, ArrayList(parts))
                     putStringArrayList(BIBLE_SEARCH_SECTIONS, ArrayList(sections))
                     putStringArrayList(BIBLE_SEARCH_BOOKS, ArrayList(books))
+                    putBoolean(BIBLE_SEARCH_HAS_URI_FILTER, true)
                 }
             }
             fragment.arguments = args
@@ -458,7 +471,8 @@ fun BibleSearchScreen(
     onSelectionChanged: ((selectedParts: Set<String>, selectedSections: Set<String>, selectedBooks: Set<String>, flatBookRefs: List<String>?) -> Unit)? = null,
     isFilterSheetVisible: Boolean? = null,
     onOpenFilter: (() -> Unit)? = null,
-    onDismissFilter: (() -> Unit)? = null
+    onDismissFilter: (() -> Unit)? = null,
+    shouldPulseFilter: Boolean = false
 ) {
     val tree = remember { BibleTreeRepository.getTree() }
     var selectedParts by remember(initialSelectedParts) { mutableStateOf(initialSelectedParts) }
@@ -482,6 +496,10 @@ fun BibleSearchScreen(
 
     val bgColor = getLectureBackgroundColor()
     val dividerColor = getDividerColor()
+    val rippleConfiguration = RippleConfiguration(
+        color = getAccentColor(),
+        rippleAlpha = RippleAlpha(.20f, .20f, .20f, .20f)
+    )
 
     Column(
         modifier = modifier
@@ -489,61 +507,64 @@ fun BibleSearchScreen(
             .padding(top = 0.dp)
             .clickable(enabled = false) {}
     ) {
-        Surface(color = bgColor, modifier = Modifier.fillMaxSize()) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    FilterAndSortHeader(
-                        filterLabel = filterLabel,
-                        sort = sort,
-                        onOpenFilter = handleOpenFilter,
-                        onSortChanged = onSortChanged
-                    )
-                    HorizontalDivider(color = dividerColor, thickness = 1.dp)
+        CompositionLocalProvider(LocalRippleConfiguration provides rippleConfiguration) {
+            Surface(color = bgColor, modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        FilterAndSortHeader(
+                            filterLabel = filterLabel,
+                            sort = sort,
+                            onOpenFilter = handleOpenFilter,
+                            onSortChanged = onSortChanged,
+                            shouldPulseFilter = shouldPulseFilter
+                        )
+                        HorizontalDivider(color = dividerColor, thickness = 1.dp)
 
-                    referenceTarget?.let { target ->
-                        ReferenceJumpBadge(
-                            target = target,
-                            onClick = { onItemClick(target.link) }
+                        referenceTarget?.let { target ->
+                            ReferenceJumpBadge(
+                                target = target,
+                                onClick = { onItemClick(target.link) }
+                            )
+                        }
+
+                        SearchResultsList(
+                            results = searchResults,
+                            onItemClick = onItemClick
                         )
                     }
 
-                    SearchResultsList(
-                        results = searchResults,
-                        onItemClick = onItemClick
-                    )
-                }
+                    if (showFilterSheet) {
+                        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                        val scope = rememberCoroutineScope()
 
-                if (showFilterSheet) {
-                    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-                    val scope = rememberCoroutineScope()
-
-                    val animateAndDismiss = {
-                        scope.launch {
-                            sheetState.hide()
-                        }.invokeOnCompletion {
-                            if (!sheetState.isVisible) {
-                                handleDismissFilter()
+                        val animateAndDismiss = {
+                            scope.launch {
+                                sheetState.hide()
+                            }.invokeOnCompletion {
+                                if (!sheetState.isVisible) {
+                                    handleDismissFilter()
+                                }
                             }
                         }
-                    }
 
-                    ModalBottomSheet(
-                        onDismissRequest = { handleDismissFilter() },
-                        sheetState = sheetState,
-                        containerColor = bgColor,
-                        scrimColor = Color.Black.copy(alpha = 0.5f),
-                        dragHandle = { }
-                    ) {
-                        BibleBookFilterSheet(
-                            tree = tree,
-                            selectedParts = selectedParts,
-                            selectedSections = selectedSections,
-                            selectedBooks = selectedBooks,
-                            onSelectedPartsChange = { selectedParts = it },
-                            onSelectedSectionsChange = { selectedSections = it },
-                            onSelectedBooksChange = { selectedBooks = it },
-                            onDismiss = { animateAndDismiss() }
-                        )
+                        ModalBottomSheet(
+                            onDismissRequest = { handleDismissFilter() },
+                            sheetState = sheetState,
+                            containerColor = bgColor,
+                            scrimColor = Color.Black.copy(alpha = 0.5f),
+                            dragHandle = { }
+                        ) {
+                            BibleBookFilterSheet(
+                                tree = tree,
+                                selectedParts = selectedParts,
+                                selectedSections = selectedSections,
+                                selectedBooks = selectedBooks,
+                                onSelectedPartsChange = { selectedParts = it },
+                                onSelectedSectionsChange = { selectedSections = it },
+                                onSelectedBooksChange = { selectedBooks = it },
+                                onDismiss = { animateAndDismiss() }
+                            )
+                        }
                     }
                 }
             }
@@ -557,10 +578,27 @@ private fun FilterAndSortHeader(
     sort: BibleController.Sort,
     onOpenFilter: () -> Unit,
     onSortChanged: (BibleController.Sort) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    shouldPulseFilter: Boolean = false
 ) {
     val accentColor = getAccentColor()
     val lectureBgColor = getLectureBackgroundColor()
+
+    val pulseAlpha = remember { Animatable(0f) }
+
+    LaunchedEffect(shouldPulseFilter) {
+        if (shouldPulseFilter) {
+            delay(150.milliseconds)
+            pulseAlpha.animateTo(0.20f, animationSpec = tween(300))
+            pulseAlpha.animateTo(0f, animationSpec = tween(1000, easing = EaseOutBounce))
+        }
+    }
+
+    val buttonBgColor = if (pulseAlpha.value > 0f) {
+        accentColor.copy(alpha = pulseAlpha.value)
+    } else {
+        lectureBgColor
+    }
 
     Column(
         modifier = modifier
@@ -569,16 +607,12 @@ private fun FilterAndSortHeader(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
+            onClick = onOpenFilter,
             modifier = Modifier
                 .width(320.dp)
-                .height(32.dp)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onOpenFilter
-                ),
+                .height(32.dp),
             shape = RectangleShape,
-            color = lectureBgColor,
+            color = buttonBgColor,
             border = BorderStroke(1.dp, accentColor)
         ) {
             Box(
