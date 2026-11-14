@@ -1604,6 +1604,7 @@ private fun ReferenceJumpBadge(
     modifier: Modifier = Modifier
 ) {
     val accentColor = getAccentColor()
+    val buttonBgColor = getLectureBackgroundColor()
 
     Box(
         modifier = modifier
@@ -1612,14 +1613,9 @@ private fun ReferenceJumpBadge(
         contentAlignment = Alignment.Center
     ) {
         Surface(
-            modifier = Modifier
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = onClick
-                ),
+            onClick = onClick,
             shape = RoundedCornerShape(16.dp),
-            color = accentColor.copy(alpha = 0.12f),
+            color = buttonBgColor,
             border = BorderStroke(1.dp, accentColor)
         ) {
             Row(
