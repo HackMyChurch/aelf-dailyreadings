@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.10.0">
+    <!ENTITY app_version "2.10.1">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -41,10 +41,9 @@
     
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
-    <string name="dialog_about_content">
-        L\'application \"&app_name;\" version &app_version; est développée bénévolement par
-        "Epitre &amp; co" avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale pour la
-        Liturgie Francophone.
+    <string name="dialog_about_content">L\'application \"&app_name;\" version &app_version; est
+        développée bénévolement avec le soutien d\'AELF (www.aelf.org), l\'Association Épiscopale
+        pour la Liturgie Francophone.
 
         \n\nTextes liturgiques, logo et nom reproduits avec l\'aimable autorisation d\'AELF. Tous droits
         réservés. AELF n\'est pas responsable de cette application.
@@ -53,14 +52,14 @@
     </string>
 
     <string name="dialog_whats_new_title">Nouveautés</string>
-    <string name="dialog_whats_new_content">
-        Merci d\'avoir mis à jour \"&app_name;\" !
+    <string name="dialog_whats_new_content">Merci d\'avoir mis à jour \"&app_name;\" !
         \n
-        \nCette mise à jour met l\'accent sur l\'accessibilité, particulièrement avec les lecteurs d\'écran tels que TalkBack. Si vous utilisez cette application avec un lecteur d\'écran ou rencontrez des soucis d\'accessibilité, vous pouvez me faire part de votre expélrience par mail: &app_support;.
+        \n🔎 Le moteur de recherche de la Bible a été complètement repensé. Il est maintenant possible
+        de restreindre la recherche à certains livres de la Bible ou bien de chercher une référence
+        spécifique.
         \n
-        \nAutres changements:
-        \n• La barre de notifications est toujours cachée
-        \n• L\'heure des Laudes et de l\'office des lectures ont été ajustées
+        \n💬 Coté accessibilité, les lecteurs d\'écran tels que "TalkBack" seront plus fluide dans la
+        Bible.
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
         devenir meilleure 😇
