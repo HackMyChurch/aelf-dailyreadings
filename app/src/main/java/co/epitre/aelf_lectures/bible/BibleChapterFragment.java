@@ -1,7 +1,10 @@
 package co.epitre.aelf_lectures.bible;
 
 import android.os.Bundle;
+import android.util.Log;
 
+import co.epitre.aelf_lectures.bible.data.BibleBook;
+import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
 import co.epitre.aelf_lectures.components.ReadingFragment;
 
 
@@ -11,7 +14,6 @@ public class BibleChapterFragment extends ReadingFragment {
     /**
      * The fragment arguments
      */
-    public static final String ARG_TEXT_HTML = "chapter_text";
     public static final String ARG_HIGHLIGHT = "highlight";
     public static final String ARG_REFERENCE = "reference";
     public static final String ARG_BOOK_REF = "book_ref";
@@ -30,11 +32,31 @@ public class BibleChapterFragment extends ReadingFragment {
         String book_ref = "";
         String chapter = "";
         if (args != null) {
-            body = args.getString(ARG_TEXT_HTML);
             highlight = args.getString(ARG_HIGHLIGHT, "");
             reference = args.getString(ARG_REFERENCE, "");
             book_ref = args.getString(ARG_BOOK_REF, "");
             chapter = args.getString(ARG_CHAPTER, "");
+        }
+        if (highlight == null) highlight = "";
+        if (reference == null) reference = "";
+        if (book_ref == null) book_ref = "";
+        if (chapter == null) chapter = "";
+
+        if (!book_ref.isEmpty() && !chapter.isEmpty()) {
+            BibleBook book = BibleBook.getBook(book_ref);
+            try {
+                int pos = book.getChapterPosition(chapter);
+                BibleBookChapter chapterObj = book.getChapter(pos);
+                if (chapterObj != null) {
+                    body = chapterObj.getContent();
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to load chapter content for " + book_ref + " " + chapter, e);
+            }
+        }
+
+        if (body == null) {
+            body = "";
         }
 
         htmlString.append("<!DOCTYPE html><html><head>");

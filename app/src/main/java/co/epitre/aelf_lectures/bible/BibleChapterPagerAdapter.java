@@ -5,14 +5,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import java.util.List;
 
 import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
 import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
 
-public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
+public class BibleChapterPagerAdapter extends FragmentStatePagerAdapter {
     private BibleBookEntry mBibleBookEntry;
     private int mHighlightChapterId;
     private String mHighlightQuery;
@@ -33,7 +33,6 @@ public class BibleChapterPagerAdapter extends FragmentPagerAdapter {
         Fragment fragment = new BibleChapterFragment();
 
         Bundle args = new Bundle();
-        args.putString(BibleChapterFragment.ARG_TEXT_HTML, chapter.getContent());
         if (position == mHighlightChapterId) {
             args.putString(BibleChapterFragment.ARG_HIGHLIGHT, mHighlightQuery);
         }
