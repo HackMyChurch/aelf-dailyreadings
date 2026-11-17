@@ -16,6 +16,8 @@ p {
 h3 {
 	font-size: 20px;
 	font-weight: bolder;
+	user-select: none;
+	-webkit-user-select: none;
 }
 
 /* Page title reference */
@@ -95,6 +97,8 @@ div.app-office-navigation {
     margin-top: 4px;
     margin-left: -30px;
     font-size: 10px;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .line .verse {
