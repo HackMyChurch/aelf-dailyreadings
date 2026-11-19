@@ -9,8 +9,8 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 
 import java.util.List;
 
-import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
-import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookChapter;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntry;
 
 public class BibleChapterPagerAdapter extends FragmentStatePagerAdapter {
     private BibleBookEntry mBibleBookEntry;

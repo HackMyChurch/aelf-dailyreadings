@@ -172,3 +172,15 @@ mark {
     text-decoration: underline;
     text-decoration-style: dotted;
 }
+
+/* Bookmark / Highlight styling */
+mark.aelf-bookmark {
+    background-color: #FFE066;
+    color: inherit;
+    font-weight: normal;
+    text-decoration: none;
+    border-radius: 2px;
+    padding: 1px 0;
+    cursor: pointer;
+}
+

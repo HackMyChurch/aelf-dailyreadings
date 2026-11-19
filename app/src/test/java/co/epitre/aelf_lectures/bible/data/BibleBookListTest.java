@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntry;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookList;
+import co.epitre.aelf_lectures.bible.data.bible.BiblePart;
+
 public class BibleBookListTest {
 
     @Test

@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.data;
+package co.epitre.aelf_lectures.bible.data.bible;
 
 import static org.sqlite.database.sqlite.SQLiteDatabase.OPEN_READONLY;
 

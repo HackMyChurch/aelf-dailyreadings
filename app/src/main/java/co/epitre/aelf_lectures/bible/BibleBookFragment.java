@@ -24,10 +24,10 @@ import java.util.Objects;
 
 import co.epitre.aelf_lectures.LecturesActivity;
 import co.epitre.aelf_lectures.R;
-import co.epitre.aelf_lectures.bible.data.BibleBookChapter;
-import co.epitre.aelf_lectures.bible.data.BibleBookEntry;
-import co.epitre.aelf_lectures.bible.data.BibleBookList;
-import co.epitre.aelf_lectures.bible.data.BiblePart;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookChapter;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntry;
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookList;
+import co.epitre.aelf_lectures.bible.data.bible.BiblePart;
 
 public class BibleBookFragment extends BibleFragment {
     private final static String TAG = "BibleBookFragment";

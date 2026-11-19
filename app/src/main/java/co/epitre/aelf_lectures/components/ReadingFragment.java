@@ -57,6 +57,15 @@ public abstract class ReadingFragment extends Fragment {
         );
     }
 
+    /**
+     * Extension hooks for subclasses to configure/cleanup WebView (e.g. JS interfaces)
+     */
+    protected void onWebViewCreated(@NonNull WebView webView) {
+    }
+
+    protected void onWebViewDestroyed(@NonNull WebView webView) {
+    }
+
     /*
      * Lifecycle
      */
@@ -75,6 +84,9 @@ public abstract class ReadingFragment extends Fragment {
         // Install Zoom support
         mWebView.setOnTouchListener(new ReadingPinchToZoomListener(getContext(), mWebView));
 
+        // Subclass hook
+        onWebViewCreated(mWebView);
+
         // Load content
         loadText();
 
@@ -90,6 +102,11 @@ public abstract class ReadingFragment extends Fragment {
         View rootView = getView();
         if (rootView == null) {
             return;
+        }
+
+        // Subclass hook
+        if (mWebView != null) {
+            onWebViewDestroyed(mWebView);
         }
 
         // Release WebView references, allow them to be garbage collected

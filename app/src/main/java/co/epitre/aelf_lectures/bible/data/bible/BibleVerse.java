@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.data;
+package co.epitre.aelf_lectures.bible.data.bible;
 
 import androidx.annotation.NonNull;
 

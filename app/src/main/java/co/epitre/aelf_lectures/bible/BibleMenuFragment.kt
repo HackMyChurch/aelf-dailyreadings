@@ -9,7 +9,7 @@ import androidx.appcompat.app.ActionBar
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import co.epitre.aelf_lectures.LecturesActivity
-import co.epitre.aelf_lectures.bible.data.BibleBookList
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookList
 import co.epitre.aelf_lectures.bible.ui.BibleMenuScreen
 
 class BibleMenuFragment : BibleFragment() {

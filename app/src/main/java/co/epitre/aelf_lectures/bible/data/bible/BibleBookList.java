@@ -1,4 +1,4 @@
-package co.epitre.aelf_lectures.bible.data;
+package co.epitre.aelf_lectures.bible.data.bible;
 
 import androidx.annotation.NonNull;
 
@@ -178,6 +178,32 @@ public class BibleBookList {
         }
         String key = normalizeKey(candidate);
         return mAliasMap.get(key);
+    }
+
+    /**
+     * Returns the 0-based ordinal index of a book in canonical Bible order.
+     * Returns -1 if candidate cannot be resolved.
+     */
+    public int getBookIndex(String candidate) {
+        if (candidate == null || candidate.trim().isEmpty()) {
+            return -1;
+        }
+        String canonical = findBookRef(candidate);
+        if (canonical == null) {
+            canonical = candidate;
+        }
+        int index = 0;
+        for (BiblePart part : mParts) {
+            for (BibleBookEntry entry : part.getBibleBookEntries()) {
+                if (entry.getType() == BibleBookEntryType.BOOK && entry.getBookRef() != null) {
+                    if (entry.getBookRef().equalsIgnoreCase(canonical)) {
+                        return index;
+                    }
+                    index++;
+                }
+            }
+        }
+        return -1;
     }
 
     /**

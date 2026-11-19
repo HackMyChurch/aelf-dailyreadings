@@ -27,7 +27,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import co.epitre.aelf_lectures.R;
 import co.epitre.aelf_lectures.base.SectionFragment;
-import co.epitre.aelf_lectures.bible.data.BibleController;
+import co.epitre.aelf_lectures.bible.data.bible.BibleController;
 import co.epitre.aelf_lectures.settings.SettingsActivity;
 
 

@@ -92,9 +92,9 @@ import androidx.compose.material3.RippleConfiguration
 import androidx.compose.runtime.CompositionLocalProvider
 import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
-import co.epitre.aelf_lectures.bible.data.BibleBookEntryType
-import co.epitre.aelf_lectures.bible.data.BibleBookList
-import co.epitre.aelf_lectures.bible.data.BibleController
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntryType
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookList
+import co.epitre.aelf_lectures.bible.data.bible.BibleController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URLEncoder

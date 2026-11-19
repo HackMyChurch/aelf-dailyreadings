@@ -49,9 +49,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.bible.BibleBookListAdapter
-import co.epitre.aelf_lectures.bible.data.BibleBookEntryType
-import co.epitre.aelf_lectures.bible.data.BibleBookList
-import co.epitre.aelf_lectures.bible.data.BiblePart
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntryType
+import co.epitre.aelf_lectures.bible.data.bible.BibleBookList
+import co.epitre.aelf_lectures.bible.data.bible.BiblePart
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 

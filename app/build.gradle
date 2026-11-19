@@ -87,6 +87,7 @@ dependencies {
     // ** AUTOMATED TEST **
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.json:json:20240303'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
