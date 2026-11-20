@@ -38,7 +38,12 @@
     <string name="action_sync_do">Synchroniser</string>
     <string name="action_refresh">Rafraîchir</string>
     <string name="action_about">À propos</string>
-    
+
+    <!-- Context menu buttons -->
+    <string name="action_bookmark_add">Ajouter un signet</string>
+    <string name="action_bookmark_save">Enregistrer</string>
+    <string name="action_bookmark_delete">Supprimer</string>
+
     <!-- Dialogs -->
     <string name="dialog_about_title">À propos</string>
     <string name="dialog_about_content">L\'application \"&app_name;\" version &app_version; est

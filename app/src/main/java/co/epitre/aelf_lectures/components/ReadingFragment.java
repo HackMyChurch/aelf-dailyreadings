@@ -26,7 +26,7 @@ public abstract class ReadingFragment extends Fragment {
      * Views
      */
     private View mWebviewPlaceHolder;
-    private WebView mWebView;
+    protected AelfWebView mWebView;
 
     /**
      * Internals

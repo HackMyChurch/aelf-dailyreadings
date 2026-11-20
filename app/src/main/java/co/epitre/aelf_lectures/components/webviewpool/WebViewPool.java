@@ -2,7 +2,7 @@ package co.epitre.aelf_lectures.components.webviewpool;
 
 import android.content.Context;
 import android.content.MutableContextWrapper;
-import android.webkit.WebView;
+import co.epitre.aelf_lectures.components.AelfWebView;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -17,7 +17,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class WebViewPool extends WebViewPoolBase {
     private static final String TAG = "WebViewPool";
 
-    private final ArrayBlockingQueue<WebView> webViews;
+    private final ArrayBlockingQueue<AelfWebView> webViews;
     private final Context appContext;
 
     //
@@ -34,17 +34,19 @@ public class WebViewPool extends WebViewPoolBase {
         }
 
         // Clear the (application wide) webview cache
-        WebView webView = webViews.peek();
-        webView.clearCache(true);
+        AelfWebView webView = webViews.peek();
+        if (webView != null) {
+            webView.clearCache(true);
+        }
     }
 
     //
     // Interface
     //
 
-    public WebView borrowWebView(Context ctx) {
+    public AelfWebView borrowWebView(Context ctx) {
         // Get available webview or allocate if needed
-        WebView webView = webViews.poll();
+        AelfWebView webView = webViews.poll();
         if (webView == null) {
             webView = createWebView(ctx);
         }
@@ -57,7 +59,7 @@ public class WebViewPool extends WebViewPoolBase {
         return webView;
     }
 
-    public void releaseWebView(WebView webView) {
+    public void releaseWebView(AelfWebView webView) {
         // Swap the context
         MutableContextWrapper mutableContextWrapper = (MutableContextWrapper) webView.getContext();
         mutableContextWrapper.setBaseContext(appContext);

@@ -1,7 +1,7 @@
 package co.epitre.aelf_lectures.components.webviewpool;
 
 import android.content.Context;
-import android.webkit.WebView;
+import co.epitre.aelf_lectures.components.AelfWebView;
 
 /**
  * This class is a Stub implementation of the WebViewPool that will always allocate a new instance
@@ -13,10 +13,10 @@ import android.webkit.WebView;
  */
 public class WebViewPoolStub extends WebViewPoolBase {
     @Override
-    public WebView borrowWebView(Context ctx) {
+    public AelfWebView borrowWebView(Context ctx) {
         return createWebView(ctx);
     }
 
     @Override
-    public void releaseWebView(WebView webView) {}
+    public void releaseWebView(AelfWebView webView) {}
 }

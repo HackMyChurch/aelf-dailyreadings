@@ -15,17 +15,34 @@ class BibleBookmarkWebBridge @JvmOverloads constructor(
         const val INTERFACE_NAME = "AndroidBridge"
     }
 
+    @Volatile
+    var isEditingExistingBookmark: Boolean = false
+        private set
+
+    @Volatile
+    var currentEditingBookmarkId: String = ""
+        private set
+
+    @JavascriptInterface
+    fun onSelectionStateChanged(isEditingExisting: Boolean, bookmarkId: String?) {
+        Log.d(TAG, "onSelectionStateChanged: isEditingExisting=$isEditingExisting, bookmarkId=$bookmarkId")
+        this.isEditingExistingBookmark = isEditingExisting
+        this.currentEditingBookmarkId = bookmarkId ?: ""
+    }
+
+    fun clearSelectionState() {
+        this.isEditingExistingBookmark = false
+        this.currentEditingBookmarkId = ""
+    }
+
     @JavascriptInterface
     fun createBookmark(jsonString: String): String {
         Log.d(TAG, "createBookmark: $jsonString")
         return try {
             val bookmark = BibleBookmark.fromJsonString(jsonString)
-            val updated = if (bookmark.createdAt == 0L || bookmark.updatedAt == 0L) {
-                val now = System.currentTimeMillis()
-                bookmark.copy(createdAt = now, updatedAt = now)
-            } else {
-                bookmark
-            }
+            val now = System.currentTimeMillis()
+            val createdAt = if (bookmark.createdAt == 0L) now else bookmark.createdAt
+            val updated = bookmark.copy(createdAt = createdAt, updatedAt = now)
             val saved = repository.saveBookmark(updated)
             if (saved) updated.id else ""
         } catch (e: JSONException) {

@@ -3,9 +3,9 @@ package co.epitre.aelf_lectures.components.webviewpool;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.webkit.WebSettings;
-import android.webkit.WebView;
 
 import co.epitre.aelf_lectures.base.VirtualDisplayMutableContextWrapper;
+import co.epitre.aelf_lectures.components.AelfWebView;
 
 public abstract class WebViewPoolBase {
     private static final String TAG = "WebViewPoolBase";
@@ -14,17 +14,17 @@ public abstract class WebViewPoolBase {
     // Interface
     //
 
-    public abstract WebView borrowWebView(Context ctx);
-    public abstract void releaseWebView(WebView webView);
+    public abstract AelfWebView borrowWebView(Context ctx);
+    public abstract void releaseWebView(AelfWebView webView);
 
     //
     // Internals
     //
 
     @SuppressLint("SetJavaScriptEnabled")
-    protected static WebView createWebView(Context baseContext) {
+    protected static AelfWebView createWebView(Context baseContext) {
         Context WebViewContext = new VirtualDisplayMutableContextWrapper(baseContext);
-        WebView webView = new WebView(WebViewContext);
+        AelfWebView webView = new AelfWebView(WebViewContext);
 
         // Common setup
         webView.setBackgroundColor(0x00000000);

@@ -168,7 +168,7 @@ public class LecturesApplication extends Application {
                 .detectLeakedSqlLiteObjects()
                 .detectLeakedClosableObjects()
                 .penaltyLog()
-                .penaltyDeath()
+                //.penaltyDeath()
                 .build());
         super.onCreate();
     }

@@ -57,3 +57,9 @@ mark {
 .highlight {
     background-color: #f9787e33;
 }
+
+/* Bookmark / Highlight styling */
+mark.aelf-bookmark {
+    background-color: #665200;
+    color: #f8f7fa;
+}

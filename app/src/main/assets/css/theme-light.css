@@ -57,3 +57,9 @@ mark {
 .highlight {
     background-color: rgba(191, 35, 41, .12);
 }
+
+/* Bookmark / Highlight styling */
+mark.aelf-bookmark {
+    background-color: #ffe066;
+    color: #212529;
+}

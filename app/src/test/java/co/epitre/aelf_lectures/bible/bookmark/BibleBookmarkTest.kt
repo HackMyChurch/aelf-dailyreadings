@@ -79,6 +79,34 @@ class BibleBookmarkTest {
     }
 
     @Test
+    fun testJsNestedFormatDeserializationWithCreatedAt() {
+        val jsJsonString = """
+            {
+              "id": "bookmark-456",
+              "bookRef": "Ex",
+              "chapterRef": "3",
+              "createdAt": 1700000000000,
+              "range": {
+                "startVerse": 2,
+                "startOffset": 10,
+                "endVerse": 4,
+                "endOffset": 15
+              },
+              "textQuote": {
+                "exact": "Le buisson était enflammé",
+                "prefix": "et voici ",
+                "suffix": " mais ne se consumait pas"
+              }
+            }
+        """.trimIndent()
+
+        val bookmark = BibleBookmark.fromJsonString(jsJsonString)
+
+        assertEquals("bookmark-456", bookmark.id)
+        assertEquals(1700000000000L, bookmark.createdAt)
+    }
+
+    @Test
     fun testDefaultValuesWhenMissing() {
         val json = JSONObject().apply {
             put("bookRef", "Ps")
