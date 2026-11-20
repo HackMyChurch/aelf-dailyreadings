@@ -12,7 +12,6 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
@@ -330,11 +329,7 @@ public class LecturesActivity extends BaseActivity implements
 
     @Override
     public boolean isInMultiWindowMode() {
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return super.isInMultiWindowMode();
-        } else {
-            return false;
-        }
+        return super.isInMultiWindowMode();
     }
 
     @Override

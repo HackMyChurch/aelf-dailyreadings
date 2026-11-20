@@ -1358,11 +1358,7 @@ private fun HtmlText(
     modifier: Modifier = Modifier
 ) {
     val annotatedString = remember(html) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            AnnotatedString.fromHtml(html)
-        } else {
-            AnnotatedString(HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY).toString())
-        }
+        AnnotatedString.fromHtml(html)
     }
     Text(
         text = annotatedString,

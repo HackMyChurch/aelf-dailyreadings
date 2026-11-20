@@ -38,14 +38,10 @@ public class MainPrefFragment extends BasePrefFragment {
         // Request adding app to doze mode whitelist (Android >= 6.0)
         Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
         assert batterySyncPref != null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            batterySyncPref.setOnPreferenceClickListener(preference -> {
-                requestDozeModeExemption();
-                return true;
-            });
-        } else {
-            batterySyncPref.getParent().removePreference(batterySyncPref);
-        }
+        batterySyncPref.setOnPreferenceClickListener(preference -> {
+            requestDozeModeExemption();
+            return true;
+        });
 
         // Send mail + logs to dev
         Preference contactDevPref = findPreference(SettingsActivity.KEY_CONTACT_DEV);
@@ -105,12 +101,10 @@ public class MainPrefFragment extends BasePrefFragment {
             Preference batterySyncPref = findPreference(SettingsActivity.KEY_PREF_SYNC_BATTERY);
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             if (batterySyncPref != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
-                        batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
-                    } else {
-                        batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
-                    }
+                if (pm.isIgnoringBatteryOptimizations(context.getApplicationContext().getPackageName())) {
+                    batterySyncPref.setSummary("La synchronisation fonctionnera même sur batterie !");
+                } else {
+                    batterySyncPref.setSummary("Attention: La synchronisation risque de ne pas fonctionner sur batterie...");
                 }
             }
         } else if (key.equals(SettingsActivity.KEY_PREF_SYNC_DROP_CACHE)) {

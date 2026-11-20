@@ -2,7 +2,6 @@ package co.epitre.aelf_lectures.components;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -82,9 +81,7 @@ public class ReadingPinchToZoomListener implements View.OnTouchListener, SharedP
         // Start the scale detector
         mPinchListener = new PinchListener();
         mScaleDetector = new ScaleGestureDetector(context, mPinchListener);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
-        }
+        mScaleDetector.setStylusScaleEnabled(false); // disable stylus scale
         mScaleDetector.setQuickScaleEnabled(false);  // disable double tap + swipe
         mPinchListener.setEnabled(preferences.getBoolean(SettingsActivity.KEY_PREF_DISP_PINCH_TO_ZOOM, true));
 
