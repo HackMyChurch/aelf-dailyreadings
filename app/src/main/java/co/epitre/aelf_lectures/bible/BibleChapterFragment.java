@@ -71,6 +71,18 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
 
     @Override
     public boolean onContextMenuPrepare(ActionMode mode, Menu menu) {
+        // Remove "Translate" / "Traduire" if present
+        for (int i = menu.size() - 1; i >= 0; i--) {
+            MenuItem item = menu.getItem(i);
+            CharSequence title = item.getTitle();
+            if (title != null) {
+                String titleStr = title.toString().toLowerCase();
+                if (titleStr.contains("translate") || titleStr.contains("traduire")) {
+                    menu.removeItem(item.getItemId());
+                }
+            }
+        }
+
         // Remove "Select all" (android.R.id.selectAll) to place bookmark button on main bar
         MenuItem selectAllItem = menu.findItem(android.R.id.selectAll);
         if (selectAllItem != null) {
