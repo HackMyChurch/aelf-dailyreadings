@@ -32,6 +32,7 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
      */
     public static final String ARG_HIGHLIGHT = "highlight";
     public static final String ARG_REFERENCE = "reference";
+    public static final String ARG_BOOKMARK = "bookmark";
     public static final String ARG_BOOK_REF = "book_ref";
     public static final String ARG_CHAPTER = "chapter";
 
@@ -143,16 +144,19 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
         String body = "";
         String highlight = "";
         String reference = "";
+        String bookmark = "";
         String book_ref = "";
         String chapter = "";
         if (args != null) {
             highlight = args.getString(ARG_HIGHLIGHT, "");
             reference = args.getString(ARG_REFERENCE, "");
+            bookmark = args.getString(ARG_BOOKMARK, "");
             book_ref = args.getString(ARG_BOOK_REF, "");
             chapter = args.getString(ARG_CHAPTER, "");
         }
         if (highlight == null) highlight = "";
         if (reference == null) reference = "";
+        if (bookmark == null) bookmark = "";
         if (book_ref == null) book_ref = "";
         if (chapter == null) chapter = "";
 
@@ -183,7 +187,11 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
             }
         }
 
-        htmlString.append("<!DOCTYPE html><html><head>");
+        if (!bookmark.isEmpty() || !reference.isEmpty()) {
+            htmlString.append("<!DOCTYPE html><html class=\"target-pending\"><head>");
+        } else {
+            htmlString.append("<!DOCTYPE html><html><head>");
+        }
         htmlString.append("<link href=\"css/common.css\" type=\"text/css\" rel=\"stylesheet\" media=\"screen\" />");
         htmlString.append("<link href=\"");
         htmlString.append(getThemeCss());
@@ -194,10 +202,11 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
         htmlString.append("</head><body>");
         htmlString.append(body);
         htmlString.append("<script>");
-        htmlString.append("var highlight='").append(highlight.replace("'", "")).append("';\n");
-        htmlString.append("var reference='").append(reference.replace("'", "")).append("';\n");
-        htmlString.append("var current_chapter='").append(chapter.replace("'", "")).append("';\n");
-        htmlString.append("var current_book='").append(book_ref.replace("'", "")).append("';\n");
+        htmlString.append("var highlight=").append(org.json.JSONObject.quote(highlight)).append(";\n");
+        htmlString.append("var reference=").append(org.json.JSONObject.quote(reference)).append(";\n");
+        htmlString.append("var target_bookmark=").append(org.json.JSONObject.quote(bookmark)).append(";\n");
+        htmlString.append("var current_chapter=").append(org.json.JSONObject.quote(chapter)).append(";\n");
+        htmlString.append("var current_book=").append(org.json.JSONObject.quote(book_ref)).append(";\n");
         htmlString.append("var current_bookmarks=").append(bookmarksJsonArray).append(";\n");
         htmlString.append("</script>");
         htmlString.append("<script src=\"js/mark.8.11.1.min.js\" charset=\"utf-8\"></script>\n");
@@ -217,6 +226,9 @@ public class BibleChapterFragment extends ReadingFragment implements AelfWebView
         if (!reference.isEmpty()) {
             UrlString.append("#ref=");
             UrlString.append(reference);
+        } else if (!bookmark.isEmpty()) {
+            UrlString.append("#bookmark=");
+            UrlString.append(bookmark);
         }
 
         // Load content

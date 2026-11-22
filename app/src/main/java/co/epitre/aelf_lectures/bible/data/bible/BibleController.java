@@ -95,6 +95,10 @@ public class BibleController {
     public List<BibleBookChapter> getBookChapters(String bookRef) {
         waitReady();
 
+        if (db == null) {
+            return new ArrayList<>();
+        }
+
         Cursor cursor = db.query(
                 true,
                 "verses",

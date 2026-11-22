@@ -26,7 +26,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
@@ -44,7 +47,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.epitre.aelf_lectures.R
@@ -58,12 +63,14 @@ import org.greenrobot.eventbus.EventBus
 @Composable
 fun BibleMenuScreen(
     initialBiblePartId: Int = 0,
-    onPageChanged: (Int) -> Unit = {}
+    onPageChanged: (Int) -> Unit = {},
+    onItemClick: (String) -> Unit = {}
 ) {
     val bibleBookList = remember { BibleBookList.getInstance() }
     val parts = bibleBookList.parts
-    val initialPage = initialBiblePartId.coerceIn(0, (parts.size - 1).coerceAtLeast(0))
-    val pagerState = rememberPagerState(initialPage = initialPage) { parts.size }
+    val totalPages = parts.size + 1 // 3 parts + 1 bookmarks tab
+    val initialPage = initialBiblePartId.coerceIn(0, (totalPages - 1).coerceAtLeast(0))
+    val pagerState = rememberPagerState(initialPage = initialPage) { totalPages }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
@@ -119,15 +126,26 @@ fun BibleMenuScreen(
                     .fillMaxWidth()
                     .weight(1f)
             ) { page ->
-                val part = parts[page]
-                BibleBookGrid(
-                    part = part,
-                    biblePartId = page
-                )
+                if (page < parts.size) {
+                    val part = parts[page]
+                    BibleBookGrid(
+                        part = part,
+                        biblePartId = page
+                    )
+                } else {
+                    BibleBookmarksScreen(
+                        onItemClick = onItemClick
+                    )
+                }
             }
         }
     }
 }
+
+private data class TabMetrics(
+    val fontSize: TextUnit,
+    val weights: List<Float>
+)
 
 @Composable
 private fun BibleTabRow(
@@ -154,19 +172,22 @@ private fun BibleTabRow(
         val textMeasurer = rememberTextMeasurer()
         val totalWidthPx = with(density) { this@BoxWithConstraints.maxWidth.toPx() }
 
-        val (calculatedFontSize, outerWeight, middleWeight) = remember(
-            part0.name, part1.name, part2.name, totalWidthPx, density
+        val iconTabWidthDp = 48.dp
+        val iconTabWidthPx = with(density) { iconTabWidthDp.toPx() }
+
+        val metrics = remember(
+            part0.name, part1.name, part2.name, totalWidthPx, iconTabWidthPx, density
         ) {
-            if (totalWidthPx <= 0f) {
-                Triple(14.sp, 1f / 3f, 1f / 3f)
+            val availableForTextPx = (totalWidthPx - iconTabWidthPx).coerceAtLeast(100f)
+            if (availableForTextPx <= 0f) {
+                TabMetrics(11.sp, listOf(1f / 3f, 1f / 3f, 1f / 3f))
             } else {
-                val targetFontSizeSp = 14f
-                val minFontSizeSp = 9f
-                val minPaddingPx = density.run { 16.dp.toPx() }
+                val targetFontSizeSp = 12f
+                val minFontSizeSp = 7f
+                val minPaddingPx = density.run { 4.dp.toPx() }
 
                 var chosenFontSizeSp = targetFontSizeSp
-                var outerWeightCalc = 1f / 3f
-                var middleWeightCalc = 1f / 3f
+                var weights = listOf(1f / 3f, 1f / 3f, 1f / 3f)
 
                 var currentSp = targetFontSizeSp
                 while (currentSp >= minFontSizeSp) {
@@ -182,36 +203,44 @@ private fun BibleTabRow(
                     val maxOuterPx = maxOf(w0, w2)
                     val minRequiredPx = 2 * maxOuterPx + w1 + 3 * minPaddingPx
 
-                    if (minRequiredPx <= totalWidthPx || currentSp <= minFontSizeSp) {
+                    if (minRequiredPx <= availableForTextPx || currentSp <= minFontSizeSp) {
                         chosenFontSizeSp = currentSp
-                        val extraSpacePx = (totalWidthPx - w1 - 2 * maxOuterPx) / 3f
+                        val extraSpacePx = (availableForTextPx - w1 - 2 * maxOuterPx) / 3f
                         val outerPx = maxOuterPx + extraSpacePx
-                        val middlePx = totalWidthPx - 2 * outerPx
+                        val middlePx = availableForTextPx - 2 * outerPx
 
-                        outerWeightCalc = outerPx / totalWidthPx
-                        middleWeightCalc = middlePx / totalWidthPx
+                        weights = listOf(
+                            outerPx / totalWidthPx,
+                            middlePx / totalWidthPx,
+                            outerPx / totalWidthPx
+                        )
                         break
                     }
 
                     currentSp -= 0.5f
                 }
 
-                Triple(chosenFontSizeSp.sp, outerWeightCalc, middleWeightCalc)
+                TabMetrics(chosenFontSizeSp.sp, weights)
             }
         }
 
-        val w0Dp = this@BoxWithConstraints.maxWidth * outerWeight
-        val w1Dp = this@BoxWithConstraints.maxWidth * middleWeight
+        val calculatedFontSize = metrics.fontSize
+        val textWeights = metrics.weights
 
-        val tabLeftsDp = listOf(0.dp, w0Dp, w0Dp + w1Dp)
-        val tabWidthsDp = listOf(w0Dp, w1Dp, w0Dp)
+        val w0Dp = this@BoxWithConstraints.maxWidth * textWeights[0]
+        val w1Dp = this@BoxWithConstraints.maxWidth * textWeights[1]
+        val w2Dp = this@BoxWithConstraints.maxWidth * textWeights[2]
+        val iconDp = iconTabWidthDp
+
+        val tabLeftsDp = listOf(0.dp, w0Dp, w0Dp + w1Dp, w0Dp + w1Dp + w2Dp)
+        val tabWidthsDp = listOf(w0Dp, w1Dp, w2Dp, iconDp)
 
         Box(modifier = Modifier.fillMaxWidth()) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Tab(
                     selected = selectedTabIndex == 0,
                     onClick = { onTabSelected(0) },
-                    modifier = Modifier.weight(outerWeight),
+                    modifier = Modifier.width(w0Dp),
                     selectedContentColor = contentColor,
                     unselectedContentColor = contentColor.copy(alpha = 0.7f),
                     text = {
@@ -220,14 +249,15 @@ private fun BibleTabRow(
                             fontSize = calculatedFontSize,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
-                            softWrap = false
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 )
                 Tab(
                     selected = selectedTabIndex == 1,
                     onClick = { onTabSelected(1) },
-                    modifier = Modifier.weight(middleWeight),
+                    modifier = Modifier.width(w1Dp),
                     selectedContentColor = contentColor,
                     unselectedContentColor = contentColor.copy(alpha = 0.7f),
                     text = {
@@ -236,14 +266,15 @@ private fun BibleTabRow(
                             fontSize = calculatedFontSize,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
-                            softWrap = false
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 )
                 Tab(
                     selected = selectedTabIndex == 2,
                     onClick = { onTabSelected(2) },
-                    modifier = Modifier.weight(outerWeight),
+                    modifier = Modifier.width(w2Dp),
                     selectedContentColor = contentColor,
                     unselectedContentColor = contentColor.copy(alpha = 0.7f),
                     text = {
@@ -252,13 +283,28 @@ private fun BibleTabRow(
                             fontSize = calculatedFontSize,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
-                            softWrap = false
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                )
+                Tab(
+                    selected = selectedTabIndex == 3,
+                    onClick = { onTabSelected(3) },
+                    modifier = Modifier.width(iconDp),
+                    selectedContentColor = contentColor,
+                    unselectedContentColor = contentColor.copy(alpha = 0.7f),
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.BookmarkBorder,
+                            contentDescription = "Signets",
+                            tint = if (selectedTabIndex == 3) contentColor else contentColor.copy(alpha = 0.7f)
                         )
                     }
                 )
             }
 
-            val validIndex = selectedTabIndex.coerceIn(0, 2)
+            val validIndex = selectedTabIndex.coerceIn(0, 3)
             val indicatorLeft by animateDpAsState(
                 targetValue = tabLeftsDp[validIndex],
                 animationSpec = tween(durationMillis = 250, easing = FastOutSlowInEasing),
@@ -276,7 +322,7 @@ private fun BibleTabRow(
                     .offset(x = indicatorLeft)
                     .width(indicatorWidth),
                 color = indicatorColor,
-                height = 3.dp
+                height = 2.dp
             )
         }
     }

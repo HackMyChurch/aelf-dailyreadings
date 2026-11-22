@@ -639,7 +639,7 @@ private fun FilterAndSortHeader(
 }
 
 @Composable
-private fun BibleBookFilterSheet(
+internal fun BibleBookFilterSheet(
     tree: List<BibleTreePart>,
     selectedParts: Set<String>,
     selectedSections: Set<String>,

@@ -58,8 +58,13 @@ mark {
     background-color: rgba(191, 35, 41, .12);
 }
 
+:root {
+    --aelf-bookmark-bg: #ffe066;
+    --aelf-bookmark-bg-rgb: 255, 224, 102;
+}
+
 /* Bookmark / Highlight styling */
 mark.aelf-bookmark {
-    background-color: #ffe066;
+    background-color: var(--aelf-bookmark-bg);
     color: #212529;
 }

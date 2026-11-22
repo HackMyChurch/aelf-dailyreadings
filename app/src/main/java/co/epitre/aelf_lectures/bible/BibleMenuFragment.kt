@@ -1,5 +1,6 @@
 package co.epitre.aelf_lectures.bible
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -41,6 +42,10 @@ class BibleMenuFragment : BibleFragment() {
                     initialBiblePartId = initialBiblePartId,
                     onPageChanged = { page ->
                         currentPageState = page
+                    },
+                    onItemClick = { link ->
+                        val act = activity as? LecturesActivity
+                        act?.onIntent(Intent(Intent.ACTION_VIEW, Uri.parse(link)))
                     }
                 )
             }
@@ -49,19 +54,29 @@ class BibleMenuFragment : BibleFragment() {
 
     override fun getRoute(): String? {
         val parts = BibleBookList.getInstance().parts
-        if (currentPageState < 0 || currentPageState >= parts.size) {
+        if (currentPageState < 0) {
             return null
         }
-        return "/bible" + parts[currentPageState].route
+        if (currentPageState < parts.size) {
+            return "/bible" + parts[currentPageState].route
+        } else if (currentPageState == parts.size) {
+            return "/bible/bookmarks"
+        }
+        return null
     }
 
     override fun getTitle(): String? {
         val parts = BibleBookList.getInstance().parts
-        if (currentPageState < 0 || currentPageState >= parts.size) {
+        if (currentPageState < 0) {
             return null
         }
-        val partTitle = parts[currentPageState].name
-        return "Bible de la liturgie — $partTitle"
+        if (currentPageState < parts.size) {
+            val partTitle = parts[currentPageState].name
+            return "Bible de la liturgie — $partTitle"
+        } else if (currentPageState == parts.size) {
+            return "Bible de la liturgie — Signets"
+        }
+        return null
     }
 
     companion object {
@@ -70,6 +85,10 @@ class BibleMenuFragment : BibleFragment() {
         @JvmStatic
         fun newInstance(uri: Uri): BibleMenuFragment {
             val fragmentStr = uri.fragment
+            val path = uri.path
+            if (path == "/bible/bookmarks" || fragmentStr == "bookmarks") {
+                return newInstance(3)
+            }
             var biblePartId = 0
             var found = false
             val parts = BibleBookList.getInstance().parts

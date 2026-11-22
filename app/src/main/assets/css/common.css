@@ -173,9 +173,14 @@ mark {
     text-decoration-style: dotted;
 }
 
+/* Target scrolling setup */
+html.target-pending body {
+    visibility: hidden;
+}
+
 /* Bookmark / Highlight styling */
 mark.aelf-bookmark {
-    background-color: #FFE066;
+    background-color: var(--aelf-bookmark-bg, #FFE066);
     color: inherit;
     font-weight: normal;
     text-decoration: none;
@@ -184,3 +189,24 @@ mark.aelf-bookmark {
     cursor: pointer;
 }
 
+@keyframes aelf-bookmark-flash {
+    0% {
+        background-color: rgba(var(--aelf-bookmark-bg-rgb, 255, 224, 102), 1);
+    }
+    25% {
+        background-color: rgba(var(--aelf-bookmark-bg-rgb, 255, 224, 102), 0.15);
+    }
+    50% {
+        background-color: rgba(var(--aelf-bookmark-bg-rgb, 255, 224, 102), 1);
+    }
+    75% {
+        background-color: rgba(var(--aelf-bookmark-bg-rgb, 255, 224, 102), 0.15);
+    }
+    100% {
+        background-color: rgba(var(--aelf-bookmark-bg-rgb, 255, 224, 102), 1);
+    }
+}
+
+mark.aelf-bookmark.flash {
+    animation: aelf-bookmark-flash 3s ease-in-out;
+}

@@ -17,13 +17,19 @@ public class BibleChapterPagerAdapter extends FragmentStatePagerAdapter {
     private int mHighlightChapterId;
     private String mHighlightQuery;
     private String mReference;
+    private String mBookmark;
 
     public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery, String reference) {
+        this(fm, bibleBookEntry, highlightChapterId, highlightQuery, reference, null);
+    }
+
+    public BibleChapterPagerAdapter(@NonNull FragmentManager fm, @NonNull BibleBookEntry bibleBookEntry, int highlightChapterId, String highlightQuery, String reference, String bookmark) {
         super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         mBibleBookEntry = bibleBookEntry;
         mHighlightChapterId = highlightChapterId;
         mHighlightQuery = highlightQuery;
         mReference = reference;
+        mBookmark = bookmark;
     }
 
     @NonNull
@@ -35,10 +41,11 @@ public class BibleChapterPagerAdapter extends FragmentStatePagerAdapter {
         Bundle args = new Bundle();
         if (position == mHighlightChapterId) {
             args.putString(BibleChapterFragment.ARG_HIGHLIGHT, mHighlightQuery);
+            args.putString(BibleChapterFragment.ARG_REFERENCE, mReference);
+            args.putString(BibleChapterFragment.ARG_BOOKMARK, mBookmark);
         }
         args.putString(BibleChapterFragment.ARG_BOOK_REF, mBibleBookEntry.getBookRef());
         args.putString(BibleChapterFragment.ARG_CHAPTER, chapter.getChapterRef());
-        args.putString(BibleChapterFragment.ARG_REFERENCE, mReference);
         fragment.setArguments(args);
         return fragment;
     }

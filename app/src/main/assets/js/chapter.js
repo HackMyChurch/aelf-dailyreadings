@@ -290,6 +290,7 @@ function highlight_reference_for_chapter(reference, chapter) {
     if (first_verse_element) {
         first_verse_element.scrollIntoView();
     }
+    document.documentElement.classList.remove('target-pending');
 }
 
 if (reference) {

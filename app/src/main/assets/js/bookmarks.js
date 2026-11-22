@@ -309,12 +309,22 @@
         var nodes = getTextNodesBetween(range);
         if (nodes.length === 0) return "";
         var parts = [];
+        var currentVerse = findClosestVerseElement(nodes[0]);
         for (var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             var bounds = getNodeSelectionRange(node, range);
+            var newVerse = findClosestVerseElement(node);
+
+            if (currentVerse !== newVerse) {
+                // Ensure there is a blank at verse boundaries
+                parts.push(" ");
+            }
+
             if (bounds && bounds.startOffset < bounds.endOffset) {
                 parts.push(node.textContent.substring(bounds.startOffset, bounds.endOffset));
             }
+
+            currentVerse = newVerse;
         }
         return parts.join("").trim();
     }
@@ -473,20 +483,30 @@
         if (!bm || !bm.range || !bm.id) return;
         activeBookmarksMap[bm.id] = bm;
 
-        var startVerseEl = document.getElementById('verse-' + bm.range.startVerse);
-        var endVerseEl = document.getElementById('verse-' + bm.range.endVerse);
-        if (!startVerseEl || !endVerseEl) return;
+        var startVerseNum = bm.range.startVerse || 1;
+        var endVerseNum = bm.range.endVerse || startVerseNum;
+        if (endVerseNum < startVerseNum) endVerseNum = startVerseNum;
 
-        var startPt = findDomPointInVerse(startVerseEl, bm.range.startOffset);
-        var endPt = findDomPointInVerse(endVerseEl, bm.range.endOffset);
+        var startVerseEl = document.getElementById('verse-' + startVerseNum);
+        var endVerseEl = document.getElementById('verse-' + endVerseNum) || startVerseEl;
+        if (!startVerseEl) return;
+        if (!endVerseEl) endVerseEl = startVerseEl;
 
-        if (!startPt || !endPt) return;
+        var startPt = findDomPointInVerse(startVerseEl, bm.range.startOffset || 0);
+        var endPt = findDomPointInVerse(endVerseEl, bm.range.endOffset || 0);
 
-        var range = document.createRange();
-        range.setStart(startPt.node, startPt.offset);
-        range.setEnd(endPt.node, endPt.offset);
+        if (!startPt) return;
+        if (!endPt) endPt = startPt;
 
-        wrapRangeInBookmark(range, bm.id);
+        try {
+            var range = document.createRange();
+            range.setStart(startPt.node, startPt.offset);
+            range.setEnd(endPt.node, endPt.offset);
+
+            wrapRangeInBookmark(range, bm.id);
+        } catch (e) {
+            log("renderBookmark EXCEPTION: " + e);
+        }
     }
 
     /**
@@ -750,10 +770,47 @@
         }
     }
 
+    /**
+     * Highlights and scrolls to the targeted bookmark, flashing it lightly.
+     */
+    function highlightTargetBookmark(bookmarkId) {
+        if (!bookmarkId) {
+            document.documentElement.classList.remove('target-pending');
+            return;
+        }
+        var marks = document.querySelectorAll('mark.aelf-bookmark[data-bookmark-id="' + bookmarkId + '"]');
+        if (marks && marks.length > 0) {
+            try {
+                marks[0].scrollIntoView({ block: 'center' });
+            } catch (e) {
+                marks[0].scrollIntoView();
+            }
+
+            // Reveal body on frame 1 directly at the target position
+            document.documentElement.classList.remove('target-pending');
+
+            // Start background pulse after revealing
+            requestAnimationFrame(function() {
+                for (var i = 0; i < marks.length; i++) {
+                    marks[i].classList.add('flash');
+                }
+            });
+
+            setTimeout(function() {
+                for (var i = 0; i < marks.length; i++) {
+                    marks[i].classList.remove('flash');
+                }
+            }, 4000);
+        } else {
+            document.documentElement.classList.remove('target-pending');
+        }
+    }
+
     // Public API on window
     window.AelfBookmarks = {
         renderAll: renderAllBookmarks,
         render: renderBookmark,
+        highlightTargetBookmark: highlightTargetBookmark,
         remove: function(id) {
             removeBookmarkFromDom(id);
             delete activeBookmarksMap[id];
@@ -771,14 +828,24 @@
         if (typeof window.current_bookmarks !== 'undefined' && Array.isArray(window.current_bookmarks)) {
             renderAllBookmarks(window.current_bookmarks);
         }
+        if (typeof window.target_bookmark !== 'undefined' && window.target_bookmark) {
+            highlightTargetBookmark(window.target_bookmark);
+        } else {
+            document.documentElement.classList.remove('target-pending');
+        }
     }
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        setTimeout(init, 50);
+        init();
     } else {
         document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(init, 50);
+            init();
         });
     }
+
+    // Safety fallback: ensure target-pending class is removed
+    setTimeout(function() {
+        document.documentElement.classList.remove('target-pending');
+    }, 500);
 
 })();

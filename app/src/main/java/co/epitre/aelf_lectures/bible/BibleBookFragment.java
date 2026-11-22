@@ -41,6 +41,7 @@ public class BibleBookFragment extends BibleFragment {
     private final static String BIBLE_CHAPTER_ID = "bibleChapterId";
     private final static String BIBLE_SEARCH_QUERY = "bibleSearchQuery";
     private final static String BIBLE_REFERENCE = "bibleReference";
+    private final static String BIBLE_BOOKMARK = "bibleBookmark";
 
     /**
      * Global Views
@@ -67,6 +68,7 @@ public class BibleBookFragment extends BibleFragment {
         String[] chunks = path.split("/");
         String query = uri.getQueryParameter("query");
         String reference = uri.getQueryParameter("reference");
+        String bookmark = uri.getQueryParameter("bookmark");
 
         int biblePartId = 0;
         int bibleBookId = 0;
@@ -119,7 +121,7 @@ public class BibleBookFragment extends BibleFragment {
             }
         }
 
-        return newInstance(biblePartId, bibleBookId, bibleChapterId, query, reference);
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, query, reference, bookmark);
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId) {
@@ -127,10 +129,14 @@ public class BibleBookFragment extends BibleFragment {
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId) {
-        return newInstance(biblePartId, bibleBookId, bibleChapterId, null, null);
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, null, null, null);
     }
 
     public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query, String reference) {
+        return newInstance(biblePartId, bibleBookId, bibleChapterId, query, reference, null);
+    }
+
+    public static BibleBookFragment newInstance(int biblePartId, int bibleBookId, int bibleChapterId, String query, String reference, String bookmark) {
         BibleBookFragment fragment = new BibleBookFragment();
 
         Bundle args = new Bundle();
@@ -139,6 +145,7 @@ public class BibleBookFragment extends BibleFragment {
         args.putInt(BIBLE_CHAPTER_ID, bibleChapterId);
         args.putString(BIBLE_SEARCH_QUERY, query);
         args.putString(BIBLE_REFERENCE, reference);
+        args.putString(BIBLE_BOOKMARK, bookmark);
         fragment.setArguments(args);
 
         return fragment;
@@ -166,6 +173,7 @@ public class BibleBookFragment extends BibleFragment {
         int bibleChapterId = -1;
         String query = null;
         String reference = null;
+        String bookmark = null;
 
         if (args != null) {
             biblePartId = args.getInt(BIBLE_PART_ID, 0);
@@ -173,6 +181,7 @@ public class BibleBookFragment extends BibleFragment {
             bibleChapterId = args.getInt(BIBLE_CHAPTER_ID, -1);
             query = args.getString(BIBLE_SEARCH_QUERY);
             reference = args.getString(BIBLE_REFERENCE);
+            bookmark = args.getString(BIBLE_BOOKMARK);
         }
 
         BiblePart biblePart = BibleBookList.getInstance().getParts().get(biblePartId);
@@ -187,7 +196,7 @@ public class BibleBookFragment extends BibleFragment {
         actionBar.setTitle(mBibleBookEntry.getBookName());
 
         // Setup the pager
-        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry, bibleChapterId, query, reference);
+        mBibleChapterPagerAdapter = new BibleChapterPagerAdapter(getChildFragmentManager(), mBibleBookEntry, bibleChapterId, query, reference, bookmark);
         mViewPager = view.findViewById(R.id.bible_chapter_pager);
         mViewPager.setAdapter(mBibleChapterPagerAdapter);
         mTabLayout = view.findViewById(R.id.bible_chapter_layout);
@@ -249,6 +258,7 @@ public class BibleBookFragment extends BibleFragment {
 
         String query = args.getString(BIBLE_SEARCH_QUERY);
         String reference = args.getString(BIBLE_REFERENCE);
+        String bookmark = args.getString(BIBLE_BOOKMARK);
         String separator = "?";
 
         if (query != null ) {
@@ -258,6 +268,11 @@ public class BibleBookFragment extends BibleFragment {
 
         if (reference != null ) {
             route += separator + "reference=" + reference;
+            separator = "&";
+        }
+
+        if (bookmark != null ) {
+            route += separator + "bookmark=" + bookmark;
         }
 
         return route;
