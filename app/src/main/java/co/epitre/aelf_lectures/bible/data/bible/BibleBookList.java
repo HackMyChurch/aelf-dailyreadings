@@ -86,8 +86,6 @@ public class BibleBookList {
                 biblePart.addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Livre des Psaumes", "Psaume " + i, "Ps", "" + i));
             }
         }
-        // Book-level entry for Psaumes aliases
-        biblePart.addBibleBookEntry(new BibleBookEntry(BibleBookEntryType.BOOK, "Livre des Psaumes", "Psaume", "Ps", new String[]{"Psaumes"}));
         this.addPart(biblePart);
 
         this.addPart(new BiblePart("Nouveau Testament", "nouveau")
