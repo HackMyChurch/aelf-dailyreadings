@@ -23,18 +23,6 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.openjsse.**
 
-# EventBus support http://greenrobot.org/eventbus/documentation/proguard
--keepattributes *Annotation*
--keepclassmembers class * {
-    @org.greenrobot.eventbus.Subscribe <methods>;
-}
--keep enum org.greenrobot.eventbus.ThreadMode { *; }
-
-# Only required if you use AsyncExecutor
--keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
-    <init>(java.lang.Throwable);
-}
-
 # Moshi support https://github.com/square/moshi/blob/master/moshi/src/main/resources/META-INF/proguard/moshi.pro
 # JSR 305 annotations are for embedding nullability information.
 -dontwarn javax.annotation.**

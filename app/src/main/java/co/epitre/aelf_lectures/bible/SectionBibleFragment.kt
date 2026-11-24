@@ -21,8 +21,6 @@ import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.base.SectionFragment
 import co.epitre.aelf_lectures.bible.data.bible.BibleController
 import co.epitre.aelf_lectures.settings.SettingsActivity
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -227,22 +225,9 @@ class SectionBibleFragment : SectionFragment() {
         return "Bible de la liturgie"
     }
 
-    fun openBook(biblePartId: Int, bibleBookId: Int) {
-        if (activity == null) {
-            return
-        }
-        val newBibleFragment = BibleBookFragment.newInstance(biblePartId, bibleBookId)
-        setFragment(newBibleFragment)
-    }
-
     //
     // Lifecycle
     //
-
-    override fun onStart() {
-        super.onStart()
-        EventBus.getDefault().register(this)
-    }
 
     override fun onPause() {
         val lastPage = getUri().toString()
@@ -252,16 +237,6 @@ class SectionBibleFragment : SectionFragment() {
         editor?.apply()
 
         super.onPause()
-    }
-
-    override fun onStop() {
-        EventBus.getDefault().unregister(this)
-        super.onStop()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        // STUB
     }
 
     override fun onAttach(context: Context) {
@@ -286,11 +261,6 @@ class SectionBibleFragment : SectionFragment() {
     //
     // Events
     //
-
-    @Subscribe
-    fun onBibleEntryClick(event: BibleBookListAdapter.OnBibleEntryClickEvent) {
-        openBook(event.mBiblePartId, event.mBibleBookId)
-    }
 
     fun onShare(): Boolean {
         // Get current URL

@@ -1,5 +1,7 @@
 package co.epitre.aelf_lectures.bible.ui
 
+import android.content.Intent
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -52,13 +54,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import co.epitre.aelf_lectures.LecturesActivity
 import co.epitre.aelf_lectures.R
-import co.epitre.aelf_lectures.bible.BibleBookListAdapter
 import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntryType
 import co.epitre.aelf_lectures.bible.data.bible.BibleBookList
 import co.epitre.aelf_lectures.bible.data.bible.BiblePart
 import kotlinx.coroutines.launch
-import org.greenrobot.eventbus.EventBus
 
 @Composable
 fun BibleMenuScreen(
@@ -334,6 +336,8 @@ fun BibleBookGrid(
     biblePartId: Int,
     modifier: Modifier = Modifier
 ) {
+    val lecturesActivity = LocalActivity.current as? LecturesActivity
+
     val configuration = LocalConfiguration.current
     val isTablet = configuration.smallestScreenWidthDp >= 600
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -393,9 +397,9 @@ fun BibleBookGrid(
                     textColor = textColor,
                     dividerColor = dividerColor,
                     onClick = {
-                        EventBus.getDefault().post(
-                            BibleBookListAdapter.OnBibleEntryClickEvent(biblePartId, index)
-                        )
+                        val uri = "https://www.aelf.org/bible/${entry.bookRef}/${entry.chapterRef}".toUri()
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        lecturesActivity?.onIntent(intent)
                     }
                 )
             }
