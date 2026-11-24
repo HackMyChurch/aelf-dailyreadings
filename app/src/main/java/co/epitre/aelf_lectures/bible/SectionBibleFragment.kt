@@ -12,7 +12,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -21,6 +20,8 @@ import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.base.SectionFragment
 import co.epitre.aelf_lectures.bible.data.bible.BibleController
 import co.epitre.aelf_lectures.settings.SettingsActivity
+import androidx.core.net.toUri
+import androidx.core.content.edit
 
 /**
  * Created by jean-tiare on 12/03/18.
@@ -28,7 +29,6 @@ import co.epitre.aelf_lectures.settings.SettingsActivity
 class SectionBibleFragment : SectionFragment() {
 
     private var initialized = false
-    private var fragmentLoaded = false
     private var mFragmentManager: FragmentManager? = null
     private var settings: SharedPreferences? = null
 
@@ -67,14 +67,8 @@ class SectionBibleFragment : SectionFragment() {
         } else if (savedInstanceState != null) {
             // Nothing to do
         } else if (uri != null) {
-            val path = uri.path
-            if (path != null && path == "/bible/home") {
-                // Handle "Home": Load default or last visited page
-                onHome()
-            } else {
-                // Load requested URL
-                onLink(uri)
-            }
+            // Load requested URL
+            onLink(uri)
         } else if (Intent.ACTION_SEARCH == intent.action) {
             onSearch(intent.getStringExtra(SearchManager.QUERY))
         } else {
@@ -84,26 +78,6 @@ class SectionBibleFragment : SectionFragment() {
 
         initialized = true
         return view
-    }
-
-    private fun onHome() {
-        // Load the last visited uri
-        var lastPageStr = settings?.getString(SettingsActivity.KEY_BIBLE_LAST_PAGE, null)
-        if (lastPageStr == null) {
-            lastPageStr = "https://www.aelf.org/bible"
-        }
-
-        // Parse and extract the path
-        val lastPage = Uri.parse(lastPageStr)
-        val lastPagePath = lastPage.path
-
-        // Inject a "home" page in the back stack, unless requesting the home page
-        if (lastPagePath != null && lastPagePath != "/bible") {
-            onLink(null)
-        }
-
-        // Restore last viewed page
-        onLink(lastPage)
     }
 
     fun onLink(uri: Uri?) {
@@ -148,7 +122,7 @@ class SectionBibleFragment : SectionFragment() {
                 url += "&filter=" + Uri.encode(bookRef.trim())
             }
         }
-        val uri = Uri.parse(url)
+        val uri = url.toUri()
         onLink(uri)
     }
 
@@ -197,11 +171,8 @@ class SectionBibleFragment : SectionFragment() {
         val fm = mFragmentManager ?: return
         val fragmentTransaction = fm.beginTransaction()
         fragmentTransaction.replace(R.id.bible_container, newBibleFragment)
-        if (fragmentLoaded) {
-            fragmentTransaction.addToBackStack(null)
-        }
+        fragmentTransaction.addToBackStack(null)
         fragmentTransaction.commit()
-        fragmentLoaded = true
     }
 
     //
@@ -214,7 +185,7 @@ class SectionBibleFragment : SectionFragment() {
         if (currentBibleFragment != null) {
             route = currentBibleFragment.route
         }
-        return Uri.parse("https://www.aelf.org$route")
+        return "https://www.aelf.org$route".toUri()
     }
 
     fun getTitle(): String {
@@ -230,32 +201,17 @@ class SectionBibleFragment : SectionFragment() {
     //
 
     override fun onPause() {
-        val lastPage = getUri().toString()
+        val lastPage = getUri()
+        val path = lastPage.path
 
-        val editor = settings?.edit()
-        editor?.putString(SettingsActivity.KEY_BIBLE_LAST_PAGE, lastPage)
-        editor?.apply()
+        if (path != null && path.startsWith("/bible/") && path != "/bible/home") {
+            // Persist the last read location in a Bible Book
+            settings?.edit {
+                this.putString(SettingsActivity.KEY_BIBLE_LAST_PAGE, lastPage.toString())
+            }
+        }
 
         super.onPause()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-
-        val act = activity ?: return
-
-        act.onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                val fm = mFragmentManager
-                if (fm != null && fm.backStackEntryCount > 0) {
-                    // Move back in the current stack
-                    fm.popBackStack()
-                } else {
-                    // Delete parent fragment
-                    parentFragmentManager.popBackStack()
-                }
-            }
-        })
     }
 
     //

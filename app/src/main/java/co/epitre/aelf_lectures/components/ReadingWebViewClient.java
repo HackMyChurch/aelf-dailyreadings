@@ -50,12 +50,12 @@ public class ReadingWebViewClient extends WebViewClient {
 
         if (host != null && host.equals("www.aelf.org") || url.startsWith("aelf:")) {
             // If this is a request to AELF website, forward it to the main activity
-            mActivity.onIntent(new Intent(Intent.ACTION_VIEW, uri));
+            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+            mActivity.onIntent(intent);
         } else if (url.startsWith("mailto:")) {
             // Send mail to dev
             Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setType("text/plain");
-            intent.setData(uri);
+            intent.setDataAndType(uri, "text/plain");
             try {
                 mActivity.startActivity(Intent.createChooser(intent, "Envoyer un mail"));
             } catch (ActivityNotFoundException e) {

@@ -28,10 +28,16 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
@@ -44,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -56,10 +63,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import co.epitre.aelf_lectures.LecturesActivity
+import androidx.preference.PreferenceManager
 import co.epitre.aelf_lectures.R
 import co.epitre.aelf_lectures.bible.data.bible.BibleBookEntryType
 import co.epitre.aelf_lectures.bible.data.bible.BibleBookList
 import co.epitre.aelf_lectures.bible.data.bible.BiblePart
+import co.epitre.aelf_lectures.settings.SettingsActivity
 import kotlinx.coroutines.launch
 
 @Composable
@@ -68,6 +77,8 @@ fun BibleMenuScreen(
     onPageChanged: (Int) -> Unit = {},
     onItemClick: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
     val bibleBookList = remember { BibleBookList.getInstance() }
     val parts = bibleBookList.parts
     val totalPages = parts.size + 1 // 3 parts + 1 bookmarks tab
@@ -77,6 +88,52 @@ fun BibleMenuScreen(
 
     LaunchedEffect(pagerState.currentPage) {
         onPageChanged(pagerState.currentPage)
+    }
+
+    LaunchedEffect(Unit) {
+        // Reload the last page
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        val lastPageStr = prefs.getString(SettingsActivity.KEY_BIBLE_LAST_PAGE, null)
+        if (lastPageStr == null) {
+            return@LaunchedEffect
+        }
+
+        // Extract the book ref and chapter, if possible
+        val lastUri = lastPageStr.toUri()
+        val path = lastUri.path
+        if (path == null || !path.startsWith("/bible/")) {
+            return@LaunchedEffect
+        }
+
+        val chunks = path.split("/")
+        if (chunks.size != 4) {
+            return@LaunchedEffect
+        }
+
+        val bookRef = chunks[2]
+        val bookEntry = bibleBookList.findBookEntry(bookRef)
+        if (bookEntry == null) {
+            return@LaunchedEffect
+        }
+
+        val bookName = bookEntry.shortBookName
+        val chapterRef = chunks[3]
+        val chapterObj = bookEntry.chapters?.find { it.chapterRef.equals(chapterRef, ignoreCase = true) }
+        if (chapterObj == null) {
+            return@LaunchedEffect
+        }
+
+        // Generate snackbar
+        val chapterName = chapterObj.chapterName ?: "Chapitre $chapterRef"
+        val result = snackbarHostState.showSnackbar(
+            message = "Reprendre à $bookName, $chapterName",
+            actionLabel = "Reprendre",
+            withDismissAction = true,
+            duration = SnackbarDuration.Indefinite
+        )
+        if (result == SnackbarResult.ActionPerformed) {
+            onItemClick(lastPageStr)
+        }
     }
 
     val isDark = isSystemInDarkTheme()
@@ -103,43 +160,65 @@ fun BibleMenuScreen(
         colorResource(R.color.light_aelf_lecture_background)
     }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        if (parts.isNotEmpty()) {
-            BibleTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                parts = parts,
-                onTabSelected = { index ->
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                },
-                containerColor = tabContainerColor,
-                contentColor = tabContentColor,
-                indicatorColor = tabIndicatorColor
-            )
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (parts.isNotEmpty()) {
+                BibleTabRow(
+                    selectedTabIndex = pagerState.currentPage,
+                    parts = parts,
+                    onTabSelected = { index ->
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    containerColor = tabContainerColor,
+                    contentColor = tabContentColor,
+                    indicatorColor = tabIndicatorColor
+                )
 
-            HorizontalPager(
-                state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) { page ->
-                if (page < parts.size) {
-                    val part = parts[page]
-                    BibleBookGrid(
-                        part = part,
-                        biblePartId = page
-                    )
-                } else {
-                    BibleBookmarksScreen(
-                        onItemClick = onItemClick
-                    )
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) { page ->
+                    if (page < parts.size) {
+                        val part = parts[page]
+                        BibleBookGrid(
+                            part = part,
+                            biblePartId = page
+                        )
+                    } else {
+                        BibleBookmarksScreen(
+                            onItemClick = onItemClick
+                        )
+                    }
                 }
             }
+        }
+
+        val accentColor = if (isDark) {
+            colorResource(R.color.dark_aelf_accent)
+        } else {
+            colorResource(R.color.light_aelf_accent)
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+        ) { data ->
+            Snackbar(
+                snackbarData = data,
+                actionColor = accentColor
+            )
         }
     }
 }
