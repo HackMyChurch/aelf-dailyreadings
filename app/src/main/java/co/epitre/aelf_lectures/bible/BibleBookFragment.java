@@ -374,7 +374,7 @@ public class BibleBookFragment extends BibleFragment {
     public void onDestroyView() {
         super.onDestroyView();
 
-        // Detach adapter to fix leaks on back navigation
-        mViewPager.setAdapter(null);
+        mViewPager = null;
+        mTabLayout = null;
     }
 }
