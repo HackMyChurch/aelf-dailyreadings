@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE resources [
     <!ENTITY app_name    "AELF">
-    <!ENTITY app_version "2.10.2">
+    <!ENTITY app_version "2.11.0">
     <!ENTITY app_support "support@epitre.co">
 ]>
 <resources>
@@ -59,12 +59,15 @@
     <string name="dialog_whats_new_title">Nouveautés</string>
     <string name="dialog_whats_new_content">Merci d\'avoir mis à jour \"&app_name;\" !
         \n
+        \n🔖 Nouvelle fonction dans la Bible : Les signets\; pour retrouver rapidement un passage de
+        votre choix. Sélectionnez, cliquez sur « Ajouter un signet », et c\'est fait !
+        \n
         \n🔎 Le moteur de recherche de la Bible a été complètement repensé. Il est maintenant possible
         de restreindre la recherche à certains livres de la Bible ou bien de chercher une référence
         spécifique.
         \n
-        \n💬 Coté accessibilité, les lecteurs d\'écran tels que "TalkBack" seront plus fluide dans la
-        Bible.
+        \n💬 Coté accessibilité, les lecteurs d\'écran tels que « TalkBack » seront plus fluide
+        dans la Bible.
         \n
         \nMerci pour vos retours, commentaires et suggestions qui permettent à cette application de
         devenir meilleure 😇
