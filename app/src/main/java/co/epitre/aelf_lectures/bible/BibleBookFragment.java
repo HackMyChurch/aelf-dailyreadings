@@ -351,7 +351,7 @@ public class BibleBookFragment extends BibleFragment {
         // Enable "home" button to get back to the menu
         if (getParentFragmentManager().getBackStackEntryCount() > 0) {
             activity.setHomeButtonEnabled(true, v -> {
-                getParentFragmentManager().popBackStack();
+                activity.getOnBackPressedDispatcher().onBackPressed();
             });
         } else {
             activity.setHomeButtonEnabled(false, null);
